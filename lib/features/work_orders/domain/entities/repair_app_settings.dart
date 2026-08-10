@@ -1,0 +1,95 @@
+part of 'work_order.dart';
+
+class RepairAppSettings {
+  const RepairAppSettings({
+    this.shopName = '林师傅维修',
+    this.ownerName = '林师傅',
+    this.phone = '',
+    this.address = '',
+    this.defaultNote = '以上报价仅供本次服务参考，实际费用以现场确认内容为准。额外项目需经客户确认后执行。',
+    this.darkMode = false,
+    this.hasSeenWelcome = false,
+    this.customServiceItemTypes = const [],
+    this.deletedBuiltInServiceItemTypes = const [],
+    this.dashboardCardOrder = const [],
+    this.dashboardHiddenCards = const [],
+  });
+
+  final String shopName;
+  final String ownerName;
+  final String phone;
+  final String address;
+  final String defaultNote;
+  final bool darkMode;
+  final bool hasSeenWelcome;
+  final List<String> customServiceItemTypes;
+  final List<String> deletedBuiltInServiceItemTypes;
+  final List<String> dashboardCardOrder;
+  final List<String> dashboardHiddenCards;
+
+  RepairAppSettings copyWith({
+    String? shopName,
+    String? ownerName,
+    String? phone,
+    String? address,
+    String? defaultNote,
+    bool? darkMode,
+    bool? hasSeenWelcome,
+    List<String>? customServiceItemTypes,
+    List<String>? deletedBuiltInServiceItemTypes,
+    List<String>? dashboardCardOrder,
+    List<String>? dashboardHiddenCards,
+  }) =>
+      RepairAppSettings(
+        shopName: shopName ?? this.shopName,
+        ownerName: ownerName ?? this.ownerName,
+        phone: phone ?? this.phone,
+        address: address ?? this.address,
+        defaultNote: defaultNote ?? this.defaultNote,
+        darkMode: darkMode ?? this.darkMode,
+        hasSeenWelcome: hasSeenWelcome ?? this.hasSeenWelcome,
+        customServiceItemTypes:
+            customServiceItemTypes ?? this.customServiceItemTypes,
+        deletedBuiltInServiceItemTypes: deletedBuiltInServiceItemTypes ??
+            this.deletedBuiltInServiceItemTypes,
+        dashboardCardOrder: dashboardCardOrder ?? this.dashboardCardOrder,
+        dashboardHiddenCards: dashboardHiddenCards ?? this.dashboardHiddenCards,
+      );
+
+  Map<String, Object?> toJson() => {
+        'shopName': shopName,
+        'ownerName': ownerName,
+        'phone': phone,
+        'address': address,
+        'defaultNote': defaultNote,
+        'darkMode': darkMode,
+        'hasSeenWelcome': hasSeenWelcome,
+        'customServiceItemTypes': customServiceItemTypes,
+        'deletedBuiltInServiceItemTypes': deletedBuiltInServiceItemTypes,
+        'dashboardCardOrder': dashboardCardOrder,
+        'dashboardHiddenCards': dashboardHiddenCards,
+      };
+
+  factory RepairAppSettings.fromJson(Map<String, Object?> json) =>
+      RepairAppSettings(
+        shopName: json['shopName']?.toString() ?? '林师傅维修',
+        ownerName: json['ownerName']?.toString() ?? '林师傅',
+        phone: json['phone']?.toString() ?? '',
+        address: json['address']?.toString() ?? '',
+        defaultNote:
+            json['defaultNote']?.toString() ?? RepairAppSettings().defaultNote,
+        darkMode: json['darkMode'] == true,
+        hasSeenWelcome: json['hasSeenWelcome'] == true,
+        customServiceItemTypes: _stringList(json['customServiceItemTypes']),
+        deletedBuiltInServiceItemTypes:
+            _stringList(json['deletedBuiltInServiceItemTypes']),
+        dashboardCardOrder: _stringList(json['dashboardCardOrder']),
+        dashboardHiddenCards: _stringList(json['dashboardHiddenCards']),
+      );
+}
+
+List<String> _stringList(Object? value) => (value as List? ?? const [])
+    .map((item) => item.toString().trim())
+    .where((item) => item.isNotEmpty)
+    .toSet()
+    .toList();

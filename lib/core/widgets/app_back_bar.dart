@@ -1,0 +1,33 @@
+import 'package:flutter/material.dart';
+
+/// A reusable fixed app bar for pages that are entered from another page.
+class AppBackBar extends StatelessWidget implements PreferredSizeWidget {
+  const AppBackBar({
+    required this.title,
+    required this.onBack,
+    super.key,
+  });
+
+  final String title;
+  final VoidCallback onBack;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      automaticallyImplyLeading: false,
+      leading: IconButton(
+        onPressed: onBack,
+        tooltip: '返回',
+        icon: const Icon(Icons.arrow_back),
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+      ),
+      centerTitle: false,
+    );
+  }
+}

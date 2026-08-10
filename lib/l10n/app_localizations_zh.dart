@@ -1,0 +1,19 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for Chinese (`zh`).
+class AppLocalizationsZh extends AppLocalizations {
+  AppLocalizationsZh([String locale = 'zh']) : super(locale);
+
+  @override
+  String get appTitle => '维修工单助手';
+
+  @override
+  String get retry => '重试';
+
+  @override
+  String get unexpectedError => '操作失败，请稍后重试';
+}

@@ -1,0 +1,154 @@
+import 'package:repair_work_order_assistant/app/base_app.dart';
+import 'package:repair_work_order_assistant/features/work_orders/application/work_order_controller.dart';
+import 'package:repair_work_order_assistant/features/work_orders/domain/entities/work_order.dart';
+import 'package:repair_work_order_assistant/features/work_orders/domain/repositories/work_order_repository.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+class _FakeWorkOrderRepository implements WorkOrderRepository {
+  RepairAppData value = seedData();
+
+  @override
+  Future<RepairAppData> load() async => value;
+
+  @override
+  Future<void> save(RepairAppData data) async => value = data;
+}
+
+void main() {
+  testWidgets('work order app shows welcome page before the dashboard',
+      (tester) async {
+    final controller = WorkOrderController(_FakeWorkOrderRepository());
+    await controller.initialize();
+
+    await tester.pumpWidget(BaseApp(controller: controller));
+    await tester.pumpAndSettle();
+
+    expect(find.text('开始使用'), findsOneWidget);
+    await tester.ensureVisible(find.text('开始使用'));
+    await tester.tap(find.text('开始使用'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('今天，先把现场安排好。'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('最近工单'), 500);
+    expect(find.text('最近工单'), findsOneWidget);
+  });
+
+  testWidgets('dashboard progress merges confirmed into repairing',
+      (tester) async {
+    final draft = emptyWorkOrder(
+      id: 'draft-dashboard-order',
+      number: '20260807-001',
+    );
+    final cancelled = emptyWorkOrder(
+      id: 'cancelled-dashboard-order',
+      number: '20260807-002',
+    ).copyWith(status: WorkOrderStatus.cancelled);
+    final confirmed = emptyWorkOrder(
+      id: 'confirmed-dashboard-order',
+      number: '20260807-003',
+    ).copyWith(status: WorkOrderStatus.confirmed);
+    final repairing = emptyWorkOrder(
+      id: 'repairing-dashboard-order',
+      number: '20260807-004',
+    ).copyWith(status: WorkOrderStatus.repairing);
+    final awaitingPayment = emptyWorkOrder(
+      id: 'awaiting-payment-dashboard-order',
+      number: '20260807-005',
+    ).copyWith(status: WorkOrderStatus.awaitingPayment);
+    final completed = emptyWorkOrder(
+      id: 'completed-dashboard-order',
+      number: '20260807-006',
+    ).copyWith(status: WorkOrderStatus.completed);
+    final repository = _FakeWorkOrderRepository()
+      ..value = RepairAppData(
+        customers: const [],
+        serviceItems: const [],
+        workOrders: [
+          draft,
+          cancelled,
+          confirmed,
+          repairing,
+          awaitingPayment,
+          completed,
+        ],
+        payments: const [],
+        settings: const RepairAppSettings(hasSeenWelcome: true),
+      );
+    final controller = WorkOrderController(repository);
+    await controller.initialize();
+
+    await tester.pumpWidget(BaseApp(controller: controller));
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(find.text('工单进度'), 500);
+    await tester.pumpAndSettle();
+
+    final progressCard = find.ancestor(
+      of: find.text('工单进度'),
+      matching: find.byType(Card),
+    );
+    expect(progressCard, findsOneWidget);
+    expect(
+      find.descendant(of: progressCard, matching: find.text('草稿')),
+      findsNothing,
+    );
+    expect(
+      find.descendant(of: progressCard, matching: find.text('已取消')),
+      findsNothing,
+    );
+    expect(
+      find.descendant(of: progressCard, matching: find.text('已确认')),
+      findsNothing,
+    );
+    expect(
+      find.descendant(of: progressCard, matching: find.text('待确认')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: progressCard, matching: find.text('维修中')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: progressCard, matching: find.text('待收款')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: progressCard, matching: find.text('已完成')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: progressCard, matching: find.text('2 张')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('settings opens a secondary menu before its detail page',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final repository = _FakeWorkOrderRepository();
+    repository.value = repository.value.copyWith(
+      settings: repository.value.settings.copyWith(hasSeenWelcome: true),
+    );
+    final controller = WorkOrderController(repository);
+    await controller.initialize();
+
+    await tester.pumpWidget(BaseApp(controller: controller));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('设置'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('系统设置'), findsOneWidget);
+    expect(find.text('门店资料'), findsOneWidget);
+    expect(find.text('门店名称'), findsNothing);
+
+    await tester.tap(find.text('门店资料'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('门店名称'), findsOneWidget);
+    expect(find.text('保存门店资料'), findsOneWidget);
+  });
+}

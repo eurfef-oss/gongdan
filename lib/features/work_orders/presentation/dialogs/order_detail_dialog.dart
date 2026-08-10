@@ -1,0 +1,1376 @@
+part of '../work_order_dialogs.dart';
+
+class OrderDetailDialog extends StatefulWidget {
+  const OrderDetailDialog(
+      {required this.controller,
+      required this.orderId,
+      required this.onEdit,
+      required this.onPayment,
+      required this.onSignature,
+      required this.onDocument,
+      required this.onMoveToTrash,
+      this.fileSelectionService,
+      this.asPage = false,
+      super.key});
+
+  final WorkOrderController controller;
+  final String orderId;
+  final VoidCallback onEdit;
+  final VoidCallback onPayment;
+  final VoidCallback onSignature;
+  final ValueChanged<String> onDocument;
+  final Future<void> Function() onMoveToTrash;
+  final FileSelectionService? fileSelectionService;
+  final bool asPage;
+
+  @override
+  State<OrderDetailDialog> createState() => _OrderDetailDialogState();
+}
+
+class _OrderDetailDialogState extends State<OrderDetailDialog> {
+  String _photoCategory = 'before';
+  late final FileSelectionService _fileSelectionService;
+
+  @override
+  void initState() {
+    super.initState();
+    _fileSelectionService =
+        widget.fileSelectionService ?? PlatformFileSelectionService();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: widget.controller,
+      builder: (context, _) {
+        final order = widget.controller.orderById(widget.orderId);
+        if (order == null) return const SizedBox.shrink();
+        final customer = widget.controller.customerById(order.customerId);
+        final locked = order.status.isTerminal || order.isTrashed;
+        final canReceivePayment = !locked && order.outstanding > 0;
+        final next = locked ? null : order.status.next;
+        final detail = Column(
+          children: [
+            if (!widget.asPage)
+              _DialogHeader(
+                kicker: 'WORK ORDER / DETAIL',
+                title: customer?.name.isNotEmpty == true
+                    ? customer!.name
+                    : '未关联客户',
+                subtitle: '${_dialogDevice(order)} · ${order.number}',
+              ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(11, 0, 11, 18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _OrderHero(
+                      order: order,
+                      next: next,
+                      onAdvance: next == null ||
+                              (next == WorkOrderStatus.completed &&
+                                  order.outstanding > 0)
+                          ? null
+                          : () => widget.controller.advanceStatus(order.id),
+                      onEdit: locked ? null : widget.onEdit,
+                      onCancel: locked
+                          ? null
+                          : () => widget.controller.cancelOrder(order.id),
+                    ),
+                    const SizedBox(height: 16),
+                    _FieldOperationsCard(
+                      onSignature: locked ? null : widget.onSignature,
+                      onPhoto: locked ? null : () => _addPhoto(order),
+                      onPayment: canReceivePayment ? widget.onPayment : null,
+                      onReceipt: () => widget.onDocument('receipt'),
+                    ),
+                    const SizedBox(height: 16),
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final main = Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _DetailInfo(order: order, customer: customer),
+                            const SizedBox(height: 16),
+                            _LineItemsCard(
+                              order: order,
+                              onQuote: () => widget.onDocument('quote'),
+                            ),
+                            if (order.result.isNotEmpty) ...[
+                              const SizedBox(height: 16),
+                              _NoteCard(title: '维修结果', text: order.result),
+                            ],
+                            if (order.internalNote.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              _NoteCard(
+                                  title: '内部备注', text: order.internalNote),
+                            ],
+                          ],
+                        );
+                        final side = Column(
+                          children: [
+                            _PaymentCard(
+                              order: order,
+                              payments: widget.controller.paymentsFor(order.id),
+                              onAdd:
+                                  canReceivePayment ? widget.onPayment : null,
+                            ),
+                            const SizedBox(height: 12),
+                            _WarrantyCard(order: order),
+                            const SizedBox(height: 12),
+                            _SignatureCard(
+                                order: order,
+                                onSign: locked ? null : widget.onSignature),
+                          ],
+                        );
+                        if (constraints.maxWidth < 720) {
+                          return Column(
+                            children: [main, const SizedBox(height: 16), side],
+                          );
+                        }
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(child: main),
+                            const SizedBox(width: 16),
+                            SizedBox(width: 285, child: side),
+                          ],
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    _PhotoCard(
+                      controller: widget.controller,
+                      order: order,
+                      category: _photoCategory,
+                      editable: !locked,
+                      fileSelectionService: _fileSelectionService,
+                      onCategoryChanged: (value) =>
+                          setState(() => _photoCategory = value),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const Divider(height: 1),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(11, 12, 11, 12),
+              child: Wrap(
+                alignment: WrapAlignment.end,
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  TextButton.icon(
+                    onPressed: order.isTrashed ? null : widget.onMoveToTrash,
+                    icon: const Icon(Icons.delete_sweep_outlined, size: 17),
+                    label: const Text('移入回收站'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                  OutlinedButton(
+                    onPressed: () => widget.onDocument('quote'),
+                    child: const Text('报价单'),
+                  ),
+                  OutlinedButton(
+                    onPressed: () => widget.onDocument('receipt'),
+                    child: const Text('维修凭证'),
+                  ),
+                  FilledButton(
+                    onPressed: canReceivePayment ? widget.onPayment : null,
+                    child: const Text('记录收款'),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+        if (widget.asPage) {
+          return Scaffold(
+            appBar: AppBackBar(
+              title:
+                  customer?.name.isNotEmpty == true ? customer!.name : '工单详情',
+              onBack: () => Navigator.of(context).pop(),
+            ),
+            body: SafeArea(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1440),
+                  child: SizedBox(width: double.infinity, child: detail),
+                ),
+              ),
+            ),
+          );
+        }
+        final viewInsets = MediaQuery.viewInsetsOf(context);
+        final maxHeight =
+            (MediaQuery.sizeOf(context).height - viewInsets.bottom - 22)
+                .clamp(300.0, 880.0)
+                .toDouble();
+        return Dialog(
+          insetPadding: const EdgeInsets.all(11),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 1280, maxHeight: maxHeight),
+            child: detail,
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _addPhoto(WorkOrder order) async {
+    final category = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const ListTile(
+              title: Text('选择照片分类'),
+              subtitle: Text('照片会归档到当前工单。'),
+            ),
+            for (final item in const [
+              ('before', '维修前'),
+              ('during', '维修中'),
+              ('after', '维修后'),
+            ])
+              ListTile(
+                leading: const Icon(Icons.photo_camera_outlined),
+                title: Text(item.$2),
+                onTap: () => Navigator.pop(context, item.$1),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (!mounted || category == null) return;
+    setState(() => _photoCategory = category);
+    await _pickOrderPhotos(
+      context: context,
+      controller: widget.controller,
+      order: order,
+      category: category,
+      fileSelectionService: _fileSelectionService,
+    );
+  }
+}
+
+class _FieldOperationsCard extends StatelessWidget {
+  const _FieldOperationsCard({
+    required this.onSignature,
+    required this.onPhoto,
+    required this.onPayment,
+    required this.onReceipt,
+  });
+
+  final VoidCallback? onSignature;
+  final VoidCallback? onPhoto;
+  final VoidCallback? onPayment;
+  final VoidCallback onReceipt;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: Theme.of(context).colorScheme.primary.withValues(alpha: .05),
+      child: Padding(
+        padding: const EdgeInsets.all(15),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('现场操作',
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w800)),
+                      SizedBox(height: 4),
+                      Text('签名、照片、收款和凭证集中处理', style: TextStyle(fontSize: 14)),
+                    ],
+                  ),
+                ),
+                Icon(Icons.flash_on_outlined,
+                    color: Theme.of(context).colorScheme.primary),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _FieldOperationButton(
+                  icon: Icons.draw_outlined,
+                  label: '签名',
+                  onPressed: onSignature,
+                ),
+                _FieldOperationButton(
+                  icon: Icons.photo_camera_outlined,
+                  label: '拍照',
+                  onPressed: onPhoto,
+                ),
+                _FieldOperationButton(
+                  icon: Icons.payments_outlined,
+                  label: '收款',
+                  onPressed: onPayment,
+                ),
+                _FieldOperationButton(
+                  icon: Icons.receipt_long_outlined,
+                  label: '生成凭证',
+                  onPressed: onReceipt,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FieldOperationButton extends StatelessWidget {
+  const _FieldOperationButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) => OutlinedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, size: 16),
+        label: Text(label),
+      );
+}
+
+class _OrderHero extends StatelessWidget {
+  const _OrderHero(
+      {required this.order,
+      required this.next,
+      required this.onAdvance,
+      required this.onEdit,
+      required this.onCancel});
+
+  final WorkOrder order;
+  final WorkOrderStatus? next;
+  final VoidCallback? onAdvance;
+  final VoidCallback? onEdit;
+  final VoidCallback? onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context)
+            .colorScheme
+            .surfaceContainerHighest
+            .withValues(alpha: .5),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final summary = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Wrap(
+                spacing: 7,
+                runSpacing: 6,
+                children: [
+                  _DialogStatusChip(order.status),
+                  _DialogStatusChip(order.paymentStatus, payment: true),
+                ],
+              ),
+              const SizedBox(height: 9),
+              Text(
+                _dialogMoney(order.total),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  fontFamily: 'monospace',
+                ),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                '创建于 ${_dialogDate(order.createdAt)} · 更新于 ${_dialogDateTime(order.updatedAt)}',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          );
+          final actions = Wrap(
+            alignment: WrapAlignment.end,
+            spacing: 7,
+            runSpacing: 7,
+            children: [
+              OutlinedButton(onPressed: onEdit, child: const Text('编辑')),
+              if (next != null)
+                FilledButton(
+                  onPressed: onAdvance,
+                  child: Text(
+                    order.status == WorkOrderStatus.pendingConfirmation
+                        ? '确认报价并开始维修'
+                        : '推进至 ${next!.label}',
+                  ),
+                ),
+              if (onCancel != null)
+                TextButton(
+                  onPressed: onCancel,
+                  style: TextButton.styleFrom(
+                    foregroundColor: Theme.of(context).colorScheme.error,
+                  ),
+                  child: const Text('取消工单'),
+                ),
+            ],
+          );
+          if (constraints.maxWidth < 560) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [summary, const SizedBox(height: 13), actions],
+            );
+          }
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [Expanded(child: summary), actions],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _DetailInfo extends StatelessWidget {
+  const _DetailInfo({required this.order, required this.customer});
+
+  final WorkOrder order;
+  final Customer? customer;
+
+  @override
+  Widget build(BuildContext context) {
+    final address = order.serviceAddress.isNotEmpty
+        ? order.serviceAddress
+        : customer?.address.isNotEmpty == true
+            ? customer!.address
+            : '未填写';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text('服务信息',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 9,
+          runSpacing: 9,
+          children: [
+            _MiniInfo(
+                label: '客户',
+                value:
+                    '${customer?.name ?? '未关联'} · ${customer?.phone.isEmpty == false ? customer!.phone : '未填写电话'}'),
+            _MiniInfo(label: '服务地址', value: address),
+            _MiniInfo(label: '设备', value: _dialogDevice(order)),
+            _MiniInfo(
+                label: '预约时间', value: _dialogDateTime(order.appointmentAt)),
+            _MiniInfo(
+                label: '故障描述',
+                value: order.faultDescription.isEmpty
+                    ? '未填写'
+                    : order.faultDescription),
+            if (order.customerRequest.isNotEmpty)
+              _MiniInfo(label: '客户需求', value: order.customerRequest),
+            if (order.customerNote.isNotEmpty)
+              _MiniInfo(label: '客户备注', value: order.customerNote),
+            if (order.serialNumber.isNotEmpty)
+              _MiniInfo(label: '序列号', value: order.serialNumber),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _MiniInfo extends StatelessWidget {
+  const _MiniInfo({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minWidth: 180, maxWidth: 360),
+      padding: const EdgeInsets.all(11),
+      decoration: BoxDecoration(
+        color: Theme.of(context)
+            .colorScheme
+            .surfaceContainerHighest
+            .withValues(alpha: .45),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(value, style: const TextStyle(fontSize: 14, height: 1.45)),
+        ],
+      ),
+    );
+  }
+}
+
+class _LineItemsCard extends StatelessWidget {
+  const _LineItemsCard({required this.order, required this.onQuote});
+
+  final WorkOrder order;
+  final VoidCallback onQuote;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(15, 13, 15, 9),
+            child: Row(
+              children: [
+                const Text('报价明细',
+                    style:
+                        TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+                const Spacer(),
+                TextButton(onPressed: onQuote, child: const Text('预览报价单 →')),
+              ],
+            ),
+          ),
+          if (order.items.isEmpty)
+            const Padding(
+              padding: EdgeInsets.all(22),
+              child: Text('尚未添加项目',
+                  style: TextStyle(fontSize: 14, color: Colors.grey)),
+            )
+          else ...[
+            Table(
+              columnWidths: const {
+                0: FlexColumnWidth(3),
+                1: FlexColumnWidth(1.2),
+                2: FlexColumnWidth(1.4),
+              },
+              children: [
+                const TableRow(
+                  children: [
+                    _TableCell('项目', header: true),
+                    _TableCell('数量', header: true),
+                    _TableCell('小计', header: true, alignEnd: true),
+                  ],
+                ),
+                ...order.items.map(
+                  (item) => TableRow(
+                    children: [
+                      _TableCell(item.name, note: item.note),
+                      _TableCell('${item.quantity} ${item.unit}'),
+                      _TableCell(_dialogMoney(item.amount), alignEnd: true),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(15, 10, 15, 15),
+              child: Column(
+                children: [
+                  _DialogAmountLine(label: '项目小计', value: order.subtotal),
+                  _DialogAmountLine(label: '优惠', value: -order.discount),
+                  _DialogAmountLine(
+                      label: '应收合计', value: order.total, strong: true),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _TableCell extends StatelessWidget {
+  const _TableCell(this.text,
+      {this.header = false, this.alignEnd = false, this.note = ''});
+
+  final String text;
+  final bool header;
+  final bool alignEnd;
+  final String note;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 9),
+      child: Align(
+        alignment: alignEnd ? Alignment.centerRight : Alignment.centerLeft,
+        child: Column(
+          crossAxisAlignment:
+              alignEnd ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          children: [
+            Text(
+              text,
+              style: TextStyle(
+                fontSize: 14,
+                color: header
+                    ? Theme.of(context).colorScheme.onSurfaceVariant
+                    : null,
+                fontWeight: header ? FontWeight.normal : FontWeight.w500,
+                fontFamily: alignEnd && !header ? 'monospace' : null,
+              ),
+            ),
+            if (note.isNotEmpty)
+              Text(
+                note,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontSize: 14,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NoteCard extends StatelessWidget {
+  const _NoteCard({required this.title, required this.text});
+
+  final String title;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Theme.of(context)
+            .colorScheme
+            .surfaceContainerHighest
+            .withValues(alpha: .5),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: RichText(
+        text: TextSpan(
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontSize: 14,
+            height: 1.55,
+          ),
+          children: [
+            TextSpan(
+              text: '$title\n',
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+            ),
+            TextSpan(text: text),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PaymentCard extends StatelessWidget {
+  const _PaymentCard(
+      {required this.order, required this.payments, required this.onAdd});
+
+  final WorkOrder order;
+  final List<PaymentRecord> payments;
+  final VoidCallback? onAdd;
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = order.total <= 0
+        ? 0.0
+        : (order.normalizedPaid / order.total).clamp(0.0, 1.0).toDouble();
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(15),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                const Text('收款',
+                    style:
+                        TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+                const Spacer(),
+                TextButton.icon(
+                  onPressed: onAdd,
+                  icon: const Icon(Icons.add, size: 15),
+                  label: const Text('记一笔'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 5),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text(
+                  _dialogMoney(order.normalizedPaid),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    fontFamily: 'monospace',
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  '应收 ${_dialogMoney(order.total)}',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(99),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 7,
+                backgroundColor:
+                    Theme.of(context).colorScheme.surfaceContainerHighest,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 9),
+            Row(
+              children: [
+                Text(
+                  '未收 ${_dialogMoney(order.outstanding)}',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontSize: 14,
+                  ),
+                ),
+                const Spacer(),
+                _DialogStatusChip(order.paymentStatus, payment: true),
+              ],
+            ),
+            if (payments.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Divider(
+                  height: 1,
+                  color: Theme.of(context).colorScheme.outlineVariant),
+              const SizedBox(height: 7),
+              ...payments.take(4).map(
+                    (payment) => Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              '${payment.method.label} · ${_dialogDate(payment.paidAt)}',
+                              style: TextStyle(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            _dialogMoney(payment.amount),
+                            style: const TextStyle(
+                                fontSize: 14, fontFamily: 'monospace'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _WarrantyCard extends StatelessWidget {
+  const _WarrantyCard({required this.order});
+
+  final WorkOrder order;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(15),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text('保修信息',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 13),
+            _KeyValue(
+                label: '保修期限',
+                value:
+                    order.warrantyDays > 0 ? '${order.warrantyDays} 天' : '未设置'),
+            const SizedBox(height: 11),
+            Divider(
+                height: 1, color: Theme.of(context).colorScheme.outlineVariant),
+            const SizedBox(height: 9),
+            _KeyValue(label: '开始', value: _dialogDate(order.warrantyStart)),
+            const SizedBox(height: 7),
+            _KeyValue(label: '结束', value: _dialogDate(order.warrantyEnd)),
+            if (order.warrantyScope.isNotEmpty) ...[
+              const SizedBox(height: 11),
+              Text(
+                '范围：${order.warrantyScope}',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontSize: 14,
+                  height: 1.4,
+                ),
+              ),
+            ],
+            if (order.warrantyExclusions.isNotEmpty) ...[
+              const SizedBox(height: 5),
+              Text(
+                '除外：${order.warrantyExclusions}',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontSize: 14,
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _KeyValue extends StatelessWidget {
+  const _KeyValue({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            fontSize: 14,
+          ),
+        ),
+        const Spacer(),
+        Flexible(
+            child: Text(value,
+                textAlign: TextAlign.end,
+                style: const TextStyle(fontSize: 14))),
+      ],
+    );
+  }
+}
+
+class _SignatureCard extends StatelessWidget {
+  const _SignatureCard({required this.order, required this.onSign});
+
+  final WorkOrder order;
+  final VoidCallback? onSign;
+
+  @override
+  Widget build(BuildContext context) {
+    final bytes = _decodeDataUrl(order.signatureData);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(15),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                const Text('客户确认',
+                    style:
+                        TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+                const Spacer(),
+                TextButton(
+                    onPressed: onSign,
+                    child: Text(bytes == null ? '去签名 →' : '重新签名')),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Container(
+              height: 74,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: Theme.of(context)
+                    .colorScheme
+                    .surfaceContainerHighest
+                    .withValues(alpha: .5),
+                borderRadius: BorderRadius.circular(9),
+              ),
+              child: bytes == null
+                  ? Text(
+                      '尚未记录签名',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontSize: 14,
+                      ),
+                    )
+                  : Image.memory(bytes, fit: BoxFit.contain),
+            ),
+            if (order.quoteConfirmedAt != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  '已于 ${_dialogDateTime(order.quoteConfirmedAt)} 记录确认'
+                  '${order.quoteConfirmedTotal == null ? '' : '，确认金额 ${_dialogMoney(order.quoteConfirmedTotal!)}'}',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+Future<void> _pickOrderPhotos({
+  required BuildContext context,
+  required WorkOrderController controller,
+  required WorkOrder order,
+  required String category,
+  required FileSelectionService fileSelectionService,
+}) async {
+  final source = await showModalBottomSheet<_PhotoSource>(
+    context: context,
+    showDragHandle: true,
+    builder: (context) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            title: Text('添加${_categoryLabel(category)}照片'),
+            subtitle: const Text('可以直接拍照，也可以从本地选择图片文件。'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.photo_camera_outlined),
+            title: const Text('拍照'),
+            onTap: () => Navigator.pop(context, _PhotoSource.camera),
+          ),
+          ListTile(
+            leading: const Icon(Icons.folder_open_outlined),
+            title: const Text('从文件选择'),
+            onTap: () => Navigator.pop(context, _PhotoSource.file),
+          ),
+          const SizedBox(height: 6),
+        ],
+      ),
+    ),
+  );
+  if (!context.mounted || source == null) return;
+
+  final selectedBytes = <Uint8List>[];
+  final selectedNames = <String>[];
+  try {
+    if (source == _PhotoSource.camera) {
+      final file =
+          await fileSelectionService.pickImage(ImageSelectionSource.camera);
+      if (file == null) return;
+      selectedBytes.add(await file.readAsBytes());
+      selectedNames.add(file.name);
+    } else {
+      final files = await fileSelectionService.pickFiles(
+        kind: FileSelectionKind.image,
+        allowMultiple: true,
+      );
+      for (final file in files) {
+        try {
+          selectedBytes.add(await file.readAsBytes());
+          selectedNames.add(file.name);
+        } catch (_) {
+          continue;
+        }
+      }
+    }
+  } catch (_) {
+    if (context.mounted) {
+      showTopNotice(context, '无法打开图片来源，请检查设备权限后重试。', error: true);
+    }
+    return;
+  }
+
+  if (selectedBytes.isEmpty) return;
+  final now = DateTime.now();
+  final watermark =
+      '${DateFormat('yyyy/MM/dd').format(now)} ${_categoryLabel(category)}';
+  final attachments = <Attachment>[];
+  var failedCount = 0;
+  for (var index = 0; index < selectedBytes.length; index++) {
+    try {
+      final bytes = await _watermarkPhoto(selectedBytes[index], watermark);
+      if (bytes == null || bytes.isEmpty) {
+        failedCount++;
+        continue;
+      }
+      attachments.add(
+        Attachment(
+          id: idFor('att'),
+          category: category,
+          path: 'data:image/png;base64,${base64Encode(bytes)}',
+          caption: '${selectedNames[index]} · $watermark',
+          createdAt: now,
+        ),
+      );
+    } catch (_) {
+      failedCount++;
+    }
+  }
+  if (attachments.isEmpty) {
+    if (context.mounted) {
+      showTopNotice(context, '照片水印生成失败，未保存照片。', error: true);
+    }
+    return;
+  }
+  await controller.addAttachments(order.id, attachments);
+  if (context.mounted) {
+    showTopNotice(
+      context,
+      '已添加 ${attachments.length} 张${_categoryLabel(category)}照片。'
+      '${failedCount == 0 ? '' : '另有 $failedCount 张未保存。'}',
+    );
+  }
+}
+
+enum _PhotoSource { camera, file }
+
+Future<Uint8List?> _watermarkPhoto(Uint8List bytes, String text) async {
+  ui.Codec? codec;
+  ui.Image? source;
+  ui.Image? output;
+  try {
+    codec = await ui.instantiateImageCodec(bytes);
+    source = (await codec.getNextFrame()).image;
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    canvas.drawImage(source, ui.Offset.zero, ui.Paint());
+
+    final fontSize = (source.width / 28).clamp(8.0, 40.0).toDouble();
+    final horizontalPadding =
+        (fontSize * .75).clamp(2.0, source.width.toDouble() / 4).toDouble();
+    final maxTextWidth = (source.width - horizontalPadding * 2)
+        .clamp(1.0, source.width.toDouble());
+    final painter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: fontSize,
+          fontWeight: FontWeight.w700,
+          shadows: const [
+            Shadow(color: Colors.black54, blurRadius: 2),
+          ],
+        ),
+      ),
+      textDirection: ui.TextDirection.ltr,
+      maxLines: 1,
+      ellipsis: '…',
+    )..layout(
+        maxWidth: maxTextWidth,
+      );
+    final verticalPadding = fontSize * .6;
+    final bandHeight = painter.height + verticalPadding * 2;
+    final top =
+        (source.height - bandHeight).clamp(0.0, source.height.toDouble());
+    canvas.drawRect(
+      ui.Rect.fromLTWH(0, top, source.width.toDouble(), bandHeight),
+      ui.Paint()..color = Colors.black.withValues(alpha: .58),
+    );
+    painter.paint(
+      canvas,
+      ui.Offset(horizontalPadding, top + verticalPadding),
+    );
+
+    final picture = recorder.endRecording();
+    output = await picture.toImage(source.width, source.height);
+    final data = await output.toByteData(format: ui.ImageByteFormat.png);
+    return data?.buffer.asUint8List();
+  } catch (_) {
+    return null;
+  } finally {
+    source?.dispose();
+    output?.dispose();
+    codec?.dispose();
+  }
+}
+
+class _PhotoCard extends StatelessWidget {
+  const _PhotoCard(
+      {required this.controller,
+      required this.order,
+      required this.category,
+      required this.editable,
+      required this.fileSelectionService,
+      required this.onCategoryChanged});
+
+  final WorkOrderController controller;
+  final WorkOrder order;
+  final String category;
+  final bool editable;
+  final FileSelectionService fileSelectionService;
+  final ValueChanged<String> onCategoryChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final photos =
+        order.attachments.where((item) => item.category == category).toList();
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(15),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Wrap(
+              alignment: WrapAlignment.end,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                const Text('维修照片',
+                    style:
+                        TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+                Text(
+                  '${order.attachments.length} 张',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontSize: 14,
+                  ),
+                ),
+                DropdownButton<String>(
+                  value: category,
+                  underline: const SizedBox.shrink(),
+                  items: const [
+                    DropdownMenuItem(value: 'before', child: Text('维修前')),
+                    DropdownMenuItem(value: 'during', child: Text('维修中')),
+                    DropdownMenuItem(value: 'after', child: Text('维修后')),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) onCategoryChanged(value);
+                  },
+                ),
+                OutlinedButton.icon(
+                  onPressed: editable ? () => _pick(context) : null,
+                  icon:
+                      const Icon(Icons.add_photo_alternate_outlined, size: 15),
+                  label: const Text('添加照片'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 11),
+            if (photos.isEmpty)
+              Container(
+                height: 100,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .surfaceContainerHighest
+                      .withValues(alpha: .45),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '${_categoryLabel(category)}暂无照片',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontSize: 14,
+                  ),
+                ),
+              )
+            else
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 150,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                  childAspectRatio: 1.1,
+                ),
+                itemCount: photos.length,
+                itemBuilder: (context, index) => _PhotoTile(
+                  attachment: photos[index],
+                  onDelete: editable
+                      ? () => controller.removeAttachment(
+                          order.id, photos[index].id)
+                      : null,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pick(BuildContext context) async {
+    await _pickOrderPhotos(
+      context: context,
+      controller: controller,
+      order: order,
+      category: category,
+      fileSelectionService: fileSelectionService,
+    );
+  }
+}
+
+String _categoryLabel(String value) =>
+    const {
+      'before': '维修前',
+      'during': '维修中',
+      'after': '维修后',
+    }[value] ??
+    '照片';
+
+class _PhotoTile extends StatelessWidget {
+  const _PhotoTile({required this.attachment, required this.onDelete});
+
+  final Attachment attachment;
+  final VoidCallback? onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final bytes = _decodeDataUrl(attachment.path);
+    final preview = bytes == null
+        ? null
+        : () => _showPhotoPreview(
+              context,
+              bytes,
+              _photoWatermark(attachment),
+            );
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(9),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (bytes != null)
+            Material(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              child: InkWell(
+                onTap: preview,
+                child: Image.memory(bytes, fit: BoxFit.contain),
+              ),
+            )
+          else
+            Container(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              child: const Icon(Icons.image_outlined),
+            ),
+          Positioned(
+            top: 4,
+            right: 4,
+            child: onDelete == null
+                ? const SizedBox.shrink()
+                : InkWell(
+                    onTap: onDelete,
+                    child: Container(
+                      width: 22,
+                      height: 22,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: .55),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.close,
+                          size: 13, color: Colors.white),
+                    ),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _photoWatermark(Attachment attachment) {
+  final match = RegExp(
+          r'(\d{4}/\d{2}/\d{2}\s+维修前|\d{4}/\d{2}/\d{2}\s+维修中|\d{4}/\d{2}/\d{2}\s+维修后)$')
+      .firstMatch(attachment.caption.trim());
+  return match?.group(1) ??
+      '${DateFormat('yyyy/MM/dd').format(attachment.createdAt)} ${_categoryLabel(attachment.category)}';
+}
+
+Future<void> _showPhotoPreview(
+  BuildContext context,
+  Uint8List bytes,
+  String watermark,
+) async {
+  await showDialog<void>(
+    context: context,
+    builder: (context) => Dialog.fullscreen(
+      backgroundColor: Colors.black,
+      child: SafeArea(
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: InteractiveViewer(
+                minScale: 1,
+                maxScale: 5,
+                child: Center(
+                  child: Image.memory(bytes, fit: BoxFit.contain),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 4,
+              right: 4,
+              child: IconButton(
+                onPressed: () => Navigator.pop(context),
+                tooltip: '关闭大图',
+                icon: const Icon(Icons.close, color: Colors.white),
+              ),
+            ),
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 14,
+              child: IgnorePointer(
+                child: Text(
+                  watermark,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    shadows: [Shadow(color: Colors.black87, blurRadius: 3)],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}

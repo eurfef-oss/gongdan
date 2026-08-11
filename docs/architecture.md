@@ -81,6 +81,6 @@ Flutter App
 - `FeatureAccessService` 是所有专业功能的统一权限入口，页面不应直接判断商品或购买回调；
 - 一次性商品没有到期时间，但重新安装、清除数据或更换设备时需要通过商店恢复购买。
 
-根目录 `server/` 是 Node.js 授权服务。开发期使用 JSON 文件存储并支持显式开启的测试购买；正式环境必须关闭测试开关、使用 HTTPS、接入 Apple/Google 真实验证，并将存储替换为可靠数据库。
+根目录 `server/` 是 Node.js 授权服务，授权记录使用 MariaDB 持久化，测试时才使用显式指定的内存替身。正式环境必须关闭测试开关、使用 HTTPS、接入 Apple/Google 真实验证，并配置 MariaDB 备份和故障恢复。
 
 详细的商品权限、接口、构建参数和未完成事项见[专业版内购与离线授权实现说明](monetization-implementation.md)。

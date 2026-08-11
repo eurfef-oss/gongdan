@@ -1,13 +1,20 @@
 # 专业版授权服务
 
-这是维修工单助手的最小授权服务。它只处理应用专业版购买凭证和授权状态，不接收工单、客户、照片或签名数据。
+这是维修工单助手的最小授权服务。它只处理应用专业版购买凭证和授权状态，不接收工单、客户、照片或签名数据。授权记录使用 MariaDB 持久化。
 
 ## 本地运行
 
-需要 Node.js 20 或更高版本。开发模式允许使用测试购买，但测试开关不能用于正式环境：
+需要 Node.js 20 或更高版本和 MariaDB 10.6 或更高版本。开发模式允许使用测试购买，但测试开关不能用于正式环境：
 
 ```powershell
 cd server
+npm install
+$env:STORE_DRIVER='mariadb'
+$env:DB_HOST='127.0.0.1'
+$env:DB_PORT='3306'
+$env:DB_NAME='repair_license'
+$env:DB_USER='repair_license'
+$env:DB_PASSWORD='change-me'
 $env:ALLOW_TEST_PURCHASES='true'
 npm start
 ```
@@ -18,7 +25,9 @@ npm start
 GET /healthz
 ```
 
-本地开发模式下，`POST /v1/purchases/verify` 会接受 App 传来的测试交易信息并生成一次性专业版授权。正式环境必须关闭 `ALLOW_TEST_PURCHASES`，并在 `src/store-verifier.js` 中接入 Apple App Store Server API 和 Google Play Developer API。
+本地开发模式下，`POST /v1/purchases/verify` 会接受 App 传来的测试交易信息并生成一次性专业版授权。服务启动时会自动创建 MariaDB 表。正式环境必须关闭 `ALLOW_TEST_PURCHASES`，并在 `src/store-verifier.js` 中接入 Apple App Store Server API 和 Google Play Developer API。
+
+自动化测试使用显式的 `STORE_DRIVER=memory` 内存替身，不会连接或修改 MariaDB；生产环境禁止使用该驱动。
 
 ## 主要接口
 
@@ -47,4 +56,6 @@ POST /v1/webhooks/google
 - `ALLOW_TEST_PURCHASES` 必须为 `false`。
 - Apple webhook 必须验证 App Store Server Notifications V2 的签名。
 - Google webhook 必须通过 Real-time Developer Notifications 收到事件后，再调用 Google API 查询真实状态。
-- 购买记录需要迁移到 PostgreSQL 等持久化数据库，当前 JSON 文件存储仅用于开发和单实例部署。
+- 购买记录使用 MariaDB；请配置定期备份、最小权限数据库用户和连接池上限。
+
+系统架构、MariaDB 表结构和完整部署步骤见 [ARCHITECTURE-AND-DEPLOYMENT.md](ARCHITECTURE-AND-DEPLOYMENT.md)。

@@ -6,14 +6,24 @@ import {
   entitlementResponse,
   hashPurchaseIdentity,
 } from './entitlement.js';
-import { LicenseStore } from './store.js';
+import { MariaDbLicenseStore } from './mariadb-store.js';
+import { MemoryLicenseStore } from './memory-store.js';
 import {
   StoreVerificationError,
   validatePurchaseRequest,
   verifyStorePurchase,
 } from './store-verifier.js';
 
-const store = new LicenseStore(config.dataFile);
+if (config.nodeEnv === 'production' && config.storeDriver !== 'mariadb') {
+  throw new Error('production requires STORE_DRIVER=mariadb');
+}
+if (config.storeDriver === 'memory' && config.nodeEnv !== 'test') {
+  throw new Error('STORE_DRIVER=memory is only available in NODE_ENV=test');
+}
+
+const store = config.storeDriver === 'memory'
+  ? new MemoryLicenseStore()
+  : new MariaDbLicenseStore(config.database);
 
 const jsonHeaders = {
   'content-type': 'application/json; charset=utf-8',
@@ -72,10 +82,10 @@ async function verifyPurchase(body) {
   const request = validatePurchaseRequest(body, config.productId);
   const verified = await verifyStorePurchase(request, config);
   const key = purchaseKey(request.platform, verified.purchaseId);
-  const existing = store.findPurchaseByIdentity(request.identityKey) ??
-    store.findPurchase(request.platform, verified.purchaseId);
+  const existing = await store.findPurchaseByIdentity(request.identityKey) ??
+    await store.findPurchase(request.platform, verified.purchaseId);
   if (existing) {
-    const current = store.findEntitlement(existing.purchaseKey);
+    const current = await store.findEntitlement(existing.purchaseKey);
     if (current) return responseForEntitlement(current, true);
   }
 
@@ -98,8 +108,7 @@ async function verifyPurchase(body) {
     productId: request.productId,
     activatedAtUtc: now,
   });
-  await store.savePurchase(purchase);
-  await store.saveEntitlement(entitlement);
+  await store.savePurchaseAndEntitlement(purchase, entitlement);
   return responseForEntitlement(entitlement);
 }
 
@@ -118,9 +127,9 @@ async function handleWebhook(platform, body, request) {
   // Google notifications must be verified and decoded before applying this.
   if (config.allowTestPurchases && body && body.status === 'revoked') {
     const purchaseId = typeof body.purchaseId === 'string' ? body.purchaseId : '';
-    const purchase = store.findPurchase(platform, purchaseId);
+    const purchase = await store.findPurchase(platform, purchaseId);
     if (purchase) {
-      const current = store.findEntitlement(purchase.purchaseKey);
+      const current = await store.findEntitlement(purchase.purchaseKey);
       if (current) {
         await store.saveEntitlement({
           ...current,
@@ -151,6 +160,7 @@ async function requestHandler(request, response) {
         environment: config.nodeEnv,
         testPurchasesEnabled: config.allowTestPurchases,
         productId: config.productId,
+        storeDriver: config.storeDriver,
       });
       return;
     }
@@ -194,9 +204,19 @@ async function requestHandler(request, response) {
 
 await store.init();
 const server = http.createServer(requestHandler);
-server.listen(config.port, () => {
-  console.log(`[license-server] listening on http://localhost:${config.port}`);
+server.listen(config.port, config.host, () => {
+  console.log(`[license-server] listening on http://${config.host}:${config.port}`);
   if (config.allowTestPurchases) {
     console.warn('[license-server] ALLOW_TEST_PURCHASES is enabled; do not use this in production');
   }
 });
+
+const shutdown = async () => {
+  server.close(async () => {
+    await store.close();
+    process.exit(0);
+  });
+};
+
+process.once('SIGINT', shutdown);
+process.once('SIGTERM', shutdown);

@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { rm } from 'node:fs/promises';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -9,7 +8,6 @@ const serverDirectory = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   '..',
 );
-const dataFile = path.join(serverDirectory, 'data', 'integration-test.json');
 const port = 18787;
 
 async function waitForHealth() {
@@ -31,8 +29,10 @@ test('development server verifies and restores a purchase idempotently', async (
     env: {
       ...process.env,
       PORT: String(port),
+      HOST: '127.0.0.1',
+      NODE_ENV: 'test',
+      STORE_DRIVER: 'memory',
       ALLOW_TEST_PURCHASES: 'true',
-      DATA_FILE: dataFile,
     },
     stdio: 'ignore',
   });
@@ -77,7 +77,5 @@ test('development server verifies and restores a purchase idempotently', async (
     assert.equal(restored.entitlement.purchaseId, 'integration-transaction-1');
   } finally {
     child.kill();
-    await rm(dataFile, { force: true });
-    await rm(`${dataFile}.tmp`, { force: true });
   }
 });

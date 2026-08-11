@@ -86,14 +86,15 @@ lib/features/monetization/
 
 ## 5. Node 授权服务
 
-服务端位于根目录 `server/`，当前使用 Node.js 原生 HTTP 和开发期 JSON 文件存储。
+服务端位于根目录 `server/`，使用 Node.js 原生 HTTP 和 MariaDB 持久化授权记录；自动化测试使用内存替身。
 
 ```text
 server/
 ├── src/config.js
 ├── src/entitlement.js
 ├── src/server.js
-├── src/store.js
+├── src/mariadb-store.js
+├── src/memory-store.js
 ├── src/store-verifier.js
 └── src/generate-keys.js
 ```
@@ -136,7 +137,7 @@ npm run generate-keys
 ## 7. 当前实现状态
 
 - [x] 创建 Node 授权服务目录、健康检查、验证和恢复接口骨架；
-- [x] 创建开发期 JSON 授权存储和交易幂等结构；
+- [x] 创建 MariaDB 授权存储、自动建表和交易幂等结构；
 - [x] 创建 Flutter 专业版实体、权限规则、安全存储仓库；
 - [x] 创建商店网关、购买事件转换和远程验证客户端；
 - [x] 加入 `in_app_purchase`、`flutter_secure_storage`、`cryptography` 和 `http` 依赖；
@@ -152,7 +153,7 @@ npm run generate-keys
 
 1. 在 App Store Connect 和 Google Play Console 创建非消耗型商品 `repair_pro_lifetime`；
 2. 为正式包配置正确的 Bundle ID、Android application ID 和签名；
-3. 服务端使用 PostgreSQL 等可靠数据库替换开发期 JSON 文件；
+3. 为 MariaDB 配置定期备份、监控和故障恢复演练；
 4. 接入并验证 Apple / Google 服务器通知；
 5. 关闭测试购买和无签名授权；
 6. 使用真实测试账号完成购买、恢复、退款和重新安装回归。

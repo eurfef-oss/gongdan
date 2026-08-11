@@ -1,6 +1,6 @@
 part of '../work_order_page.dart';
 
-enum _SettingsSection { shop, appearance, data, demo }
+enum _SettingsSection { shop, appearance, dashboard, data, demo }
 
 class _SettingsPage extends StatefulWidget {
   const _SettingsPage({
@@ -118,9 +118,17 @@ class _SettingsPageState extends State<_SettingsPage> {
           _SettingsMenuEntry(
             icon: Icons.palette_outlined,
             title: '显示设置',
-            subtitle: '主题模式和概览卡片显示方式',
+            subtitle: '主题模式和概览显示方式',
             value: modeText,
             onTap: () => _openSection(_SettingsSection.appearance),
+          ),
+          _SettingsMenuEntry(
+            icon: Icons.dashboard_customize_outlined,
+            title: '概览设置',
+            subtitle: '拖动调整概览模块顺序，控制模块是否显示',
+            value:
+                '${widget.controller.dashboardCardOrder.length - widget.controller.dashboardHiddenCards.length}/${widget.controller.dashboardCardOrder.length} 张显示',
+            onTap: () => _openSection(_SettingsSection.dashboard),
           ),
           _SettingsMenuEntry(
             icon: Icons.import_export_outlined,
@@ -167,6 +175,8 @@ class _SettingsPageState extends State<_SettingsPage> {
         return '门店资料';
       case _SettingsSection.appearance:
         return '显示设置';
+      case _SettingsSection.dashboard:
+        return '概览设置';
       case _SettingsSection.data:
         return '数据备份';
       case _SettingsSection.demo:
@@ -222,15 +232,17 @@ class _SettingsPageState extends State<_SettingsPage> {
             ),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('概览卡片'),
+              title: const Text('概览设置'),
               subtitle: Text(
-                '${widget.controller.dashboardCardOrder.length} 张卡片可用',
+                '${widget.controller.dashboardCardOrder.length - widget.controller.dashboardHiddenCards.length} 张显示 · 可拖动排序',
               ),
               trailing: const Icon(Icons.chevron_right),
-              onTap: () => _showDashboardCards(context),
+              onTap: () => _openSection(_SettingsSection.dashboard),
             ),
           ],
         );
+      case _SettingsSection.dashboard:
+        return _DashboardSettingsContent(controller: widget.controller);
       case _SettingsSection.data:
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -287,46 +299,112 @@ class _SettingsPageState extends State<_SettingsPage> {
         );
     }
   }
+}
 
-  Future<void> _showDashboardCards(BuildContext context) async {
-    final hidden = {...widget.controller.dashboardHiddenCards};
-    await showDialog<void>(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: const Text('概览卡片'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: _dashboardCardLabels.keys.map((id) {
-                final visible = !hidden.contains(id);
-                return CheckboxListTile(
-                  value: visible,
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(_dashboardCardLabel(id)),
-                  onChanged: (value) async {
-                    if (value == null) return;
-                    await widget.controller.setDashboardCardVisible(id, value);
-                    setDialogState(() {
-                      if (value) {
-                        hidden.remove(id);
-                      } else {
-                        hidden.add(id);
-                      }
-                    });
-                  },
-                );
-              }).toList(),
+class _DashboardSettingsContent extends StatefulWidget {
+  const _DashboardSettingsContent({required this.controller});
+
+  final WorkOrderController controller;
+
+  @override
+  State<_DashboardSettingsContent> createState() =>
+      _DashboardSettingsContentState();
+}
+
+class _DashboardSettingsContentState extends State<_DashboardSettingsContent> {
+  late List<String> _order;
+
+  @override
+  void initState() {
+    super.initState();
+    _order = [...widget.controller.dashboardCardOrder];
+  }
+
+  @override
+  void didUpdateWidget(covariant _DashboardSettingsContent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final next = widget.controller.dashboardCardOrder;
+    if (!_sameOrder(_order, next)) _order = [...next];
+  }
+
+  bool _sameOrder(List<String> first, List<String> second) {
+    if (first.length != second.length) return false;
+    for (var index = 0; index < first.length; index++) {
+      if (first[index] != second[index]) return false;
+    }
+    return true;
+  }
+
+  void _onReorder(int oldIndex, int newIndex) {
+    if (oldIndex == newIndex) return;
+    final next = [..._order]..insert(newIndex, _order.removeAt(oldIndex));
+    setState(() => _order = next);
+    unawaited(widget.controller.updateDashboardCardOrder(next));
+  }
+
+  void _onVisibilityChanged(String id, bool visible) {
+    unawaited(widget.controller.setDashboardCardVisible(id, visible));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hidden = widget.controller.dashboardHiddenCards;
+    final visibleCount = _order.where((id) => !hidden.contains(id)).length;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _Section(
+          title: '概览模块',
+          trailing: Text(
+            '$visibleCount/${_order.length} 张显示',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontSize: 13,
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('完成'),
+          child: Text(
+            '拖动左侧手柄调整概览中的显示顺序，使用右侧开关控制模块是否显示。',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
-          ],
+          ),
         ),
-      ),
+        ReorderableListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          buildDefaultDragHandles: false,
+          itemCount: _order.length,
+          onReorderItem: _onReorder,
+          itemBuilder: (context, index) {
+            final id = _order[index];
+            final visible = !hidden.contains(id);
+            return Card(
+              key: ValueKey(id),
+              margin: const EdgeInsets.only(bottom: 10),
+              child: ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                leading: ReorderableDragStartListener(
+                  index: index,
+                  child: Icon(
+                    Icons.drag_indicator,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                title: Text(
+                  _dashboardCardLabel(id),
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+                subtitle: Text(visible ? '在概览中显示' : '已隐藏'),
+                trailing: Switch.adaptive(
+                  value: visible,
+                  onChanged: (value) => _onVisibilityChanged(id, value),
+                ),
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 }

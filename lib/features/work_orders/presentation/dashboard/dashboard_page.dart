@@ -37,6 +37,11 @@ class _DashboardPage extends StatelessWidget {
     final recent = [...orders]
       ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
 
+    final hiddenCards = controller.dashboardHiddenCards;
+    final cards = _dashboardSettingsOrder(controller.dashboardCardOrder)
+        .where((id) => _dashboardSettingVisible(id, hiddenCards))
+        .toList();
+
     return _Shell(
       kicker: '工作台 / OVERVIEW',
       title: '今天，先把现场安排好。',
@@ -50,91 +55,197 @@ class _DashboardPage extends StatelessWidget {
       ],
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _MetricSummaryCard(
-            metrics: [
-              _Metric(
-                label: '今日工单',
-                value: '$todayOrders 张',
-                icon: Icons.today_outlined,
+        children: cards
+            .map(
+              (id) => _dashboardCard(
+                context,
+                id: id,
+                orders: orders,
+                recent: recent,
+                todayOrders: todayOrders,
+                outstanding: outstanding,
+                completedAmount: completedAmount,
               ),
-              _Metric(
-                label: '待收款',
-                value: moneyText(outstanding),
-                icon: Icons.account_balance_wallet_outlined,
+            )
+            .toList(),
+      ),
+    );
+  }
+
+  Widget _dashboardCard(
+    BuildContext context, {
+    required String id,
+    required List<WorkOrder> orders,
+    required List<WorkOrder> recent,
+    required int todayOrders,
+    required double outstanding,
+    required double completedAmount,
+  }) {
+    switch (id) {
+      case 'summaryMetrics':
+        return _MetricSummaryCard(
+          metrics: [
+            _Metric(
+              label: '今日工单',
+              value: '$todayOrders 张',
+              icon: Icons.today_outlined,
+            ),
+            _Metric(
+              label: '待收款',
+              value: moneyText(outstanding),
+              icon: Icons.account_balance_wallet_outlined,
+            ),
+            _Metric(
+              label: '已完成金额',
+              value: moneyText(completedAmount),
+              icon: Icons.task_alt_outlined,
+            ),
+            _Metric(
+              label: '客户档案',
+              value: '${controller.data.customers.length} 位',
+              icon: Icons.people_outline,
+            ),
+          ],
+        );
+      case 'statusProgress':
+        return _Section(
+          title: '工单进度',
+          trailing: Text(
+            '${orders.length} 张记录',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontSize: 13,
+            ),
+          ),
+          child: _ProgressGrid(orders: orders),
+        );
+      case 'recentOrders':
+        return _Section(
+          title: '最近工单',
+          trailing: TextButton(
+            onPressed: onAllOrders,
+            child: const Text('查看全部'),
+          ),
+          child: recent.isEmpty
+              ? const _Empty(
+                  title: '还没有工单',
+                  description: '创建第一张工单开始记录服务。',
+                )
+              : Column(
+                  children: recent.take(5).map((order) {
+                    final customer = controller.customerById(order.customerId);
+                    return _DashboardOrderRow(
+                      order: order,
+                      customer: customer,
+                      onTap: () => onOpen(order),
+                    );
+                  }).toList(),
+                ),
+        );
+      case 'quickActions':
+        return _Section(
+          title: '快捷入口',
+          child: Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              _DashboardAction(
+                icon: Icons.add_circle_outline,
+                title: '新建工单',
+                onTap: () => onCreate(),
               ),
-              _Metric(
-                label: '已完成金额',
-                value: moneyText(completedAmount),
-                icon: Icons.task_alt_outlined,
+              _DashboardAction(
+                icon: Icons.person_add_alt_outlined,
+                title: '新建客户',
+                onTap: onCustomer,
               ),
-              _Metric(
-                label: '客户档案',
-                value: '${controller.data.customers.length} 位',
-                icon: Icons.people_outline,
+              _DashboardAction(
+                icon: Icons.category_outlined,
+                title: '项目模板',
+                onTap: onTemplate,
               ),
             ],
           ),
-          _Section(
-            title: '工单进度',
-            trailing: Text(
-              '${orders.length} 张记录',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                fontSize: 13,
-              ),
-            ),
-            child: _ProgressGrid(orders: orders),
-          ),
-          _Section(
-            title: '最近工单',
-            trailing: TextButton(
-              onPressed: onAllOrders,
-              child: const Text('查看全部'),
-            ),
-            child: recent.isEmpty
-                ? const _Empty(
-                    title: '还没有工单',
-                    description: '创建第一张工单开始记录服务。',
-                  )
-                : Column(
-                    children: recent.take(5).map((order) {
-                      final customer =
-                          controller.customerById(order.customerId);
-                      return _DashboardOrderRow(
-                        order: order,
-                        customer: customer,
-                        onTap: () => onOpen(order),
-                      );
-                    }).toList(),
-                  ),
-          ),
-          _Section(
-            title: '快捷入口',
-            child: Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                _DashboardAction(
-                  icon: Icons.add_circle_outline,
-                  title: '新建工单',
-                  onTap: () => onCreate(),
-                ),
-                _DashboardAction(
-                  icon: Icons.person_add_alt_outlined,
-                  title: '新建客户',
-                  onTap: onCustomer,
-                ),
-                _DashboardAction(
-                  icon: Icons.category_outlined,
-                  title: '项目模板',
-                  onTap: onTemplate,
-                ),
-              ],
-            ),
-          ),
-        ],
+        );
+      case 'warrantyReminder':
+        return _WarrantyReminderSection(
+          orders: orders,
+          onOpen: onOpen,
+          controller: controller,
+        );
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+}
+
+class _WarrantyReminderSection extends StatelessWidget {
+  const _WarrantyReminderSection({
+    required this.orders,
+    required this.onOpen,
+    required this.controller,
+  });
+
+  final List<WorkOrder> orders;
+  final Future<void> Function(WorkOrder order) onOpen;
+  final WorkOrderController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final warrantyOrders = orders.where((order) {
+      final end = order.warrantyEnd;
+      if (order.warrantyDays <= 0 || end == null) return false;
+      final endDay = DateTime(end.year, end.month, end.day);
+      return !endDay.isBefore(today);
+    }).toList()
+      ..sort((a, b) => a.warrantyEnd!.compareTo(b.warrantyEnd!));
+
+    return _Section(
+      title: '保修提醒',
+      trailing: Text(
+        '${warrantyOrders.length} 张有效',
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+          fontSize: 13,
+        ),
       ),
+      child: warrantyOrders.isEmpty
+          ? const _Empty(
+              title: '暂无有效保修',
+              description: '为已完成的工单填写保修期限后，会在这里集中提醒。',
+            )
+          : Column(
+              children: warrantyOrders.take(5).map((order) {
+                final end = order.warrantyEnd!;
+                final endDay = DateTime(end.year, end.month, end.day);
+                final remaining = endDay.difference(today).inDays;
+                final customer = controller.customerById(order.customerId);
+                final remainingText = remaining == 0
+                    ? '今日到期'
+                    : remaining == 1
+                        ? '剩余 1 天'
+                        : '剩余 $remaining 天';
+                return ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: CircleAvatar(
+                    backgroundColor: Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: .1),
+                    foregroundColor: Theme.of(context).colorScheme.primary,
+                    child: const Icon(Icons.verified_user_outlined, size: 19),
+                  ),
+                  title: Text(
+                    '${order.number} · ${customer?.name ?? '未关联客户'}',
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  subtitle: Text('保修至 ${dateText(end)} · $remainingText'),
+                  onTap: () => onOpen(order),
+                );
+              }).toList(),
+            ),
     );
   }
 }
@@ -244,7 +355,7 @@ class _ProgressGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final columns = constraints.maxWidth >= 780 ? 4 : 2;
+        const columns = 1;
         const gap = 10.0;
         final width = (constraints.maxWidth - gap * (columns - 1)) / columns;
         return Wrap(

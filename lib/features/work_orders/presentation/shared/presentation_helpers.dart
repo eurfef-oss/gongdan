@@ -16,15 +16,35 @@ const _dashboardProgressStatuses = <WorkOrderStatus>[
 
 const _dashboardCardLabels = <String, String>{
   'summaryMetrics': '数据概览',
-  'todaySummary': '今日工单',
-  'outstanding': '待收款',
-  'completedAmount': '已完成金额',
-  'customers': '客户档案',
+  'statusProgress': '工单进度',
   'recentOrders': '最近工单',
   'quickActions': '快捷入口',
-  'statusProgress': '工单进度',
   'warrantyReminder': '保修提醒',
 };
+
+const _dashboardSettingCardIds = <String>[
+  'summaryMetrics',
+  'statusProgress',
+  'recentOrders',
+  'quickActions',
+  'warrantyReminder',
+];
+
+List<String> _dashboardSettingsOrder(Iterable<String> cardOrder) {
+  final result = <String>[];
+  for (final id in cardOrder) {
+    if (_dashboardSettingCardIds.contains(id) && !result.contains(id)) {
+      result.add(id);
+    }
+  }
+  for (final id in _dashboardSettingCardIds) {
+    if (!result.contains(id)) result.add(id);
+  }
+  return result;
+}
+
+bool _dashboardSettingVisible(String id, Set<String> hiddenCards) =>
+    !hiddenCards.contains(id);
 
 String _dashboardCardLabel(String id) => _dashboardCardLabels[id] ?? id;
 

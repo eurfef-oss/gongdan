@@ -449,11 +449,11 @@ void main() {
 
     await controller.updateDashboardCardOrder([
       'warrantyReminder',
-      'todaySummary',
+      'summaryMetrics',
     ]);
-    await controller.setDashboardCardVisible('customers', false);
+    await controller.setDashboardCardVisible('summaryMetrics', false);
     expect(controller.dashboardCardOrder.first, 'warrantyReminder');
-    expect(controller.dashboardHiddenCards, contains('customers'));
+    expect(controller.dashboardHiddenCards, contains('summaryMetrics'));
 
     final backup = controller.exportJson();
     await controller.importJson(
@@ -462,7 +462,7 @@ void main() {
     expect(controller.dashboardHiddenCards, isEmpty);
     expect(await controller.importJson(backup), isTrue);
     expect(controller.dashboardCardOrder.first, 'warrantyReminder');
-    expect(controller.dashboardHiddenCards, contains('customers'));
+    expect(controller.dashboardHiddenCards, contains('summaryMetrics'));
     controller.dispose();
   });
 

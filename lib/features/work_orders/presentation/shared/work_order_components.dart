@@ -37,16 +37,22 @@ class _Shell extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     if (showPageHeader)
-                      _PageHeader(
-                        kicker: kicker,
-                        title: title,
-                        actions: actions,
-                        actionsBelowTitle: actionsBelowTitle,
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: pagePadding),
+                        child: _PageHeader(
+                          kicker: kicker,
+                          title: title,
+                          actions: actions,
+                          actionsBelowTitle: actionsBelowTitle,
+                        ),
                       )
                     else if (actions.isNotEmpty)
-                      _PageActions(
-                        actions: actions,
-                        wrap: actionsBelowTitle,
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: pagePadding),
+                        child: _PageActions(
+                          actions: actions,
+                          wrap: actionsBelowTitle,
+                        ),
                       ),
                     Padding(
                       padding: EdgeInsets.fromLTRB(
@@ -77,7 +83,7 @@ class _PageActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 12, 10, 12),
+      padding: const EdgeInsets.symmetric(vertical: 12),
       child: wrap
           ? Wrap(
               spacing: 8,

@@ -2,13 +2,10 @@ import '../../domain/entities/work_order.dart';
 import '../work_order_store.dart';
 
 const dashboardCardIds = <String>[
-  'outstanding',
-  'quickActions',
+  'summaryMetrics',
   'statusProgress',
   'recentOrders',
-  'todaySummary',
-  'completedAmount',
-  'customers',
+  'quickActions',
   'warrantyReminder',
 ];
 

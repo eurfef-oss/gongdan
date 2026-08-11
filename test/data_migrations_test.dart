@@ -32,13 +32,13 @@ void main() {
       'payments': const [],
       'settings': {
         'customServiceItemTypes': ['清洗', '清洗', '  '],
-        'dashboardCardOrder': ['customers', 'customers'],
+        'dashboardCardOrder': ['summaryMetrics', 'summaryMetrics'],
       },
     });
 
     expect(data.toJson()['version'], 3);
     expect(data.settings.customServiceItemTypes, ['清洗']);
-    expect(data.settings.dashboardCardOrder, ['customers']);
+    expect(data.settings.dashboardCardOrder, ['summaryMetrics']);
   });
 
   test('rejects a snapshot from a newer schema version', () {

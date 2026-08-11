@@ -145,6 +145,21 @@ void main() {
     expect(find.text('门店资料'), findsOneWidget);
     expect(find.text('门店名称'), findsNothing);
 
+    await tester.tap(find.text('概览设置'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('概览模块'), findsOneWidget);
+    expect(find.text('数据概览'), findsOneWidget);
+    expect(find.byType(ReorderableListView), findsOneWidget);
+    expect(find.byType(Switch), findsNWidgets(5));
+    await tester.tap(find.byType(Switch).first);
+    await tester.pumpAndSettle();
+    expect(controller.dashboardHiddenCards, contains('summaryMetrics'));
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('系统设置'), findsOneWidget);
+
     await tester.tap(find.text('门店资料'));
     await tester.pumpAndSettle();
 
@@ -174,6 +189,29 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('系统设置'), findsOneWidget);
+  });
+
+  testWidgets('orders page keeps its list visible on a narrow surface',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final repository = _FakeWorkOrderRepository();
+    repository.value = repository.value.copyWith(
+      settings: repository.value.settings.copyWith(hasSeenWelcome: true),
+    );
+    final controller = WorkOrderController(repository);
+    await controller.initialize();
+
+    await tester.pumpWidget(BaseApp(controller: controller));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('工单'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('工单清单'), findsOneWidget);
+    expect(find.text('没有匹配的工单'), findsNothing);
+    expect(find.text('周女士'), findsOneWidget);
+    expect(find.text('林先生'), findsOneWidget);
   });
 
   testWidgets('primary page needs a second back press to leave the app',

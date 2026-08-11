@@ -232,66 +232,55 @@ class _OrderCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(14),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Container(
-              width: 4,
-              decoration: BoxDecoration(
-                color: status,
-                borderRadius: const BorderRadius.horizontal(
-                  left: Radius.circular(14),
-                ),
-              ),
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border(
+              left: BorderSide(color: status, width: 4),
             ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _OrderTile(
-                      order: order,
-                      customer: customer,
-                      onTap: onTap,
-                    ),
-                    const SizedBox(height: 15),
-                    _OrderCardDetail(order: order),
-                    const SizedBox(height: 14),
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 10,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Text(
-                          '应收 ${moneyText(order.total)}',
-                          style: const TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                        Text(
-                          '未收 ${moneyText(order.outstanding)}',
-                          style: TextStyle(
-                            color: order.outstanding > 0
-                                ? statusColor(context, order.paymentStatus)
-                                : scheme.onSurfaceVariant,
-                          ),
-                        ),
-                        if (order.status.next != null &&
-                            !order.status.isTerminal)
-                          OutlinedButton.icon(
-                            onPressed: onAdvance,
-                            icon: const Icon(
-                              Icons.arrow_forward_rounded,
-                              size: 16,
-                            ),
-                            label: Text('推进至 ${order.status.next!.label}'),
-                          ),
-                      ],
-                    ),
-                  ],
-                ),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          padding: const EdgeInsets.fromLTRB(12, 16, 16, 14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _OrderTile(
+                order: order,
+                customer: customer,
+                onTap: onTap,
               ),
-            ),
-          ],
+              const SizedBox(height: 15),
+              _OrderCardDetail(order: order),
+              const SizedBox(height: 14),
+              Wrap(
+                spacing: 12,
+                runSpacing: 10,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(
+                    '应收 ${moneyText(order.total)}',
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  Text(
+                    '未收 ${moneyText(order.outstanding)}',
+                    style: TextStyle(
+                      color: order.outstanding > 0
+                          ? statusColor(context, order.paymentStatus)
+                          : scheme.onSurfaceVariant,
+                    ),
+                  ),
+                  if (order.status.next != null && !order.status.isTerminal)
+                    OutlinedButton.icon(
+                      onPressed: onAdvance,
+                      icon: const Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 16,
+                      ),
+                      label: Text('推进至 ${order.status.next!.label}'),
+                    ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

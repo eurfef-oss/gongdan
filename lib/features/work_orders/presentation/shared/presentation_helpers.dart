@@ -43,9 +43,6 @@ List<String> _dashboardSettingsOrder(Iterable<String> cardOrder) {
   return result;
 }
 
-bool _dashboardSettingVisible(String id, Set<String> hiddenCards) =>
-    !hiddenCards.contains(id);
-
 String _dashboardCardLabel(String id) => _dashboardCardLabels[id] ?? id;
 
 String moneyText(double value) => '¥${value.toStringAsFixed(2)}';

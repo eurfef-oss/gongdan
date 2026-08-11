@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import '../core/services/file_selection_service.dart';
 import '../core/services/share_service.dart';
 import '../core/theme/app_theme.dart';
+import '../features/monetization/application/entitlement_controller.dart';
 import '../features/work_orders/application/work_order_controller.dart';
 import '../features/work_orders/presentation/work_order_page.dart';
 import '../features/work_orders/services/document_service.dart';
@@ -12,6 +13,7 @@ import '../l10n/app_localizations.dart';
 class BaseApp extends StatefulWidget {
   const BaseApp({
     required this.controller,
+    this.entitlementController,
     this.fileSelectionService,
     this.shareService,
     this.documentService,
@@ -19,6 +21,7 @@ class BaseApp extends StatefulWidget {
   });
 
   final WorkOrderController controller;
+  final EntitlementController? entitlementController;
   final FileSelectionService? fileSelectionService;
   final ShareService? shareService;
   final DocumentService? documentService;
@@ -28,9 +31,19 @@ class BaseApp extends StatefulWidget {
 }
 
 class _BaseAppState extends State<BaseApp> {
+  late final EntitlementController _entitlementController;
+
+  @override
+  void initState() {
+    super.initState();
+    _entitlementController =
+        widget.entitlementController ?? EntitlementController.disabled();
+  }
+
   @override
   void dispose() {
     widget.controller.dispose();
+    _entitlementController.dispose();
     super.dispose();
   }
 
@@ -54,6 +67,7 @@ class _BaseAppState extends State<BaseApp> {
               : ThemeMode.light,
           home: WorkOrderPage(
             controller: widget.controller,
+            entitlementController: _entitlementController,
             fileSelectionService: widget.fileSelectionService,
             shareService: widget.shareService,
             documentService: widget.documentService,

@@ -3,6 +3,7 @@ part of '../work_order_page.dart';
 class WorkOrderPage extends StatefulWidget {
   const WorkOrderPage({
     required this.controller,
+    required this.entitlementController,
     this.fileSelectionService,
     this.shareService,
     this.documentService,
@@ -10,6 +11,7 @@ class WorkOrderPage extends StatefulWidget {
   });
 
   final WorkOrderController controller;
+  final EntitlementController entitlementController;
   final FileSelectionService? fileSelectionService;
   final ShareService? shareService;
   final DocumentService? documentService;
@@ -29,6 +31,8 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
   late final DocumentService _documentService;
 
   WorkOrderController get controller => widget.controller;
+  EntitlementController get entitlementController =>
+      widget.entitlementController;
 
   @override
   void initState() {
@@ -223,20 +227,34 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
         return _TemplatesPage(
           controller: controller,
           onBack: () => _selectPage(5),
-          onCreate: _createTemplate,
-          onEdit: _editTemplate,
-          onDelete: _deleteTemplate,
-          onManageTypes: _showTypeManager,
+          onCreate: () => _requirePro(
+            ProFeature.customTemplates,
+            _createTemplate,
+          ),
+          onEdit: (item) => _requirePro(
+            ProFeature.customTemplates,
+            () => _editTemplate(item),
+          ),
+          onDelete: (item) => _requirePro(
+            ProFeature.customTemplates,
+            () => _deleteTemplate(item),
+          ),
+          onManageTypes: () => _requirePro(
+            ProFeature.customTemplates,
+            _showTypeManager,
+          ),
         );
       case 4:
         return _StatsPage(
           controller: controller,
+          entitlementController: entitlementController,
           onBack: () => _selectPage(5),
         );
       case 5:
         return _SettingsPage(
           key: _settingsKey,
           controller: controller,
+          entitlementController: entitlementController,
           onExport: _exportData,
           onImport: _importData,
           onImportCsv: _importCsv,
@@ -254,7 +272,10 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
           controller: controller,
           onCreate: _createOrder,
           onCustomer: _createCustomer,
-          onTemplate: _createTemplate,
+          onTemplate: () => _requirePro(
+            ProFeature.customTemplates,
+            _createTemplate,
+          ),
           onOpen: _openOrder,
           onAllOrders: () => _selectPage(1),
         );
@@ -262,6 +283,11 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
   }
 
   Future<void> _createOrder({String? customerId}) async {
+    if (!entitlementController
+        .canCreateOrder(controller.data.workOrders.length)) {
+      await _showProPrompt(ProFeature.unlimitedOrders);
+      return;
+    }
     final now = DateTime.now();
     var order = emptyWorkOrder(
       id: idFor('ord'),
@@ -309,6 +335,11 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
           onPayment: () => _showPayment(order.id),
           onSignature: () => _showSignature(order.id),
           onDocument: (kind) => _showDocument(order.id, kind),
+          canUsePhotoAttachments:
+              entitlementController.canUse(ProFeature.photoAttachments),
+          onPremiumRequired: () => unawaited(
+            _showProPrompt(ProFeature.photoAttachments),
+          ),
           onMoveToTrash: () => _moveOrderToTrash(order.id),
         ),
       ),
@@ -390,18 +421,94 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
         PaymentDialog(controller: controller, orderId: orderId),
       );
 
-  Future<void> _showSignature(String orderId) => _showDialog(
-        SignatureDialog(controller: controller, orderId: orderId),
-      );
+  Future<void> _showSignature(String orderId) async {
+    if (!entitlementController.canUse(ProFeature.customerSignature)) {
+      await _showProPrompt(ProFeature.customerSignature);
+      return;
+    }
+    await _showDialog(
+      SignatureDialog(controller: controller, orderId: orderId),
+    );
+  }
 
-  Future<void> _showDocument(String orderId, String kind) => _showDialog(
-        DocumentPreviewDialog(
-          controller: controller,
-          orderId: orderId,
-          kind: kind,
-          documentService: _documentService,
+  Future<void> _showDocument(String orderId, String kind) async {
+    if (!entitlementController.canUse(ProFeature.documentExport)) {
+      await _showProPrompt(ProFeature.documentExport);
+      return;
+    }
+    await _showDialog(
+      DocumentPreviewDialog(
+        controller: controller,
+        orderId: orderId,
+        kind: kind,
+        documentService: _documentService,
+      ),
+    );
+  }
+
+  Future<void> _requirePro(
+    ProFeature feature,
+    Future<void> Function() action,
+  ) async {
+    if (!entitlementController.canUse(feature)) {
+      await _showProPrompt(feature);
+      return;
+    }
+    await action();
+  }
+
+  Future<void> _showProPrompt(ProFeature feature) async {
+    final description = switch (feature) {
+      ProFeature.unlimitedOrders => '免费版最多创建 30 张工单。',
+      ProFeature.customTemplates => '自定义项目模板是专业版功能。',
+      ProFeature.statistics => '统计复盘是专业版功能。',
+      ProFeature.documentExport => 'PDF / PNG 单据导出是专业版功能。',
+      ProFeature.customerSignature => '客户电子签名是专业版功能。',
+      ProFeature.photoAttachments => '维修照片附件是专业版功能。',
+    };
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => Dialog(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520, maxHeight: 720),
+          child: Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        '解锁专业版',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(dialogContext),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+                Text(description),
+                const SizedBox(height: 14),
+                Flexible(
+                  child: ProPage(
+                    controller: entitlementController,
+                    compact: true,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-      );
+      ),
+    );
+  }
 
   Future<void> _moveOrderToTrash(String orderId) async {
     final ok = await showDialog<bool>(

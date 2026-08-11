@@ -11,6 +11,8 @@ class OrderDetailDialog extends StatefulWidget {
       required this.onSignature,
       required this.onDocument,
       required this.onMoveToTrash,
+      this.canUsePhotoAttachments = true,
+      this.onPremiumRequired,
       this.fileSelectionService,
       this.asPage = false,
       super.key});
@@ -22,6 +24,8 @@ class OrderDetailDialog extends StatefulWidget {
   final VoidCallback onSignature;
   final ValueChanged<String> onDocument;
   final Future<void> Function() onMoveToTrash;
+  final bool canUsePhotoAttachments;
+  final VoidCallback? onPremiumRequired;
   final FileSelectionService? fileSelectionService;
   final bool asPage;
 
@@ -83,7 +87,11 @@ class _OrderDetailDialogState extends State<OrderDetailDialog> {
                     const SizedBox(height: 16),
                     _FieldOperationsCard(
                       onSignature: locked ? null : widget.onSignature,
-                      onPhoto: locked ? null : () => _addPhoto(order),
+                      onPhoto: locked
+                          ? null
+                          : widget.canUsePhotoAttachments
+                              ? () => _addPhoto(order)
+                              : widget.onPremiumRequired,
                       onPayment: canReceivePayment ? widget.onPayment : null,
                       onReceipt: () => widget.onDocument('receipt'),
                     ),
@@ -146,7 +154,7 @@ class _OrderDetailDialogState extends State<OrderDetailDialog> {
                       controller: widget.controller,
                       order: order,
                       category: _photoCategory,
-                      editable: !locked,
+                      editable: !locked && widget.canUsePhotoAttachments,
                       fileSelectionService: _fileSelectionService,
                       onCategoryChanged: (value) =>
                           setState(() => _photoCategory = value),
@@ -1215,10 +1223,10 @@ Future<Uint8List?> _watermarkPhoto(Uint8List bytes, String text) async {
 
     // Repeat a light, diagonal watermark over the complete image. There is no
     // opaque band behind it, so the original photo remains visible.
-    final tileWidth = (painter.width + fontSize * 2.5) *
-        _photoWatermarkSpacingScale;
-    final tileHeight = (painter.height + fontSize * 2.2) *
-        _photoWatermarkSpacingScale;
+    final tileWidth =
+        (painter.width + fontSize * 2.5) * _photoWatermarkSpacingScale;
+    final tileHeight =
+        (painter.height + fontSize * 2.2) * _photoWatermarkSpacingScale;
     final margin = (source.width + source.height).toDouble();
     final imageWidth = source.width.toDouble();
     final imageHeight = source.height.toDouble();

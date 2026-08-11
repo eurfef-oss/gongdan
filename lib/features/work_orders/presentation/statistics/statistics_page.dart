@@ -1,9 +1,14 @@
 part of '../work_order_page.dart';
 
 class _StatsPage extends StatefulWidget {
-  const _StatsPage({required this.controller, required this.onBack});
+  const _StatsPage({
+    required this.controller,
+    required this.entitlementController,
+    required this.onBack,
+  });
 
   final WorkOrderController controller;
+  final EntitlementController entitlementController;
   final VoidCallback onBack;
 
   @override
@@ -15,6 +20,23 @@ class _StatsPageState extends State<_StatsPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (!widget.entitlementController.canUse(ProFeature.statistics)) {
+      return Column(
+        children: [
+          AppBackBar(title: '统计复盘', onBack: widget.onBack),
+          Expanded(
+            child: _Shell(
+              kicker: 'INSIGHTS / STATISTICS',
+              title: '统计复盘',
+              showPageHeader: false,
+              child: ProPage(
+                controller: widget.entitlementController,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
     final orders = widget.controller.visibleOrders.where((order) {
       final range = _dateRange;
       if (range == null) return true;

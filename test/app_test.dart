@@ -30,7 +30,12 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('今天，先把现场安排好。'), findsOneWidget);
-    await tester.scrollUntilVisible(find.text('最近工单'), 500);
+    expect(find.byType(ReorderableListView), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('最近工单'),
+      500,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('最近工单'), findsOneWidget);
   });
 
@@ -81,7 +86,11 @@ void main() {
     await tester.pumpWidget(BaseApp(controller: controller));
     await tester.pumpAndSettle();
 
-    await tester.scrollUntilVisible(find.text('工单进度'), 500);
+    await tester.scrollUntilVisible(
+      find.text('工单进度'),
+      500,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.pumpAndSettle();
 
     final progressCard = find.ancestor(
@@ -144,6 +153,11 @@ void main() {
     expect(find.text('系统设置'), findsOneWidget);
     expect(find.text('门店资料'), findsOneWidget);
     expect(find.text('门店名称'), findsNothing);
+    expect(find.text('概览设置'), findsNothing);
+
+    await tester.tap(find.text('显示设置'));
+    await tester.pumpAndSettle();
+    expect(find.text('概览设置'), findsOneWidget);
 
     await tester.tap(find.text('概览设置'));
     await tester.pumpAndSettle();
@@ -151,6 +165,7 @@ void main() {
     expect(find.text('概览模块'), findsOneWidget);
     expect(find.text('数据概览'), findsOneWidget);
     expect(find.byType(ReorderableListView), findsOneWidget);
+    expect(find.byType(ReorderableDragStartListener), findsNWidgets(5));
     expect(find.byType(Switch), findsNWidgets(5));
     await tester.tap(find.byType(Switch).first);
     await tester.pumpAndSettle();

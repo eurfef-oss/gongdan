@@ -1,10 +1,11 @@
 part of '../work_order_page.dart';
 
-enum _SettingsSection { shop, appearance, dashboard, data, demo }
+enum _SettingsSection { shop, appearance, dashboard, pro, data, demo }
 
 class _SettingsPage extends StatefulWidget {
   const _SettingsPage({
     required this.controller,
+    required this.entitlementController,
     required this.onExport,
     required this.onImport,
     required this.onImportCsv,
@@ -15,6 +16,7 @@ class _SettingsPage extends StatefulWidget {
   });
 
   final WorkOrderController controller;
+  final EntitlementController entitlementController;
   final ValueChanged<String> onExport;
   final VoidCallback onImport;
   final VoidCallback onImportCsv;
@@ -123,12 +125,11 @@ class _SettingsPageState extends State<_SettingsPage> {
             onTap: () => _openSection(_SettingsSection.appearance),
           ),
           _SettingsMenuEntry(
-            icon: Icons.dashboard_customize_outlined,
-            title: '概览设置',
-            subtitle: '拖动调整概览模块顺序，控制模块是否显示',
-            value:
-                '${widget.controller.dashboardCardOrder.length - widget.controller.dashboardHiddenCards.length}/${widget.controller.dashboardCardOrder.length} 张显示',
-            onTap: () => _openSection(_SettingsSection.dashboard),
+            icon: Icons.workspace_premium_outlined,
+            title: '专业版',
+            subtitle: '一次性买断，解锁更多工具',
+            value: widget.entitlementController.isPro ? '已激活' : '未激活',
+            onTap: () => _openSection(_SettingsSection.pro),
           ),
           _SettingsMenuEntry(
             icon: Icons.import_export_outlined,
@@ -177,6 +178,8 @@ class _SettingsPageState extends State<_SettingsPage> {
         return '显示设置';
       case _SettingsSection.dashboard:
         return '概览设置';
+      case _SettingsSection.pro:
+        return '专业版';
       case _SettingsSection.data:
         return '数据备份';
       case _SettingsSection.demo:
@@ -243,6 +246,8 @@ class _SettingsPageState extends State<_SettingsPage> {
         );
       case _SettingsSection.dashboard:
         return _DashboardSettingsContent(controller: widget.controller);
+      case _SettingsSection.pro:
+        return ProPage(controller: widget.entitlementController);
       case _SettingsSection.data:
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

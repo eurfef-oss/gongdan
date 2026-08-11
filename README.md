@@ -19,6 +19,8 @@
 - 应用私有目录 JSON 主存储、旧 SharedPreferences 数据迁移和存储异常内存兜底；
 - Material 3、浅色 / 深色模式和中英文本地化基础设施。
 
+专业版收费功能按“非消耗型一次性买断 + 本地离线授权缓存”实现。授权不上传工单业务数据，购买验证服务位于根目录 `server/`；当前已完成 Flutter 页面、设置入口、专业权限拦截和开发期服务端测试链路，真实商店凭证验证及生产配置仍需联调。
+
 ## 目录
 
 ```text
@@ -29,6 +31,7 @@ lib/
 │   ├── result/                  成功/失败结果模型
 │   └── theme/                   浅色与深色主题
 ├── features/
+│   ├── monetization/            专业版授权与内购
 │   └── work_orders/             工单助手业务模块
 │       ├── application/         状态与流程编排
 │       ├── data/                数据实现
@@ -38,6 +41,7 @@ lib/
 ├── l10n/                        中英文资源和生成文件
 ├── bootstrap.dart               初始化与依赖装配
 └── main.dart                    唯一入口
+server/                           Node.js 专业版授权服务
 ```
 
 工单模块已按职责进一步拆分：
@@ -69,6 +73,18 @@ I:\sdk\flutter\bin\cache\dart-sdk\bin\dart.exe test
 ```
 
 如果修改了 ARB 文件，执行 `flutter gen-l10n` 生成本地化 Dart 文件。
+
+### 专业版授权服务
+
+需要 Node.js 20 或更高版本。开发期可启动测试授权服务：
+
+```powershell
+cd server
+$env:ALLOW_TEST_PURCHASES='true'
+npm start
+```
+
+服务端的正式验证、密钥和上线前检查见[专业版内购与离线授权实现说明](docs/monetization-implementation.md)。
 
 ### SDK 与构建工具路径
 
@@ -106,6 +122,8 @@ $env:Path="$env:JAVA_HOME\bin;$env:Path"
 - UI 不直接读写本地存储；
 - domain 不依赖 Flutter UI；
 - 本地数据默认只保存在设备，不上传业务服务器；
+- 专业版授权快照保存在平台安全存储，不进入工单 JSON 备份；
+- 专业版购买服务只处理商店交易和授权，不接收客户、工单、照片或签名数据；
 - 备份可能包含客户姓名、电话、地址、照片和签名，分享前请确认接收方；
 - 新增核心流程需补充成功、失败和边界测试。
 
@@ -117,7 +135,7 @@ $env:Path="$env:JAVA_HOME\bin;$env:Path"
 - 完成格式化、分析、测试和正式构建；
 - 默认构建命令：`flutter build apk --release`；调试构建需显式使用 `flutter build apk --debug`；
 - 验证命令：`flutter analyze`、`flutter test --no-pub`；
-- 当前自动化测试基线：24 项全部通过；
+- 当前自动化测试基线：Flutter 31 项、Node 4 项全部通过；
 - 真机验证安装、升级、深色模式、语言、大字体和系统安全区；
 - 保存正式产物的 SHA-256 和版本说明。
 

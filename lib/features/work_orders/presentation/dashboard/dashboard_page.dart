@@ -38,9 +38,7 @@ class _DashboardPage extends StatelessWidget {
       ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
 
     final hiddenCards = controller.dashboardHiddenCards;
-    final cards = _dashboardSettingsOrder(controller.dashboardCardOrder)
-        .where((id) => _dashboardSettingVisible(id, hiddenCards))
-        .toList();
+    final cards = _dashboardSettingsOrder(controller.dashboardCardOrder);
 
     return _Shell(
       kicker: '工作台 / OVERVIEW',
@@ -53,21 +51,19 @@ class _DashboardPage extends StatelessWidget {
           label: const Text('新建工单'),
         ),
       ],
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: cards
-            .map(
-              (id) => _dashboardCard(
-                context,
-                id: id,
-                orders: orders,
-                recent: recent,
-                todayOrders: todayOrders,
-                outstanding: outstanding,
-                completedAmount: completedAmount,
-              ),
-            )
-            .toList(),
+      child: _DashboardCardList(
+        controller: controller,
+        cardOrder: cards,
+        hiddenCards: hiddenCards,
+        itemBuilder: (context, id) => _dashboardCard(
+          context,
+          id: id,
+          orders: orders,
+          recent: recent,
+          todayOrders: todayOrders,
+          outstanding: outstanding,
+          completedAmount: completedAmount,
+        ),
       ),
     );
   }
@@ -176,6 +172,87 @@ class _DashboardPage extends StatelessWidget {
       default:
         return const SizedBox.shrink();
     }
+  }
+}
+
+class _DashboardCardList extends StatefulWidget {
+  const _DashboardCardList({
+    required this.controller,
+    required this.cardOrder,
+    required this.hiddenCards,
+    required this.itemBuilder,
+  });
+
+  final WorkOrderController controller;
+  final List<String> cardOrder;
+  final Set<String> hiddenCards;
+  final Widget Function(BuildContext context, String id) itemBuilder;
+
+  @override
+  State<_DashboardCardList> createState() => _DashboardCardListState();
+}
+
+class _DashboardCardListState extends State<_DashboardCardList> {
+  late List<String> _order;
+
+  @override
+  void initState() {
+    super.initState();
+    _order = [...widget.cardOrder];
+  }
+
+  @override
+  void didUpdateWidget(covariant _DashboardCardList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_sameOrder(_order, widget.cardOrder)) {
+      _order = [...widget.cardOrder];
+    }
+  }
+
+  bool _sameOrder(List<String> first, List<String> second) {
+    if (first.length != second.length) return false;
+    for (var index = 0; index < first.length; index++) {
+      if (first[index] != second[index]) return false;
+    }
+    return true;
+  }
+
+  void _onReorder(int oldIndex, int newIndex) {
+    if (oldIndex == newIndex) return;
+
+    final visible =
+        _order.where((id) => !widget.hiddenCards.contains(id)).toList();
+    final nextVisible = [...visible]
+      ..insert(newIndex, visible.removeAt(oldIndex));
+    var visibleIndex = 0;
+    final next = _order.map((id) {
+      if (widget.hiddenCards.contains(id)) return id;
+      return nextVisible[visibleIndex++];
+    }).toList();
+
+    setState(() => _order = next);
+    unawaited(widget.controller.updateDashboardCardOrder(next));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cards =
+        _order.where((id) => !widget.hiddenCards.contains(id)).toList();
+
+    return ReorderableListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      buildDefaultDragHandles: true,
+      itemCount: cards.length,
+      onReorderItem: _onReorder,
+      itemBuilder: (context, index) {
+        final id = cards[index];
+        return KeyedSubtree(
+          key: ValueKey(id),
+          child: widget.itemBuilder(context, id),
+        );
+      },
+    );
   }
 }
 

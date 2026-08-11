@@ -62,3 +62,25 @@ features/work_orders/
 - 通用平台能力放入 `core/services/`；
 - 数据结构升级时增加明确的 schema version 和 migration；
 - 团队或状态复杂度增长后再评估 Riverpod、Bloc 等方案。
+
+## 专业版授权模块
+
+专业版授权是独立于工单收款的业务模块，采用“在线激活一次，之后本地离线使用”的模型：
+
+```text
+Flutter App
+  ├── InAppPurchaseBillingGateway
+  ├── RemotePurchaseVerifier ──HTTPS──→ Node license server
+  └── LocalEntitlementRepository ──→ flutter_secure_storage
+```
+
+- `in_app_purchase` 只负责调用 Apple App Store / Google Play 和接收购买事件；
+- 服务端负责验证平台购买凭证、幂等保存交易、生成专业版授权和处理退款/撤销通知；
+- 本地授权快照不进入工单 JSON，也不进入用户业务备份；
+- 工单、客户、照片和签名继续只保存在本地，登录和云同步不在本阶段范围内；
+- `FeatureAccessService` 是所有专业功能的统一权限入口，页面不应直接判断商品或购买回调；
+- 一次性商品没有到期时间，但重新安装、清除数据或更换设备时需要通过商店恢复购买。
+
+根目录 `server/` 是 Node.js 授权服务。开发期使用 JSON 文件存储并支持显式开启的测试购买；正式环境必须关闭测试开关、使用 HTTPS、接入 Apple/Google 真实验证，并将存储替换为可靠数据库。
+
+详细的商品权限、接口、构建参数和未完成事项见[专业版内购与离线授权实现说明](monetization-implementation.md)。

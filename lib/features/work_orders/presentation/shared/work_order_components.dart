@@ -6,12 +6,14 @@ class _Shell extends StatelessWidget {
     required this.title,
     required this.child,
     this.actions = const [],
+    this.actionsBelowTitle = false,
   });
 
   final String kicker;
   final String title;
   final Widget child;
   final List<Widget> actions;
+  final bool actionsBelowTitle;
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +31,7 @@ class _Shell extends StatelessWidget {
                 kicker: kicker,
                 title: title,
                 actions: actions,
+                actionsBelowTitle: actionsBelowTitle,
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
@@ -148,34 +151,34 @@ class _Metric extends StatelessWidget {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CircleAvatar(
-              backgroundColor: scheme.primary.withValues(alpha: .1),
-              foregroundColor: scheme.primary,
-              child: Icon(icon, size: 20),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
+            Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: scheme.primary.withValues(alpha: .1),
+                  foregroundColor: scheme.primary,
+                  child: Icon(icon, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
                     label,
                     style: TextStyle(
                       color: scheme.onSurfaceVariant,
                       fontSize: 13,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    value,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
               ),
             ),
           ],

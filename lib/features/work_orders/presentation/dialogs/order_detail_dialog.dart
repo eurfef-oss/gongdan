@@ -1,5 +1,7 @@
 part of '../work_order_dialogs.dart';
 
+enum _OrderDetailAction { cancel, moveToTrash }
+
 class OrderDetailDialog extends StatefulWidget {
   const OrderDetailDialog(
       {required this.controller,
@@ -74,7 +76,7 @@ class _OrderDetailDialogState extends State<OrderDetailDialog> {
                           ? null
                           : () => widget.controller.advanceStatus(order.id),
                       onEdit: locked ? null : widget.onEdit,
-                      onCancel: locked
+                      onCancel: locked || widget.asPage
                           ? null
                           : () => widget.controller.cancelOrder(order.id),
                     ),
@@ -161,14 +163,15 @@ class _OrderDetailDialogState extends State<OrderDetailDialog> {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  TextButton.icon(
-                    onPressed: order.isTrashed ? null : widget.onMoveToTrash,
-                    icon: const Icon(Icons.delete_sweep_outlined, size: 17),
-                    label: const Text('移入回收站'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: Theme.of(context).colorScheme.error,
+                  if (!widget.asPage)
+                    TextButton.icon(
+                      onPressed: order.isTrashed ? null : widget.onMoveToTrash,
+                      icon: const Icon(Icons.delete_sweep_outlined, size: 17),
+                      label: const Text('移入回收站'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Theme.of(context).colorScheme.error,
+                      ),
                     ),
-                  ),
                   OutlinedButton(
                     onPressed: () => widget.onDocument('quote'),
                     child: const Text('报价单'),
@@ -192,6 +195,32 @@ class _OrderDetailDialogState extends State<OrderDetailDialog> {
               title:
                   customer?.name.isNotEmpty == true ? customer!.name : '工单详情',
               onBack: () => Navigator.of(context).pop(),
+              actions: [
+                PopupMenuButton<_OrderDetailAction>(
+                  tooltip: '工单操作',
+                  icon: const Icon(Icons.more_vert),
+                  onSelected: (action) async {
+                    switch (action) {
+                      case _OrderDetailAction.cancel:
+                        await widget.controller.cancelOrder(order.id);
+                      case _OrderDetailAction.moveToTrash:
+                        await widget.onMoveToTrash();
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: _OrderDetailAction.cancel,
+                      enabled: !locked,
+                      child: const Text('取消工单'),
+                    ),
+                    PopupMenuItem(
+                      value: _OrderDetailAction.moveToTrash,
+                      enabled: !order.isTrashed,
+                      child: const Text('移入回收站'),
+                    ),
+                  ],
+                ),
+              ],
             ),
             body: SafeArea(
               child: Center(

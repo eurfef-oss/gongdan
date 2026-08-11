@@ -150,5 +150,20 @@ void main() {
 
     expect(find.text('门店名称'), findsOneWidget);
     expect(find.text('保存门店资料'), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.text('系统设置'), findsOneWidget);
+    expect(find.text('门店名称'), findsNothing);
+
+    await tester.tap(find.text('项目模板'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('项目模板'), findsAtLeastNWidgets(1));
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.text('系统设置'), findsOneWidget);
   });
 }

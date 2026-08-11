@@ -37,6 +37,7 @@ class _OrdersPageState extends State<_OrdersPage> {
     return _Shell(
       kicker: '工作台 / ORDERS',
       title: '工单清单',
+      actionsBelowTitle: true,
       actions: [
         FilledButton.icon(
           onPressed: () => widget.onCreate(),

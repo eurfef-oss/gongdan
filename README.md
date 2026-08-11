@@ -12,10 +12,10 @@
 - 维修前 / 维修中 / 维修后照片分类；
 - 客户电子签名和保修期限记录；
 - 工单搜索、状态 / 收款 / 创建日期 / 服务日期 / 客户 / 设备类型筛选；
-- 已完成、已取消工单禁止编辑；工单支持移入回收站和还原；
-- 项目模板支持内置类型和自定义类型维护，使用中的类型禁止删除，未使用类型可删除；
+- 已完成、已取消工单禁止编辑；工单支持移入回收站和还原；工单详情页顶部“更多操作”菜单提供取消工单和移入回收站入口；
+- 项目模板支持内置类型和自定义类型维护，使用中的类型禁止删除，未使用类型可删除；顶部管理操作独立成行，窄屏下可自动换行；
 - 概览卡片支持显示 / 隐藏和拖动排序；工单进度卡片展示待确认、维修中（含已确认）、待收款和已完成，不展示草稿与已取消；工单、客户、项目模板页滚动时会收起顶部说明区域；
-- JSON 完整备份恢复、CSV 工单导出；
+- 数据备份页提供完整 JSON 备份、JSON 恢复以及工单 CSV 导入导出；
 - 应用私有目录 JSON 主存储、旧 SharedPreferences 数据迁移和存储异常内存兜底；
 - Material 3、浅色 / 深色模式和中英文本地化基础设施。
 
@@ -77,10 +77,16 @@ I:\sdk\flutter\bin\cache\dart-sdk\bin\dart.exe test
 ```powershell
 $env:FLUTTER_SUPPRESS_ANALYTICS='true'
 $env:DART_SUPPRESS_ANALYTICS='true'
+$env:ANDROID_HOME='I:\sdk\android-sdk'
+$env:ANDROID_SDK_ROOT='I:\sdk\android-sdk'
+$env:JAVA_HOME='I:\sdk\jdk17\jdk-17.0.19+10'
+$env:Path="$env:JAVA_HOME\bin;$env:Path"
 & 'I:\sdk\flutter\bin\flutter.bat' build apk --release
 ```
 
 产物位于 `build/app/outputs/flutter-apk/app-release.apk`。当前 Release 构建仍使用 Android 模板的 Debug 签名，适合内部安装测试；正式上架前必须配置独立的正式签名。调试包使用 `flutter build apk --debug` 显式构建。
+
+最近一次内部 Release 构建（2026-08-11，版本 `1.0.0+1`）大小为 55.22 MB；产物校验值见[发布检查清单](docs/release-checklist.md)。
 
 ## 工程约定
 

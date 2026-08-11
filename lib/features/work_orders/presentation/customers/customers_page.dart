@@ -35,6 +35,7 @@ class _CustomersPageState extends State<_CustomersPage> {
     return _Shell(
       kicker: '工作台 / CUSTOMERS',
       title: '客户档案',
+      actionsBelowTitle: true,
       actions: [
         FilledButton.icon(
           onPressed: widget.onCreate,
@@ -91,6 +92,10 @@ class _CustomerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final contactText = [
+      if (customer.phone.isNotEmpty) customer.phone,
+      if (customer.address.isNotEmpty) customer.address,
+    ].join(' · ');
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       child: ListTile(
@@ -108,12 +113,15 @@ class _CustomerCard extends StatelessWidget {
         ),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 5),
-          child: Text(
-            [
-              if (customer.phone.isNotEmpty) customer.phone,
-              if (customer.address.isNotEmpty) customer.address,
-              '$orderCount 张工单',
-            ].join(' · '),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (contactText.isNotEmpty) ...[
+                Text(contactText),
+                const SizedBox(height: 4),
+              ],
+              Text('$orderCount 张工单'),
+            ],
           ),
         ),
         trailing: const Icon(Icons.chevron_right),

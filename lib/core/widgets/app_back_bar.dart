@@ -5,11 +5,13 @@ class AppBackBar extends StatelessWidget implements PreferredSizeWidget {
   const AppBackBar({
     required this.title,
     required this.onBack,
+    this.actions = const [],
     super.key,
   });
 
   final String title;
   final VoidCallback onBack;
+  final List<Widget> actions;
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -28,6 +30,7 @@ class AppBackBar extends StatelessWidget implements PreferredSizeWidget {
         style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
       ),
       centerTitle: false,
+      actions: actions,
     );
   }
 }

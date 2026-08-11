@@ -57,20 +57,26 @@ class _SettingsPageState extends State<_SettingsPage> {
     final section = _section;
     if (section == null) return _buildMenu(context);
 
-    return Column(
-      children: [
-        AppBackBar(
-          title: '设置与备份',
-          onBack: () => setState(() => _section = null),
-        ),
-        Expanded(
-          child: _Shell(
-            kicker: 'SYSTEM / SETTINGS',
-            title: _sectionTitle(section),
-            child: _sectionContent(context, section),
+    return PopScope<void>(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && mounted) setState(() => _section = null);
+      },
+      child: Column(
+        children: [
+          AppBackBar(
+            title: '设置与备份',
+            onBack: () => setState(() => _section = null),
           ),
-        ),
-      ],
+          Expanded(
+            child: _Shell(
+              kicker: 'SYSTEM / SETTINGS',
+              title: _sectionTitle(section),
+              child: _sectionContent(context, section),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -247,17 +253,17 @@ class _SettingsPageState extends State<_SettingsPage> {
                   ),
                   const SizedBox(height: 8),
                   _BackupAction(
-                    icon: Icons.table_chart_outlined,
-                    title: '导出工单 CSV',
-                    description: '便于在表格软件中查看和整理工单。',
-                    onTap: () => widget.onExport('csv'),
-                  ),
-                  const SizedBox(height: 8),
-                  _BackupAction(
                     icon: Icons.restore_outlined,
                     title: '恢复 JSON 备份',
                     description: '恢复后会覆盖当前设备上的本地数据。',
                     onTap: widget.onImport,
+                  ),
+                  const SizedBox(height: 8),
+                  _BackupAction(
+                    icon: Icons.table_chart_outlined,
+                    title: '导出工单 CSV',
+                    description: '便于在表格软件中查看和整理工单。',
+                    onTap: () => widget.onExport('csv'),
                   ),
                   const SizedBox(height: 8),
                   _BackupAction(

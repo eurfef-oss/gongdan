@@ -80,62 +80,73 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
           builder: (context, constraints) {
             final desktop = constraints.maxWidth >= 900;
             final mobile = constraints.maxWidth < 700;
-            return Scaffold(
-              body: SafeArea(
-                child: Column(
-                  children: [
-                    if (!controller.persistenceAvailable)
-                      const _PersistenceWarning(),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          if (desktop)
-                            _SideNavigation(
-                              selected: _pageIndex,
-                              onSelected: _selectPage,
-                            ),
-                          Expanded(child: _currentPage()),
-                        ],
+            return PopScope<void>(
+              canPop: !_isSecondaryPage,
+              onPopInvokedWithResult: (didPop, _) {
+                if (!didPop && _isSecondaryPage) {
+                  _selectPage(5);
+                }
+              },
+              child: Scaffold(
+                body: SafeArea(
+                  child: Column(
+                    children: [
+                      if (!controller.persistenceAvailable)
+                        const _PersistenceWarning(),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            if (desktop)
+                              _SideNavigation(
+                                selected: _pageIndex,
+                                onSelected: _selectPage,
+                              ),
+                            Expanded(child: _currentPage()),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
+                bottomNavigationBar: mobile
+                    ? NavigationBar(
+                        selectedIndex: _pageIndex < 3 ? _pageIndex : 3,
+                        onDestinationSelected: (index) =>
+                            _selectPage(index == 3 ? 5 : index),
+                        destinations: const [
+                          NavigationDestination(
+                            icon: Icon(Icons.space_dashboard_outlined),
+                            selectedIcon: Icon(Icons.space_dashboard),
+                            label: '概览',
+                          ),
+                          NavigationDestination(
+                            icon: Icon(Icons.receipt_long_outlined),
+                            selectedIcon: Icon(Icons.receipt_long),
+                            label: '工单',
+                          ),
+                          NavigationDestination(
+                            icon: Icon(Icons.people_outline),
+                            selectedIcon: Icon(Icons.people),
+                            label: '客户',
+                          ),
+                          NavigationDestination(
+                            icon: Icon(Icons.settings_outlined),
+                            selectedIcon: Icon(Icons.settings),
+                            label: '设置',
+                          ),
+                        ],
+                      )
+                    : null,
               ),
-              bottomNavigationBar: mobile
-                  ? NavigationBar(
-                      selectedIndex: _pageIndex < 3 ? _pageIndex : 3,
-                      onDestinationSelected: (index) =>
-                          _selectPage(index == 3 ? 5 : index),
-                      destinations: const [
-                        NavigationDestination(
-                          icon: Icon(Icons.space_dashboard_outlined),
-                          selectedIcon: Icon(Icons.space_dashboard),
-                          label: '概览',
-                        ),
-                        NavigationDestination(
-                          icon: Icon(Icons.receipt_long_outlined),
-                          selectedIcon: Icon(Icons.receipt_long),
-                          label: '工单',
-                        ),
-                        NavigationDestination(
-                          icon: Icon(Icons.people_outline),
-                          selectedIcon: Icon(Icons.people),
-                          label: '客户',
-                        ),
-                        NavigationDestination(
-                          icon: Icon(Icons.settings_outlined),
-                          selectedIcon: Icon(Icons.settings),
-                          label: '设置',
-                        ),
-                      ],
-                    )
-                  : null,
             );
           },
         );
       },
     );
   }
+
+  bool get _isSecondaryPage =>
+      _pageIndex == 3 || _pageIndex == 4 || _pageIndex == 6;
 
   void _selectPage(int index) => setState(() => _pageIndex = index);
 
@@ -799,42 +810,59 @@ class _PageHeader extends StatelessWidget {
     required this.kicker,
     required this.title,
     this.actions = const [],
+    this.actionsBelowTitle = false,
   });
 
   final String kicker;
   final String title;
   final List<Widget> actions;
+  final bool actionsBelowTitle;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  kicker.toUpperCase(),
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontSize: 11,
-                    letterSpacing: 1.2,
-                    fontWeight: FontWeight.w800,
-                  ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      kicker.toUpperCase(),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontSize: 11,
+                        letterSpacing: 1.2,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 7),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 7),
-                Text(
-                  title,
-                  style: const TextStyle(
-                      fontSize: 25, fontWeight: FontWeight.w800),
-                ),
-              ],
-            ),
+              ),
+              if (!actionsBelowTitle) ...actions,
+            ],
           ),
-          ...actions,
+          if (actionsBelowTitle && actions.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: actions,
+            ),
+          ],
         ],
       ),
     );

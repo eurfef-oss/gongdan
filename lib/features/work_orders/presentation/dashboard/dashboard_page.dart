@@ -40,6 +40,7 @@ class _DashboardPage extends StatelessWidget {
     return _Shell(
       kicker: '工作台 / OVERVIEW',
       title: '今天，先把现场安排好。',
+      actionsBelowTitle: true,
       actions: [
         FilledButton.icon(
           onPressed: () => onCreate(),

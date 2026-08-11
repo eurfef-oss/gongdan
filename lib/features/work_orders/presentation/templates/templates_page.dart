@@ -38,13 +38,13 @@ class _TemplatesPageState extends State<_TemplatesPage> {
           child: _Shell(
             kicker: '工作台 / CATALOG',
             title: '项目模板',
+            actionsBelowTitle: true,
             actions: [
               OutlinedButton.icon(
                 onPressed: widget.onManageTypes,
                 icon: const Icon(Icons.tune_outlined),
                 label: const Text('管理类型'),
               ),
-              const SizedBox(width: 8),
               FilledButton.icon(
                 onPressed: widget.onCreate,
                 icon: const Icon(Icons.add),

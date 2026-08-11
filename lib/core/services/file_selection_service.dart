@@ -85,7 +85,11 @@ class PlatformFileSelectionService implements FileSelectionService {
       source: source == ImageSelectionSource.camera
           ? ImageSource.camera
           : ImageSource.gallery,
-      imageQuality: 100,
+      // Keep enough detail for a repair record while avoiding very large
+      // camera files that make watermarking and local persistence feel slow.
+      imageQuality: 90,
+      maxWidth: 2048,
+      maxHeight: 2048,
     );
     if (file == null) return null;
     return SelectedFile(name: file.name, readAsBytes: file.readAsBytes);

@@ -20,6 +20,10 @@ class WorkOrderPage extends StatefulWidget {
 
 class _WorkOrderPageState extends State<WorkOrderPage> {
   int _pageIndex = 0;
+  final _settingsKey = GlobalKey<_SettingsPageState>();
+  Timer? _exitTimer;
+  bool _exitArmed = false;
+  bool _settingsSectionOpen = false;
   late final FileSelectionService _fileSelectionService;
   late final ShareService _shareService;
   late final DocumentService _documentService;
@@ -37,6 +41,12 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
           fileSelectionService: _fileSelectionService,
           shareService: _shareService,
         );
+  }
+
+  @override
+  void dispose() {
+    _exitTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -81,11 +91,17 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
             final desktop = constraints.maxWidth >= 900;
             final mobile = constraints.maxWidth < 700;
             return PopScope<void>(
-              canPop: !_isSecondaryPage,
+              canPop: !_isSecondaryPage && !_settingsSectionOpen && _exitArmed,
               onPopInvokedWithResult: (didPop, _) {
-                if (!didPop && _isSecondaryPage) {
-                  _selectPage(5);
+                if (didPop) {
+                  _exitTimer?.cancel();
+                  return;
                 }
+                if (_isSecondaryPage) return _selectPage(5);
+                if (_settingsSectionOpen) {
+                  return _settingsKey.currentState?.showMenu();
+                }
+                _armExit(context);
               },
               child: Scaffold(
                 body: SafeArea(
@@ -148,7 +164,46 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
   bool get _isSecondaryPage =>
       _pageIndex == 3 || _pageIndex == 4 || _pageIndex == 6;
 
-  void _selectPage(int index) => setState(() => _pageIndex = index);
+  void _selectPage(int index) {
+    final resetSettingsMenu = index == 5 && _pageIndex == 5;
+    _exitTimer?.cancel();
+    _exitTimer = null;
+    if (_pageIndex != index || _exitArmed || resetSettingsMenu) {
+      setState(() {
+        _pageIndex = index;
+        _exitArmed = false;
+        if (index != 5) _settingsSectionOpen = false;
+      });
+    }
+    if (resetSettingsMenu) _settingsKey.currentState?.showMenu();
+  }
+
+  void _onSettingsSectionChanged(bool open) {
+    _exitTimer?.cancel();
+    _exitTimer = null;
+    if (!mounted) return;
+    setState(() {
+      _settingsSectionOpen = open;
+      _exitArmed = false;
+    });
+  }
+
+  void _armExit(BuildContext context) {
+    _exitTimer?.cancel();
+    if (!mounted) return;
+    setState(() => _exitArmed = true);
+    _exitTimer = Timer(const Duration(seconds: 2), () {
+      if (mounted) setState(() => _exitArmed = false);
+    });
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(
+          content: Text('再按一次返回键退出应用'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+  }
 
   Widget _currentPage() {
     switch (_pageIndex) {
@@ -180,12 +235,14 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
         );
       case 5:
         return _SettingsPage(
+          key: _settingsKey,
           controller: controller,
           onExport: _exportData,
           onImport: _importData,
           onImportCsv: _importCsv,
           onReset: _resetDemo,
           onNavigate: _selectPage,
+          onSectionChanged: _onSettingsSectionChanged,
         );
       case 6:
         return _RecycleBinPage(
@@ -671,21 +728,55 @@ class _SideNavigation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 224,
+      width: 240,
       color: _navy,
-      padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 12),
+      padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(12, 4, 12, 22),
-            child: Text(
-              '维修工单助手',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-              ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(10, 2, 10, 22),
+            child: Row(
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: _blue,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.build_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '维修工单助手',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      SizedBox(height: 3),
+                      Text(
+                        '离线工作台',
+                        style: TextStyle(
+                          color: _navMuted,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
           _NavLabel('工作台'),
@@ -732,6 +823,32 @@ class _SideNavigation extends StatelessWidget {
             label: '回收站',
             onTap: () => onSelected(6),
           ),
+          const Spacer(),
+          Container(
+            margin: const EdgeInsets.fromLTRB(4, 18, 4, 0),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: .07),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white.withValues(alpha: .08)),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.cloud_off_outlined, color: _navMuted, size: 17),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '数据保存在本机',
+                    style: TextStyle(
+                      color: _navMuted,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -776,14 +893,13 @@ class _NavItem extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Material(
-        color:
-            selected ? Colors.white.withValues(alpha: .12) : Colors.transparent,
-        borderRadius: BorderRadius.circular(9),
+        color: selected ? _blue : Colors.transparent,
+        borderRadius: BorderRadius.circular(10),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(9),
+          borderRadius: BorderRadius.circular(10),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             child: Row(
               children: [
                 Icon(icon,
@@ -821,7 +937,7 @@ class _PageHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+      padding: const EdgeInsets.fromLTRB(0, 28, 0, 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -845,8 +961,9 @@ class _PageHeader extends StatelessWidget {
                     Text(
                       title,
                       style: const TextStyle(
-                        fontSize: 25,
+                        fontSize: 27,
                         fontWeight: FontWeight.w800,
+                        height: 1.18,
                       ),
                     ),
                   ],

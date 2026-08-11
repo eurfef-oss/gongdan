@@ -70,6 +70,17 @@ I:\sdk\flutter\bin\cache\dart-sdk\bin\dart.exe test
 
 如果修改了 ARB 文件，执行 `flutter gen-l10n` 生成本地化 Dart 文件。
 
+### SDK 与构建工具路径
+
+当前 Windows 构建环境使用以下固定路径：
+
+| 工具 | 路径 |
+| --- | --- |
+| Flutter SDK | `I:\sdk\flutter` |
+| Android SDK | `I:\sdk\android-sdk` |
+| JDK 17 | `I:\sdk\jdk17\jdk-17.0.19+10` |
+| Gradle Wrapper | `android\gradle\wrapper` |
+
 ## APK 构建（默认 Release）
 
 本项目默认构建 Release APK。使用 Flutter 命令打包时显式指定 `--release`；只有需要调试 Dart 代码时才使用 `--debug`。

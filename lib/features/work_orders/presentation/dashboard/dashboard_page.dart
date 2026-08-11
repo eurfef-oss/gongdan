@@ -77,39 +77,14 @@ class _DashboardPage extends StatelessWidget {
           ),
           _Section(
             title: '工单进度',
-            child: Column(
-              children: _dashboardProgressStatuses.map((status) {
-                final count = _dashboardProgressCount(orders, status);
-                final color = statusColor(context, status);
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: .08),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          status.label,
-                          style: const TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                      ),
-                      Text(
-                        '$count 张',
-                        style: TextStyle(
-                          color: color,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
+            trailing: Text(
+              '${orders.length} 张记录',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontSize: 13,
+              ),
             ),
+            child: _ProgressGrid(orders: orders),
           ),
           _Section(
             title: '最近工单',
@@ -218,10 +193,126 @@ class _DashboardAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton.icon(
-      onPressed: onTap,
-      icon: Icon(icon),
-      label: Text(title),
+    final scheme = Theme.of(context).colorScheme;
+    return SizedBox(
+      width: 190,
+      child: Card(
+        color: scheme.surfaceContainerHighest.withValues(alpha: .72),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: scheme.primary.withValues(alpha: .1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, color: scheme.primary, size: 20),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_rounded,
+                  size: 17,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProgressGrid extends StatelessWidget {
+  const _ProgressGrid({required this.orders});
+
+  final List<WorkOrder> orders;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 780 ? 4 : 2;
+        const gap = 10.0;
+        final width = (constraints.maxWidth - gap * (columns - 1)) / columns;
+        return Wrap(
+          spacing: gap,
+          runSpacing: gap,
+          children: _dashboardProgressStatuses
+              .map(
+                (status) => SizedBox(
+                  width: width,
+                  child: _ProgressItem(
+                    status: status,
+                    count: _dashboardProgressCount(orders, status),
+                  ),
+                ),
+              )
+              .toList(),
+        );
+      },
+    );
+  }
+}
+
+class _ProgressItem extends StatelessWidget {
+  const _ProgressItem({required this.status, required this.count});
+
+  final WorkOrderStatus status;
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = statusColor(context, status);
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: .08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: .14)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: .14),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.arrow_forward_rounded, color: color, size: 15),
+          ),
+          const SizedBox(width: 9),
+          Expanded(
+            child: Text(
+              status.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ),
+          Text(
+            '$count 张',
+            style: TextStyle(
+              color: color,
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

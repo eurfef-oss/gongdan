@@ -151,6 +151,15 @@ void main() {
     expect(find.text('门店名称'), findsOneWidget);
     expect(find.text('保存门店资料'), findsOneWidget);
 
+    await tester.tap(find.text('设置'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('系统设置'), findsOneWidget);
+    expect(find.text('门店名称'), findsNothing);
+
+    await tester.tap(find.text('门店资料'));
+    await tester.pumpAndSettle();
+
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
 
@@ -165,5 +174,33 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('系统设置'), findsOneWidget);
+  });
+
+  testWidgets('primary page needs a second back press to leave the app',
+      (tester) async {
+    final repository = _FakeWorkOrderRepository();
+    repository.value = repository.value.copyWith(
+      settings: repository.value.settings.copyWith(hasSeenWelcome: true),
+    );
+    final controller = WorkOrderController(repository);
+    await controller.initialize();
+
+    await tester.pumpWidget(BaseApp(controller: controller));
+    await tester.pumpAndSettle();
+
+    expect(find.text('今天，先把现场安排好。'), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pump();
+
+    expect(find.text('今天，先把现场安排好。'), findsOneWidget);
+    expect(find.text('再按一次返回键退出应用'), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    // The test binding does not remove the root route after SystemNavigator.pop;
+    // on a phone this second back event returns to the system desktop.
+    expect(find.text('今天，先把现场安排好。'), findsOneWidget);
   });
 }

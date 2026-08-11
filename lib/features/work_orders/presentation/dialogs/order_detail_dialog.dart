@@ -223,12 +223,7 @@ class _OrderDetailDialogState extends State<OrderDetailDialog> {
               ],
             ),
             body: SafeArea(
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1440),
-                  child: SizedBox(width: double.infinity, child: detail),
-                ),
-              ),
+              child: SizedBox(width: double.infinity, child: detail),
             ),
           );
         }
@@ -1023,28 +1018,18 @@ Future<void> _pickOrderPhotos({
   );
   if (!context.mounted || source == null) return;
 
-  final selectedBytes = <Uint8List>[];
-  final selectedNames = <String>[];
+  List<SelectedFile> selectedFiles;
   try {
     if (source == _PhotoSource.camera) {
       final file =
           await fileSelectionService.pickImage(ImageSelectionSource.camera);
       if (file == null) return;
-      selectedBytes.add(await file.readAsBytes());
-      selectedNames.add(file.name);
+      selectedFiles = [file];
     } else {
-      final files = await fileSelectionService.pickFiles(
+      selectedFiles = await fileSelectionService.pickFiles(
         kind: FileSelectionKind.image,
         allowMultiple: true,
       );
-      for (final file in files) {
-        try {
-          selectedBytes.add(await file.readAsBytes());
-          selectedNames.add(file.name);
-        } catch (_) {
-          continue;
-        }
-      }
     }
   } catch (_) {
     if (context.mounted) {
@@ -1053,96 +1038,207 @@ Future<void> _pickOrderPhotos({
     return;
   }
 
-  if (selectedBytes.isEmpty) return;
-  final now = DateTime.now();
-  final watermark =
-      '${DateFormat('yyyy/MM/dd').format(now)} ${_categoryLabel(category)}';
-  final attachments = <Attachment>[];
-  var failedCount = 0;
-  for (var index = 0; index < selectedBytes.length; index++) {
-    try {
-      final bytes = await _watermarkPhoto(selectedBytes[index], watermark);
-      if (bytes == null || bytes.isEmpty) {
-        failedCount++;
-        continue;
-      }
-      attachments.add(
-        Attachment(
-          id: idFor('att'),
-          category: category,
-          path: 'data:image/png;base64,${base64Encode(bytes)}',
-          caption: '${selectedNames[index]} · $watermark',
-          createdAt: now,
-        ),
-      );
-    } catch (_) {
-      failedCount++;
+  if (!context.mounted || selectedFiles.isEmpty) return;
+
+  String? notice;
+  var noticeIsError = false;
+  await _runWithPhotoLoading(context, () async {
+    final loadedPhotos = (await Future.wait(
+      selectedFiles.map((file) async {
+        try {
+          return _PhotoFileBytes(
+            name: file.name,
+            bytes: await file.readAsBytes(),
+          );
+        } catch (_) {
+          return null;
+        }
+      }),
+    ))
+        .whereType<_PhotoFileBytes>()
+        .toList();
+
+    if (loadedPhotos.isEmpty) {
+      notice = '照片读取失败，未保存照片。';
+      noticeIsError = true;
+      return;
     }
-  }
-  if (attachments.isEmpty) {
-    if (context.mounted) {
-      showTopNotice(context, '照片水印生成失败，未保存照片。', error: true);
+
+    final now = DateTime.now();
+    final watermark = _photoWatermarkText(now, category);
+    final attachments = (await Future.wait(
+      loadedPhotos.map((photo) async {
+        try {
+          final bytes = await _watermarkPhoto(photo.bytes, watermark);
+          if (bytes == null || bytes.isEmpty) return null;
+          return Attachment(
+            id: idFor('att'),
+            category: category,
+            path: 'data:image/png;base64,${base64Encode(bytes)}',
+            caption: '${photo.name} · $watermark',
+            createdAt: now,
+          );
+        } catch (_) {
+          return null;
+        }
+      }),
+    ))
+        .whereType<Attachment>()
+        .toList();
+
+    if (attachments.isEmpty) {
+      notice = '照片水印生成失败，未保存照片。';
+      noticeIsError = true;
+      return;
     }
-    return;
-  }
-  await controller.addAttachments(order.id, attachments);
-  if (context.mounted) {
-    showTopNotice(
-      context,
-      '已添加 ${attachments.length} 张${_categoryLabel(category)}照片。'
-      '${failedCount == 0 ? '' : '另有 $failedCount 张未保存。'}',
-    );
+
+    await controller.addAttachments(order.id, attachments);
+    final failedCount = selectedFiles.length - attachments.length;
+    notice = '已添加 ${attachments.length} 张${_categoryLabel(category)}照片。'
+        '${failedCount == 0 ? '' : '另有 $failedCount 张未保存。'}';
+  });
+
+  if (context.mounted && notice != null) {
+    showTopNotice(context, notice!, error: noticeIsError);
   }
 }
 
 enum _PhotoSource { camera, file }
+
+class _PhotoFileBytes {
+  const _PhotoFileBytes({required this.name, required this.bytes});
+
+  final String name;
+  final Uint8List bytes;
+}
+
+Future<void> _runWithPhotoLoading(
+  BuildContext context,
+  Future<void> Function() task,
+) async {
+  final navigator = Navigator.of(context, rootNavigator: true);
+  final loadingRoute = showDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => const _PhotoProcessingDialog(),
+  );
+  try {
+    // Let the modal route paint before image decoding starts on the UI thread.
+    await WidgetsBinding.instance.endOfFrame;
+    await task();
+  } finally {
+    if (navigator.mounted) navigator.pop();
+    await loadingRoute;
+  }
+}
+
+class _PhotoProcessingDialog extends StatelessWidget {
+  const _PhotoProcessingDialog();
+
+  @override
+  Widget build(BuildContext context) => PopScope<void>(
+        canPop: false,
+        child: Dialog(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 220),
+            child: const Padding(
+              padding: EdgeInsets.fromLTRB(24, 22, 24, 22),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2.5),
+                  ),
+                  SizedBox(width: 16),
+                  Flexible(child: Text('正在处理照片，请稍候…')),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+}
+
+String _photoWatermarkText(DateTime value, String category) =>
+    '${DateFormat('yyyy/MM/dd HH:mm:ss').format(value)} ${_categoryLabel(category)}';
+
+const _maxProcessedPhotoEdge = 2048;
+// Increasing both tile dimensions again cuts the current watermark density
+// approximately in half.
+const _photoWatermarkSpacingScale = 2.25;
 
 Future<Uint8List?> _watermarkPhoto(Uint8List bytes, String text) async {
   ui.Codec? codec;
   ui.Image? source;
   ui.Image? output;
   try {
-    codec = await ui.instantiateImageCodec(bytes);
+    codec = await ui.instantiateImageCodecWithSize(
+      await ui.ImmutableBuffer.fromUint8List(bytes),
+      getTargetSize: (width, height) {
+        if (width <= _maxProcessedPhotoEdge &&
+            height <= _maxProcessedPhotoEdge) {
+          return const ui.TargetImageSize();
+        }
+        return width >= height
+            ? const ui.TargetImageSize(width: _maxProcessedPhotoEdge)
+            : const ui.TargetImageSize(height: _maxProcessedPhotoEdge);
+      },
+    );
     source = (await codec.getNextFrame()).image;
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
     canvas.drawImage(source, ui.Offset.zero, ui.Paint());
 
-    final fontSize = (source.width / 28).clamp(8.0, 40.0).toDouble();
-    final horizontalPadding =
-        (fontSize * .75).clamp(2.0, source.width.toDouble() / 4).toDouble();
-    final maxTextWidth = (source.width - horizontalPadding * 2)
-        .clamp(1.0, source.width.toDouble());
+    final fontSize = (source.width / 34).clamp(9.0, 32.0).toDouble();
     final painter = TextPainter(
       text: TextSpan(
         text: text,
         style: TextStyle(
-          color: Colors.white,
+          color: Colors.white.withValues(alpha: .18),
           fontSize: fontSize,
-          fontWeight: FontWeight.w700,
-          shadows: const [
-            Shadow(color: Colors.black54, blurRadius: 2),
+          fontWeight: FontWeight.w600,
+          shadows: [
+            Shadow(
+              color: Colors.black.withValues(alpha: .10),
+              blurRadius: 1.5,
+              offset: const Offset(.5, .5),
+            ),
           ],
         ),
       ),
       textDirection: ui.TextDirection.ltr,
       maxLines: 1,
       ellipsis: '…',
-    )..layout(
-        maxWidth: maxTextWidth,
-      );
-    final verticalPadding = fontSize * .6;
-    final bandHeight = painter.height + verticalPadding * 2;
-    final top =
-        (source.height - bandHeight).clamp(0.0, source.height.toDouble());
-    canvas.drawRect(
-      ui.Rect.fromLTWH(0, top, source.width.toDouble(), bandHeight),
-      ui.Paint()..color = Colors.black.withValues(alpha: .58),
-    );
-    painter.paint(
-      canvas,
-      ui.Offset(horizontalPadding, top + verticalPadding),
-    );
+    )..layout(maxWidth: source.width.toDouble());
+
+    // Repeat a light, diagonal watermark over the complete image. There is no
+    // opaque band behind it, so the original photo remains visible.
+    final tileWidth = (painter.width + fontSize * 2.5) *
+        _photoWatermarkSpacingScale;
+    final tileHeight = (painter.height + fontSize * 2.2) *
+        _photoWatermarkSpacingScale;
+    final margin = (source.width + source.height).toDouble();
+    final imageWidth = source.width.toDouble();
+    final imageHeight = source.height.toDouble();
+    canvas
+      ..save()
+      ..clipRect(ui.Rect.fromLTWH(0, 0, imageWidth, imageHeight));
+    var row = 0;
+    for (var y = -margin; y < imageHeight + margin; y += tileHeight) {
+      final offset = row.isEven ? 0.0 : tileWidth * .5;
+      for (var x = -margin; x < imageWidth + margin; x += tileWidth) {
+        canvas
+          ..save()
+          ..translate(x + offset, y)
+          ..rotate(-.24);
+        painter.paint(canvas, Offset.zero);
+        canvas.restore();
+      }
+      row++;
+    }
+    canvas.restore();
 
     final picture = recorder.endRecording();
     output = await picture.toImage(source.width, source.height);
@@ -1253,8 +1349,9 @@ class _PhotoCard extends StatelessWidget {
                 itemBuilder: (context, index) => _PhotoTile(
                   attachment: photos[index],
                   onDelete: editable
-                      ? () => controller.removeAttachment(
-                          order.id, photos[index].id)
+                      ? () {
+                          _confirmDeletePhoto(context, photos[index]);
+                        }
                       : null,
                 ),
               ),
@@ -1272,6 +1369,32 @@ class _PhotoCard extends StatelessWidget {
       category: category,
       fileSelectionService: fileSelectionService,
     );
+  }
+
+  Future<void> _confirmDeletePhoto(
+    BuildContext context,
+    Attachment attachment,
+  ) async {
+    final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('删除维修照片？'),
+            content: const Text('照片删除后无法恢复，确定要删除吗？'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('取消'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('确认删除'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+    if (!confirmed || !context.mounted) return;
+    await controller.removeAttachment(order.id, attachment.id);
   }
 }
 
@@ -1292,13 +1415,8 @@ class _PhotoTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bytes = _decodeDataUrl(attachment.path);
-    final preview = bytes == null
-        ? null
-        : () => _showPhotoPreview(
-              context,
-              bytes,
-              _photoWatermark(attachment),
-            );
+    final preview =
+        bytes == null ? null : () => _showPhotoPreview(context, bytes);
     return ClipRRect(
       borderRadius: BorderRadius.circular(9),
       child: Stack(
@@ -1342,18 +1460,9 @@ class _PhotoTile extends StatelessWidget {
   }
 }
 
-String _photoWatermark(Attachment attachment) {
-  final match = RegExp(
-          r'(\d{4}/\d{2}/\d{2}\s+维修前|\d{4}/\d{2}/\d{2}\s+维修中|\d{4}/\d{2}/\d{2}\s+维修后)$')
-      .firstMatch(attachment.caption.trim());
-  return match?.group(1) ??
-      '${DateFormat('yyyy/MM/dd').format(attachment.createdAt)} ${_categoryLabel(attachment.category)}';
-}
-
 Future<void> _showPhotoPreview(
   BuildContext context,
   Uint8List bytes,
-  String watermark,
 ) async {
   await showDialog<void>(
     context: context,
@@ -1378,23 +1487,6 @@ Future<void> _showPhotoPreview(
                 onPressed: () => Navigator.pop(context),
                 tooltip: '关闭大图',
                 icon: const Icon(Icons.close, color: Colors.white),
-              ),
-            ),
-            Positioned(
-              left: 16,
-              right: 16,
-              bottom: 14,
-              child: IgnorePointer(
-                child: Text(
-                  watermark,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    shadows: [Shadow(color: Colors.black87, blurRadius: 3)],
-                  ),
-                ),
               ),
             ),
           ],

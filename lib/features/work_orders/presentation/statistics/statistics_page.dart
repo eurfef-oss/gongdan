@@ -34,11 +34,12 @@ class _StatsPageState extends State<_StatsPage> {
 
     return Column(
       children: [
-        AppBackBar(title: '项目统计', onBack: widget.onBack),
+        AppBackBar(title: '统计复盘', onBack: widget.onBack),
         Expanded(
           child: _Shell(
             kicker: 'INSIGHTS / STATISTICS',
             title: '统计复盘',
+            showPageHeader: false,
             actions: [
               OutlinedButton.icon(
                 onPressed: _pickDateRange,

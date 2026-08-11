@@ -42,7 +42,14 @@
 
 ## 本次 Release 验证记录（2026-08-11）
 
-默认使用 `flutter build apk --release`，使用本机缓存的 Gradle 9.1.0、JDK 17 和 Android SDK 36 完成 Release APK 构建。当前版本为 `1.0.0+1`：
+默认使用 `flutter build apk --release`，使用本机缓存的 Gradle 9.1.0、JDK 17 和 Android SDK 36 完成 Release APK 构建。当前固定 SDK 路径为：
+
+- Flutter SDK：`I:\sdk\flutter`
+- Android SDK：`I:\sdk\android-sdk`
+- JDK 17：`I:\sdk\jdk17\jdk-17.0.19+10`
+- Gradle Wrapper：`android\gradle\wrapper`
+
+当前版本为 `1.0.0+1`：
 
 | 产物 | 大小 | SHA-256 |
 | --- | ---: | --- |

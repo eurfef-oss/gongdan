@@ -64,7 +64,6 @@ class _OrdersPageState extends State<_OrdersPage> {
                 customer: controller.customerById(order.customerId),
                 onTap: () => widget.onOpen(order),
                 onAdvance: () => controller.advanceStatus(order.id),
-                onCancel: () => controller.cancelOrder(order.id),
               ),
             ),
         ],
@@ -90,29 +89,38 @@ class _OrderFiltersState extends State<_OrderFilters> {
   @override
   Widget build(BuildContext context) {
     final controller = widget.controller;
+    final scheme = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 4, 0, 12),
-      child: Wrap(
-        spacing: 10,
-        runSpacing: 10,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          SizedBox(
-            width: 280,
-            child: TextField(
-              controller: widget.searchController,
-              onChanged: controller.setQuery,
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.search),
-                hintText: '搜索工单',
-                isDense: true,
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerHighest.withValues(alpha: .55),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 300),
+              child: SizedBox(
+                width: double.infinity,
+                child: TextField(
+                  controller: widget.searchController,
+                  onChanged: controller.setQuery,
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.search),
+                    hintText: '搜索编号、客户或设备',
+                    isDense: true,
+                  ),
+                ),
               ),
             ),
-          ),
-          DropdownButtonHideUnderline(
-            child: DropdownButton<WorkOrderStatus?>(
+            _OrderFilterDropdown<WorkOrderStatus?>(
               value: controller.statusFilter,
-              hint: const Text('全部状态'),
+              hint: '全部状态',
               items: [
                 const DropdownMenuItem<WorkOrderStatus?>(
                   value: null,
@@ -127,11 +135,9 @@ class _OrderFiltersState extends State<_OrderFilters> {
               ],
               onChanged: controller.setStatusFilter,
             ),
-          ),
-          DropdownButtonHideUnderline(
-            child: DropdownButton<PaymentStatus?>(
+            _OrderFilterDropdown<PaymentStatus?>(
               value: controller.paymentFilter,
-              hint: const Text('全部收款'),
+              hint: '全部收款',
               items: [
                 const DropdownMenuItem<PaymentStatus?>(
                   value: null,
@@ -146,89 +152,146 @@ class _OrderFiltersState extends State<_OrderFilters> {
               ],
               onChanged: controller.setPaymentFilter,
             ),
-          ),
-          if (controller.query.isNotEmpty ||
-              controller.statusFilter != null ||
-              controller.paymentFilter != null)
-            TextButton(
-              onPressed: () {
-                widget.searchController.clear();
-                controller.clearOrderFilters();
-              },
-              child: const Text('清除筛选'),
-            ),
-        ],
+            if (controller.query.isNotEmpty ||
+                controller.statusFilter != null ||
+                controller.paymentFilter != null)
+              TextButton.icon(
+                onPressed: () {
+                  widget.searchController.clear();
+                  controller.clearOrderFilters();
+                },
+                icon: const Icon(Icons.clear, size: 16),
+                label: const Text('清除筛选'),
+              ),
+          ],
+        ),
       ),
     );
   }
 }
 
+class _OrderFilterDropdown<T> extends StatelessWidget {
+  const _OrderFilterDropdown({
+    required this.value,
+    required this.hint,
+    required this.items,
+    required this.onChanged,
+  });
+
+  final T value;
+  final String hint;
+  final List<DropdownMenuItem<T>> items;
+  final ValueChanged<T?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        border: Border.all(color: scheme.outlineVariant),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<T>(
+          value: value,
+          hint: Text(hint),
+          items: items,
+          onChanged: onChanged,
+        ),
+      ),
+    );
+  }
+}
+
+/*
+ * The order card intentionally keeps its interaction surface simple: tapping
+ * anywhere opens the detail page, while the single next-step action stays
+ * visible next to the amount summary.
+ */
 class _OrderCard extends StatelessWidget {
   const _OrderCard({
     required this.order,
     required this.customer,
     required this.onTap,
     required this.onAdvance,
-    required this.onCancel,
   });
 
   final WorkOrder order;
   final Customer? customer;
   final VoidCallback onTap;
   final VoidCallback onAdvance;
-  final VoidCallback onCancel;
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final status = statusColor(context, order.status);
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(15),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _OrderTile(
-                order: order,
-                customer: customer,
-                onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              width: 4,
+              decoration: BoxDecoration(
+                color: status,
+                borderRadius: const BorderRadius.horizontal(
+                  left: Radius.circular(14),
+                ),
               ),
-              const Divider(height: 24),
-              _OrderCardDetail(order: order),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Text(
-                    '应收 ${moneyText(order.total)}',
-                    style: const TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    '未收 ${moneyText(order.outstanding)}',
-                    style: TextStyle(
-                      color: order.outstanding > 0
-                          ? statusColor(context, order.paymentStatus)
-                          : Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _OrderTile(
+                      order: order,
+                      customer: customer,
+                      onTap: onTap,
                     ),
-                  ),
-                  const Spacer(),
-                  if (order.status.next != null && !order.status.isTerminal)
-                    TextButton(
-                      onPressed: onAdvance,
-                      child: Text('推进至 ${order.status.next!.label}'),
+                    const SizedBox(height: 15),
+                    _OrderCardDetail(order: order),
+                    const SizedBox(height: 14),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 10,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(
+                          '应收 ${moneyText(order.total)}',
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        Text(
+                          '未收 ${moneyText(order.outstanding)}',
+                          style: TextStyle(
+                            color: order.outstanding > 0
+                                ? statusColor(context, order.paymentStatus)
+                                : scheme.onSurfaceVariant,
+                          ),
+                        ),
+                        if (order.status.next != null &&
+                            !order.status.isTerminal)
+                          OutlinedButton.icon(
+                            onPressed: onAdvance,
+                            icon: const Icon(
+                              Icons.arrow_forward_rounded,
+                              size: 16,
+                            ),
+                            label: Text('推进至 ${order.status.next!.label}'),
+                          ),
+                      ],
                     ),
-                  if (!order.status.isTerminal)
-                    IconButton(
-                      tooltip: '取消工单',
-                      onPressed: onCancel,
-                      icon: const Icon(Icons.block_outlined),
-                    ),
-                ],
+                  ],
+                ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -350,6 +413,7 @@ class _RecycleBinPage extends StatelessWidget {
           child: _Shell(
             kicker: '工作台 / ARCHIVE',
             title: '回收站',
+            showPageHeader: false,
             child: orders.isEmpty
                 ? const _Empty(title: '回收站为空')
                 : Column(

@@ -38,6 +38,7 @@ class _TemplatesPageState extends State<_TemplatesPage> {
           child: _Shell(
             kicker: '工作台 / CATALOG',
             title: '项目模板',
+            showPageHeader: false,
             actionsBelowTitle: true,
             actions: [
               OutlinedButton.icon(

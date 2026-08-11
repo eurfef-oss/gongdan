@@ -108,6 +108,8 @@
 - 在 CI 或固定构建环境中缓存 Flutter、Gradle 和包依赖；
 - 正式产物应记录版本号、构建号、SHA-256 和签名信息。
 
+本项目当前 Windows 构建环境的 SDK 路径如下：Flutter SDK 为 `I:\sdk\flutter`，Android SDK 为 `I:\sdk\android-sdk`，JDK 17 为 `I:\sdk\jdk17\jdk-17.0.19+10`，Gradle Wrapper 位于 `android\gradle\wrapper`。更换构建机器时，应同步更新 README、发布检查清单和本段记录。
+
 本项目默认构建 Release APK，命令为 `flutter build apk --release`，产物位于 `build/app/outputs/flutter-apk/app-release.apk`。Debug 仅用于明确的调试场景，需使用 `flutter build apk --debug` 显式构建。当前 Release 构建使用 Android 模板的 Debug 签名，仅适合内部安装测试；正式发布前必须配置独立签名。记录产物大小时应同时记录构建变体和签名状态。
 
 ## 3. 项目启动阶段

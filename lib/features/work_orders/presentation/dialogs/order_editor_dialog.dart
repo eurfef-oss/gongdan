@@ -444,12 +444,7 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
           onBack: () => Navigator.of(context).pop(),
         ),
         body: SafeArea(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1200),
-              child: SizedBox(width: double.infinity, child: editor),
-            ),
-          ),
+          child: SizedBox(width: double.infinity, child: editor),
         ),
       );
     }

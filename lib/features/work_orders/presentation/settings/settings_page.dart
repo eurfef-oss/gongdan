@@ -10,6 +10,8 @@ class _SettingsPage extends StatefulWidget {
     required this.onImportCsv,
     required this.onReset,
     required this.onNavigate,
+    required this.onSectionChanged,
+    super.key,
   });
 
   final WorkOrderController controller;
@@ -18,6 +20,7 @@ class _SettingsPage extends StatefulWidget {
   final VoidCallback onImportCsv;
   final VoidCallback onReset;
   final ValueChanged<int> onNavigate;
+  final ValueChanged<bool> onSectionChanged;
 
   @override
   State<_SettingsPage> createState() => _SettingsPageState();
@@ -30,6 +33,19 @@ class _SettingsPageState extends State<_SettingsPage> {
   late final TextEditingController _address;
   late final TextEditingController _note;
   _SettingsSection? _section;
+
+  void showMenu() => _closeSection();
+
+  void _openSection(_SettingsSection section) {
+    setState(() => _section = section);
+    widget.onSectionChanged(true);
+  }
+
+  void _closeSection() {
+    if (_section == null || !mounted) return;
+    setState(() => _section = null);
+    widget.onSectionChanged(false);
+  }
 
   @override
   void initState() {
@@ -57,26 +73,21 @@ class _SettingsPageState extends State<_SettingsPage> {
     final section = _section;
     if (section == null) return _buildMenu(context);
 
-    return PopScope<void>(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop && mounted) setState(() => _section = null);
-      },
-      child: Column(
-        children: [
-          AppBackBar(
-            title: '设置与备份',
-            onBack: () => setState(() => _section = null),
+    return Column(
+      children: [
+        AppBackBar(
+          title: _sectionTitle(section),
+          onBack: _closeSection,
+        ),
+        Expanded(
+          child: _Shell(
+            kicker: 'SYSTEM / SETTINGS',
+            title: _sectionTitle(section),
+            showPageHeader: false,
+            child: _sectionContent(context, section),
           ),
-          Expanded(
-            child: _Shell(
-              kicker: 'SYSTEM / SETTINGS',
-              title: _sectionTitle(section),
-              child: _sectionContent(context, section),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -102,26 +113,26 @@ class _SettingsPageState extends State<_SettingsPage> {
             title: '门店资料',
             subtitle: '门店名称、负责人、电话、地址和单据说明',
             value: shopText,
-            onTap: () => setState(() => _section = _SettingsSection.shop),
+            onTap: () => _openSection(_SettingsSection.shop),
           ),
           _SettingsMenuEntry(
             icon: Icons.palette_outlined,
             title: '显示设置',
             subtitle: '主题模式和概览卡片显示方式',
             value: modeText,
-            onTap: () => setState(() => _section = _SettingsSection.appearance),
+            onTap: () => _openSection(_SettingsSection.appearance),
           ),
           _SettingsMenuEntry(
             icon: Icons.import_export_outlined,
             title: '数据备份',
             subtitle: 'JSON 完整备份、CSV 导入和导出',
-            onTap: () => setState(() => _section = _SettingsSection.data),
+            onTap: () => _openSection(_SettingsSection.data),
           ),
           _SettingsMenuEntry(
             icon: Icons.auto_awesome_outlined,
             title: '演示数据',
             subtitle: '载入一组完整示例，快速查看工作流程',
-            onTap: () => setState(() => _section = _SettingsSection.demo),
+            onTap: () => _openSection(_SettingsSection.demo),
           ),
           const _SettingsGroupLabel(
             title: '工作台工具',
@@ -170,36 +181,28 @@ class _SettingsPageState extends State<_SettingsPage> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _Section(
-              title: '门店与负责人',
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _SettingField(label: '门店名称', controller: _shopName),
-                  _SettingField(label: '负责人', controller: _ownerName),
-                  _SettingField(label: '联系电话', controller: _phone),
-                  _SettingField(label: '门店地址', controller: _address),
-                  _SettingField(
-                    label: '单据默认说明',
-                    controller: _note,
-                    maxLines: 3,
+            _SettingField(label: '门店名称', controller: _shopName),
+            _SettingField(label: '负责人', controller: _ownerName),
+            _SettingField(label: '联系电话', controller: _phone),
+            _SettingField(label: '门店地址', controller: _address),
+            _SettingField(
+              label: '单据默认说明',
+              controller: _note,
+              maxLines: 3,
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: FilledButton(
+                onPressed: () => widget.controller.updateSettings(
+                  settings.copyWith(
+                    shopName: _shopName.text.trim(),
+                    ownerName: _ownerName.text.trim(),
+                    phone: _phone.text.trim(),
+                    address: _address.text.trim(),
+                    defaultNote: _note.text.trim(),
                   ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: FilledButton(
-                      onPressed: () => widget.controller.updateSettings(
-                        settings.copyWith(
-                          shopName: _shopName.text.trim(),
-                          ownerName: _ownerName.text.trim(),
-                          phone: _phone.text.trim(),
-                          address: _address.text.trim(),
-                          defaultNote: _note.text.trim(),
-                        ),
-                      ),
-                      child: const Text('保存门店资料'),
-                    ),
-                  ),
-                ],
+                ),
+                child: const Text('保存门店资料'),
               ),
             ),
           ],
@@ -208,31 +211,23 @@ class _SettingsPageState extends State<_SettingsPage> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _Section(
-              title: '显示设置',
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  SwitchListTile.adaptive(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('深色模式'),
-                    subtitle: const Text('在低光环境下使用更舒适'),
-                    value: settings.darkMode,
-                    onChanged: (value) => widget.controller.updateSettings(
-                      settings.copyWith(darkMode: value),
-                    ),
-                  ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('概览卡片'),
-                    subtitle: Text(
-                      '${widget.controller.dashboardCardOrder.length} 张卡片可用',
-                    ),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => _showDashboardCards(context),
-                  ),
-                ],
+            SwitchListTile.adaptive(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('深色模式'),
+              subtitle: const Text('在低光环境下使用更舒适'),
+              value: settings.darkMode,
+              onChanged: (value) => widget.controller.updateSettings(
+                settings.copyWith(darkMode: value),
               ),
+            ),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('概览卡片'),
+              subtitle: Text(
+                '${widget.controller.dashboardCardOrder.length} 张卡片可用',
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => _showDashboardCards(context),
             ),
           ],
         );
@@ -240,40 +235,32 @@ class _SettingsPageState extends State<_SettingsPage> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _Section(
-              title: '导入与导出',
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _BackupAction(
-                    icon: Icons.ios_share_outlined,
-                    title: '导出完整 JSON 备份',
-                    description: '包含客户、工单、模板、付款与设置。',
-                    onTap: () => widget.onExport('json'),
-                  ),
-                  const SizedBox(height: 8),
-                  _BackupAction(
-                    icon: Icons.restore_outlined,
-                    title: '恢复 JSON 备份',
-                    description: '恢复后会覆盖当前设备上的本地数据。',
-                    onTap: widget.onImport,
-                  ),
-                  const SizedBox(height: 8),
-                  _BackupAction(
-                    icon: Icons.table_chart_outlined,
-                    title: '导出工单 CSV',
-                    description: '便于在表格软件中查看和整理工单。',
-                    onTap: () => widget.onExport('csv'),
-                  ),
-                  const SizedBox(height: 8),
-                  _BackupAction(
-                    icon: Icons.file_upload_outlined,
-                    title: '导入工单 CSV',
-                    description: '按工单编号更新或追加客户与工单。',
-                    onTap: widget.onImportCsv,
-                  ),
-                ],
-              ),
+            _BackupAction(
+              icon: Icons.ios_share_outlined,
+              title: '导出完整 JSON 备份',
+              description: '包含客户、工单、模板、付款与设置。',
+              onTap: () => widget.onExport('json'),
+            ),
+            const SizedBox(height: 8),
+            _BackupAction(
+              icon: Icons.restore_outlined,
+              title: '恢复 JSON 备份',
+              description: '恢复后会覆盖当前设备上的本地数据。',
+              onTap: widget.onImport,
+            ),
+            const SizedBox(height: 8),
+            _BackupAction(
+              icon: Icons.table_chart_outlined,
+              title: '导出工单 CSV',
+              description: '便于在表格软件中查看和整理工单。',
+              onTap: () => widget.onExport('csv'),
+            ),
+            const SizedBox(height: 8),
+            _BackupAction(
+              icon: Icons.file_upload_outlined,
+              title: '导入工单 CSV',
+              description: '按工单编号更新或追加客户与工单。',
+              onTap: widget.onImportCsv,
             ),
           ],
         );
@@ -281,16 +268,19 @@ class _SettingsPageState extends State<_SettingsPage> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _Section(
-              title: '载入演示数据',
-              subtitle: '这会替换当前设备上的本地数据。建议先完成 JSON 备份。',
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: OutlinedButton.icon(
-                  onPressed: widget.onReset,
-                  icon: const Icon(Icons.auto_awesome_outlined),
-                  label: const Text('载入演示数据'),
-                ),
+            Text(
+              '这会替换当前设备上的本地数据。建议先完成 JSON 备份。',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: OutlinedButton.icon(
+                onPressed: widget.onReset,
+                icon: const Icon(Icons.auto_awesome_outlined),
+                label: const Text('载入演示数据'),
               ),
             ),
           ],

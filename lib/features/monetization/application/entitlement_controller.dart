@@ -35,7 +35,7 @@ class EntitlementController extends ChangeNotifier {
   StreamSubscription<PurchaseUpdate>? _purchaseSubscription;
   Timer? _purchaseLaunchTimer;
 
-  static const _purchaseLaunchTimeout = Duration(seconds: 90);
+  static const _purchaseLaunchTimeout = Duration(seconds: 5);
 
   Entitlement _entitlement = Entitlement.free();
   StoreProduct? _product;
@@ -148,6 +148,7 @@ class EntitlementController extends ChangeNotifier {
           ? _entitlement
           : Entitlement.free(state: EntitlementState.pending);
       notifyListeners();
+      _startPurchaseLaunchTimeout();
       await _billingGateway.restorePurchases();
     } catch (error) {
       _setError(error.toString());
@@ -167,7 +168,6 @@ class EntitlementController extends ChangeNotifier {
 
     switch (update.status) {
       case PurchaseStatus.pending:
-        _clearPurchaseLaunchTimeout();
         _entitlement = _entitlement.isPro
             ? _entitlement
             : Entitlement.free(state: EntitlementState.pending);
@@ -185,7 +185,6 @@ class EntitlementController extends ChangeNotifier {
         return;
       case PurchaseStatus.purchased:
       case PurchaseStatus.restored:
-        _clearPurchaseLaunchTimeout();
         _entitlement = _entitlement.isPro
             ? _entitlement
             : Entitlement.free(state: EntitlementState.pending);
@@ -198,7 +197,10 @@ class EntitlementController extends ChangeNotifier {
   void _startPurchaseLaunchTimeout() {
     _purchaseLaunchTimer?.cancel();
     _purchaseLaunchTimer = Timer(_purchaseLaunchTimeout, () {
-      if (_entitlement.state != EntitlementState.purchasing) return;
+      if (_entitlement.state != EntitlementState.purchasing &&
+          _entitlement.state != EntitlementState.pending) {
+        return;
+      }
       _failPurchase('购买窗口未返回结果，请稍后重试');
     });
   }
@@ -218,6 +220,7 @@ class EntitlementController extends ChangeNotifier {
       final verified = await _verifier.verify(update);
       await _repository.save(verified);
       _entitlement = verified;
+      _clearPurchaseLaunchTimeout();
       _clearError();
       notifyListeners();
       await _billingGateway.complete(update);

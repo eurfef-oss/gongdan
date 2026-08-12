@@ -155,11 +155,12 @@ npm run generate-keys
 - [x] 将模板、统计、单据导出、签名、照片和工单数量限制接入权限判断；
 - [x] 完成 Node 服务端 Google Play Developer API 购买凭证验证和购买确认；
 - [ ] 完成 Node 服务端真实 Apple 凭证验证；
-- [ ] 配置商店商品、生产 HTTPS、Webhook 和正式签名密钥；
+- [x] 配置 Google Play 商品、生产 HTTPS 和 Android 正式上传签名；
+- [ ] 完成 Apple 商品、Webhook 和 Apple 正式签名配置；
 - [x] 补充 Google Play 购买状态、购买确认、未配置凭证和离线缓存测试；
 - [ ] 补充真实商店购买、恢复、退款和撤销测试。
 
-当前代码已完成开发测试链路：Flutter 静态分析和 32 项 Flutter 测试已通过，Node 授权服务的 7 项测试（含 Google API 模拟测试）已通过；真实商店购买、退款/撤销回调和生产环境服务账号配置仍需在商店测试环境完成验证。
+当前代码已完成开发测试链路，并已构建正式 Android AAB（版本 `1.0.1+3`）：`build/app/outputs/bundle/release/app-release.aab`，SHA-256 为 `92DADCBCBB797BADBAA5B134A7A0BD640A723334DDCBC8080FCE3C2781157C76`。服务端生产健康检查正常，真实商店购买、退款/撤销回调和内部测试轨道验证仍需完成。
 
 ## 8. 上线前必须完成
 

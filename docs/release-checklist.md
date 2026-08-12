@@ -33,30 +33,35 @@
 
 ## 构建与发布
 
-- [ ] 应用标识和签名正确
-- [ ] 版本号和构建号已提高
-- [x] 默认 Release APK 构建成功（当前使用 Debug 签名，仅供内部测试）
+- [x] 应用标识和 Release 上传签名正确
+- [x] 版本号和构建号已提高（当前为 `1.0.1+3`）
+- [x] Release AAB 构建成功并通过签名校验
 - [x] Debug APK 构建成功（仅作为显式调试变体）
-- [ ] Release AAB 构建成功（本次按要求不构建）
 - [ ] 真机全新安装和升级通过
 - [x] 已记录产物大小和 SHA-256
 - [x] 已更新版本说明和相关文档
 
-## 本次 Release 验证记录（2026-08-11）
+## 本次 Release 验证记录（2026-08-12）
 
-默认使用 `flutter build apk --release`，使用本机缓存的 Gradle 9.1.0、JDK 17 和 Android SDK 36 完成 Release APK 构建。当前固定 SDK 路径为：
+使用 Flutter、Gradle、JDK 17 和 Android SDK 完成正式 AAB 构建。构建命令包含生产授权服务地址和对应的 Ed25519 公钥，未启用 `ENABLE_LOCAL_TEST_PURCHASE`。当前固定 SDK 路径为：
 
 - Flutter SDK：`I:\sdk\flutter`
 - Android SDK：`I:\sdk\android-sdk`
 - JDK 17：`I:\sdk\jdk17\jdk-17.0.19+10`
 - Gradle Wrapper：`android\gradle\wrapper`
 
-当前版本为 `1.0.0+1`：
+当前版本为 `1.0.1+3`：
 
 | 产物 | 大小 | SHA-256 |
 | --- | ---: | --- |
-| `build/app/outputs/flutter-apk/app-release.apk` | 57,903,867 bytes（55.22 MB） | `7F5BF093CF2EA94570893491C1E2CA353C05C3F8AF582DCB644AA397507B2684` |
+| `build/app/outputs/bundle/release/app-release.aab` | 59,605,730 bytes（56.8 MB） | `92DADCBCBB797BADBAA5B134A7A0BD640A723334DDCBC8080FCE3C2781157C76` |
 
-Release 变体当前使用 Flutter 模板的 debug signing config，正式商店发布前仍需替换为独立签名并完成真机安装、升级和分享验证。
+校验结果：
 
-说明：当前 Release APK 为 55.22 MB，使用 Debug 签名，仅供内部安装测试；正式商店发布前需配置正式签名，并完成真机安装、升级和 AAB 验证。
+- 包名：`com.cosdk.repairdesk`；
+- 签名证书：`CN=RepairDesk, OU=cosdk, O=cosdk, C=CN`；
+- 签名校验：`jarsigner -verify` 通过；
+- 服务端：`https://play.cosdk.com/healthz` 返回 HTTP 200，`testPurchasesEnabled=false`，商品 ID 为 `repair_pro_lifetime`；
+- 构建参数：`ENTITLEMENT_SERVER_URL=https://play.cosdk.com`，使用已登记的公钥，未启用本地测试购买。
+
+仍需在 Google Play 内部测试轨道完成 AAB 上传、测试账号安装、真实购买、恢复购买、离线使用和重新安装验证。

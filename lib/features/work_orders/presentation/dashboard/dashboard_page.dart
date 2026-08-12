@@ -47,6 +47,7 @@ class _DashboardPage extends StatelessWidget {
     return _Shell(
       kicker: '工作台 / OVERVIEW',
       title: '今天，先把现场安排好。',
+      showPageTitle: false,
       headerActions: [
         _ProPurchaseButton(
           entitlementController: entitlementController,

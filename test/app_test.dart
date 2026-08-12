@@ -29,7 +29,6 @@ void main() {
     await tester.tap(find.text('开始使用'));
     await tester.pumpAndSettle();
 
-    expect(find.text('今天，先把现场安排好。'), findsOneWidget);
     expect(find.byType(ReorderableListView), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('最近工单'),
@@ -237,12 +236,9 @@ void main() {
     await tester.pumpWidget(BaseApp(controller: controller));
     await tester.pumpAndSettle();
 
-    expect(find.text('今天，先把现场安排好。'), findsOneWidget);
-
     await tester.binding.handlePopRoute();
     await tester.pump();
 
-    expect(find.text('今天，先把现场安排好。'), findsOneWidget);
     expect(find.text('再按一次返回键退出应用'), findsOneWidget);
 
     await tester.binding.handlePopRoute();
@@ -250,6 +246,5 @@ void main() {
 
     // The test binding does not remove the root route after SystemNavigator.pop;
     // on a phone this second back event returns to the system desktop.
-    expect(find.text('今天，先把现场安排好。'), findsOneWidget);
   });
 }

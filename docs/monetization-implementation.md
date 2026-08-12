@@ -161,7 +161,7 @@ npm run generate-keys
 - [x] 补充 Google Play 购买状态、购买确认、未配置凭证和离线缓存测试；
 - [ ] 补充真实商店购买、恢复、退款和撤销测试。
 
-当前代码已完成开发测试链路，并已构建正式 Android AAB（版本 `1.0.1+5`）：`build/app/outputs/bundle/release/app-release.aab`，SHA-256 为 `98CD727B3574DD5A7318D44AC6AFB9CBBEDEEDCAA173EDF554C4AC5B3AECD1AA`。已修复 Android 商品查询的 `GooglePlayProductDetails` 泛型运行时错误，以及取消支付后按钮持续显示“正在处理”的问题；服务端生产健康检查正常，真实商店购买、退款/撤销回调和内部测试轨道验证仍需完成。
+当前代码已完成开发测试链路。Release AAB 的版本号、版本代码、产物信息和 Google Play 版本代码占用记录统一见[发布检查清单](release-checklist.md)，本文件不重复维护具体构建记录。已修复 Android 商品查询的 `GooglePlayProductDetails` 泛型运行时错误，以及取消支付后按钮持续显示“正在处理”的问题；服务端生产健康检查正常，真实商店购买、退款/撤销回调和内部测试轨道验证仍需完成。
 
 ## 8. 上线前必须完成
 

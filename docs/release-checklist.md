@@ -1,5 +1,25 @@
 # 发布检查清单
 
+## 版本与构建登记（唯一记录）
+
+- `pubspec.yaml`：`1.0.1+7`；
+- `versionName`：`1.0.1`；
+- `versionCode`：`7`；
+- 已确认 Google Play 不可复用的版本代码：`5`、`6`；
+- 下一次用于商店上传的版本代码必须高于 Google Play Console 已使用的最大值；若本次 `7` 已上传，下一次使用 `8` 或更高版本代码。
+
+| 产物 | 构建日期 | 大小 | SHA-256 |
+| --- | --- | ---: | --- |
+| `build/app/outputs/bundle/release/app-release.aab` | 2026-08-12 | 59,649,453 bytes（56.89 MB） | `995877E9E98EAB40CFD7DF1C99ED2B17BCFBEBA41FF6F832ACA702852C1D3A73` |
+
+版本代码记录：
+
+| versionName | versionCode | 状态 | 备注 |
+| --- | ---: | --- | --- |
+| `1.0.1` | `5` | 已占用 | Google Play 提示版本代码已使用 |
+| `1.0.1` | `6` | 已占用 | Google Play 提示版本代码已使用 |
+| `1.0.1` | `7` | 当前记录 | Release AAB 已构建 |
+
 ## 代码与测试
 
 - [x] `dart format lib test` 已执行
@@ -34,7 +54,7 @@
 ## 构建与发布
 
 - [x] 应用标识和 Release 上传签名正确
-- [x] 版本号和构建号已提高（当前为 `1.0.1+5`）
+- [x] 打包前已核对商店已使用的最大版本代码（具体版本见本页“版本与构建登记”）
 - [x] Release AAB 构建成功并通过签名校验
 - [x] Debug APK 构建成功（仅作为显式调试变体）
 - [ ] 真机全新安装和升级通过
@@ -49,12 +69,6 @@
 - Android SDK：`I:\sdk\android-sdk`
 - JDK 17：`I:\sdk\jdk17\jdk-17.0.19+10`
 - Gradle Wrapper：`android\gradle\wrapper`
-
-当前版本为 `1.0.1+5`：
-
-| 产物 | 大小 | SHA-256 |
-| --- | ---: | --- |
-| `build/app/outputs/bundle/release/app-release.aab` | 59,608,515 bytes（56.8 MB） | `98CD727B3574DD5A7318D44AC6AFB9CBBEDEEDCAA173EDF554C4AC5B3AECD1AA` |
 
 校验结果：
 

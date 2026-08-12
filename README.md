@@ -111,9 +111,24 @@ $env:Path="$env:JAVA_HOME\bin;$env:Path"
 & 'I:\sdk\flutter\bin\flutter.bat' build apk --release
 ```
 
-产物位于 `build/app/outputs/flutter-apk/app-release.apk`。当前 Release 构建仍使用 Android 模板的 Debug 签名，适合内部安装测试；正式上架前必须配置独立的正式签名。调试包使用 `flutter build apk --debug` 显式构建。
+产物位于 `build/app/outputs/flutter-apk/app-release.apk`。当前 Release 构建仍使用 Android 模板的 Debug 签名，适合内部安装测试；正式上架前必须配置独立的正式签名。调试包使用 `flutter build apk --debug` 显式构建。具体版本、构建号、产物大小和 SHA-256 统一记录在[发布检查清单](docs/release-checklist.md)。
 
-最近一次内部 Release 构建（2026-08-11，版本 `1.0.0+1`）大小为 55.22 MB；产物校验值见[发布检查清单](docs/release-checklist.md)。
+## AAB 构建（Google Play）
+
+```powershell
+& 'I:\sdk\flutter\bin\flutter.bat' build appbundle --release
+```
+
+产物位于 `build/app/outputs/bundle/release/app-release.aab`。具体版本、构建号、产物大小和 SHA-256 统一记录在[发布检查清单](docs/release-checklist.md)，本文件不重复维护具体构建记录。
+
+## 版本号与构建号
+
+每次 APK 或 AAB 打包前必须执行以下流程：
+
+1. 查看 Google Play Console 已使用的最大 `versionCode`；
+2. 修改 `pubspec.yaml` 的 `version`，使 `+` 后的版本代码严格大于该最大值和[发布检查清单](docs/release-checklist.md)中登记的版本代码；
+3. 完成打包后只更新[发布检查清单](docs/release-checklist.md)中的版本与构建记录；
+4. 如果商店提示版本代码已使用，立即递增版本代码并更新文档后再打包，不能重复使用旧代码。
 
 ## 工程约定
 
@@ -131,7 +146,7 @@ $env:Path="$env:JAVA_HOME\bin;$env:Path"
 
 - Android application ID 当前为 `com.cosdk.repairdesk`；正式发布前配置独立签名；
 - 不提交 keystore、密钥或密码；
-- 提高版本号和构建号；
+- 按“版本号与构建号”规则确认 `versionCode` 严格递增；
 - 完成格式化、分析、测试和正式构建；
 - 默认构建命令：`flutter build apk --release`；调试构建需显式使用 `flutter build apk --debug`；
 - 验证命令：`flutter analyze`、`flutter test --no-pub`；

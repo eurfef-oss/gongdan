@@ -8,6 +8,7 @@ class _Shell extends StatelessWidget {
     this.actions = const [],
     this.headerActions = const [],
     this.actionsBelowTitle = false,
+    this.showPageTitle = true,
     this.showPageHeader = true,
   });
 
@@ -17,6 +18,7 @@ class _Shell extends StatelessWidget {
   final List<Widget> actions;
   final List<Widget> headerActions;
   final bool actionsBelowTitle;
+  final bool showPageTitle;
   final bool showPageHeader;
 
   @override
@@ -47,6 +49,7 @@ class _Shell extends StatelessWidget {
                           actions: actions,
                           headerActions: headerActions,
                           actionsBelowTitle: actionsBelowTitle,
+                          showPageTitle: showPageTitle,
                         ),
                       )
                     else if (actions.isNotEmpty)
@@ -93,12 +96,19 @@ class _ProPurchaseButton extends StatelessWidget {
           if (entitlementController.isPro) return const SizedBox.shrink();
           return FilledButton.icon(
             onPressed: onPressed,
-            icon: const Icon(Icons.workspace_premium_outlined, size: 18),
+            icon: const Icon(Icons.workspace_premium_outlined, size: 16),
             label: const Text('购买专业版'),
             style: FilledButton.styleFrom(
               minimumSize: Size.zero,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              textStyle: const TextStyle(fontWeight: FontWeight.w700),
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+              backgroundColor: const Color(0xFFFFB020),
+              foregroundColor: const Color(0xFF4A2A00),
+              elevation: 2,
+              shadowColor: const Color(0x664A2A00),
+              textStyle: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           );
         },

@@ -169,8 +169,7 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
       _pageIndex == 3 || _pageIndex == 4 || _pageIndex == 6;
 
   void _selectPage(int index) {
-    if (index == 4 &&
-        !entitlementController.canUse(ProFeature.statistics)) {
+    if (index == 4 && !entitlementController.canUse(ProFeature.statistics)) {
       unawaited(_showProPrompt(ProFeature.statistics));
       return;
     }
@@ -230,8 +229,7 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
           entitlementController: entitlementController,
           onCreate: _createCustomer,
           onOpen: _openCustomer,
-          onPurchasePro: () =>
-              _showProPrompt(ProFeature.unlimitedCustomers),
+          onPurchasePro: () => _showProPrompt(ProFeature.unlimitedCustomers),
         );
       case 3:
         return _TemplatesPage(
@@ -331,8 +329,8 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
           initial: order,
           asPage: true,
           canCreateCustomer: () => entitlementController.canCreateCustomer(
-                controller.data.customers.length,
-              ),
+            controller.data.customers.length,
+          ),
           onPremiumRequired: () =>
               _showProPrompt(ProFeature.unlimitedCustomers),
         ),
@@ -373,8 +371,8 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
           initial: current,
           asPage: true,
           canCreateCustomer: () => entitlementController.canCreateCustomer(
-                controller.data.customers.length,
-              ),
+            controller.data.customers.length,
+          ),
           onPremiumRequired: () =>
               _showProPrompt(ProFeature.unlimitedCustomers),
         ),
@@ -498,6 +496,10 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
     await showDialog<void>(
       context: context,
       builder: (dialogContext) => Dialog(
+        insetPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 24,
+        ),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 560, maxHeight: 720),
           child: Padding(
@@ -1064,6 +1066,7 @@ class _PageHeader extends StatelessWidget {
     this.actions = const [],
     this.headerActions = const [],
     this.actionsBelowTitle = false,
+    this.showPageTitle = true,
   });
 
   final String kicker;
@@ -1071,6 +1074,7 @@ class _PageHeader extends StatelessWidget {
   final List<Widget> actions;
   final List<Widget> headerActions;
   final bool actionsBelowTitle;
+  final bool showPageTitle;
 
   @override
   Widget build(BuildContext context) {
@@ -1079,40 +1083,46 @@ class _PageHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      kicker.toUpperCase(),
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontSize: 11,
-                        letterSpacing: 1.2,
-                        fontWeight: FontWeight.w800,
-                      ),
+          if (showPageTitle ||
+              headerActions.isNotEmpty ||
+              (!actionsBelowTitle && actions.isNotEmpty))
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (showPageTitle)
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          kicker.toUpperCase(),
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontSize: 11,
+                            letterSpacing: 1.2,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 7),
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 27,
+                            fontWeight: FontWeight.w800,
+                            height: 1.18,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 7),
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 27,
-                        fontWeight: FontWeight.w800,
-                        height: 1.18,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (headerActions.isNotEmpty) ...headerActions,
-              if (!actionsBelowTitle) ...actions,
-            ],
-          ),
+                  )
+                else
+                  const Spacer(),
+                if (headerActions.isNotEmpty) ...headerActions,
+                if (!actionsBelowTitle) ...actions,
+              ],
+            ),
           if (actionsBelowTitle && actions.isNotEmpty) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: showPageTitle ? 12 : 8),
             Wrap(
               spacing: 8,
               runSpacing: 8,

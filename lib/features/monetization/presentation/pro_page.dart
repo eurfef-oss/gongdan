@@ -55,55 +55,65 @@ class ProPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Card(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .primaryContainer
-                      .withValues(alpha: .55),
-                  child: Padding(
-                    padding: EdgeInsets.all(compact ? 16 : 20),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        CircleAvatar(
-                          radius: 24,
-                          backgroundColor:
-                              Theme.of(context).colorScheme.primary,
-                          foregroundColor:
-                              Theme.of(context).colorScheme.onPrimary,
-                          child: Icon(
-                            isPro
-                                ? Icons.verified_outlined
-                                : Icons.auto_awesome,
+                  clipBehavior: Clip.antiAlias,
+                  child: DecoratedBox(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color(0xFF155EEF),
+                          Color(0xFF4338CA),
+                          Color(0xFF7C3AED),
+                        ],
+                        stops: [0, .52, 1],
+                      ),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(compact ? 16 : 20),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          CircleAvatar(
+                            radius: 24,
+                            backgroundColor: Colors.white.withValues(alpha: .2),
+                            foregroundColor: Colors.white,
+                            child: Icon(
+                              isPro
+                                  ? Icons.verified_outlined
+                                  : Icons.auto_awesome,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                isPro ? '专业版已激活' : '升级专业版',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleLarge
-                                    ?.copyWith(fontWeight: FontWeight.w800),
-                              ),
-                              const SizedBox(height: 5),
-                              Text(
-                                isPro
-                                    ? '本设备可以在没有网络时继续使用专业功能。'
-                                    : '一次购买，解锁现场维修工作流中的完整工具。',
-                                style: TextStyle(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant,
-                                  height: 1.45,
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  isPro ? '专业版已激活' : '升级专业版',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleLarge
+                                      ?.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w800,
+                                      ),
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 5),
+                                Text(
+                                  isPro
+                                      ? '本设备可以在没有网络时继续使用专业功能。'
+                                      : '一次购买，解锁现场维修工作流中的完整工具。',
+                                  style: const TextStyle(
+                                    color: Color(0xE6FFFFFF),
+                                    height: 1.45,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -211,7 +221,10 @@ class _ProFeatureRow extends StatelessWidget {
           title:
               Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
           subtitle: Text(description),
-          trailing: const Icon(Icons.check_circle_outline),
+          trailing: const Icon(
+            Icons.check_circle_outline,
+            color: Colors.green,
+          ),
         ),
       );
 }

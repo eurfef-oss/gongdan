@@ -464,52 +464,59 @@ class _SettingsMenuEntry extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
-      color: highlighted
-          ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: .5)
-          : null,
-      shape: highlighted
-          ? RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: .35),
+      clipBehavior: highlighted ? Clip.antiAlias : Clip.none,
+      child: highlighted
+          ? DecoratedBox(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF155EEF),
+                    Color(0xFF4338CA),
+                    Color(0xFF7C3AED),
+                  ],
+                  stops: [0, .52, 1],
+                ),
               ),
+              child: _buildTile(context, textOnHighlight: true),
             )
-          : null,
-      child: ListTile(
-        onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-        leading: CircleAvatar(
-          backgroundColor:
-              Theme.of(context)
-                  .colorScheme
-                  .primary
-                  .withValues(alpha: highlighted ? .2 : .1),
-          foregroundColor: Theme.of(context).colorScheme.primary,
-          child: Icon(icon, size: 20),
+          : _buildTile(context),
+    );
+  }
+
+  Widget _buildTile(BuildContext context, {bool textOnHighlight = false}) {
+    return ListTile(
+      onTap: onTap,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+      leading: CircleAvatar(
+        radius: textOnHighlight ? 24 : null,
+        backgroundColor: textOnHighlight
+            ? Colors.white.withValues(alpha: .2)
+            : Theme.of(context).colorScheme.primary.withValues(alpha: .1),
+        foregroundColor: textOnHighlight
+            ? Colors.white
+            : Theme.of(context).colorScheme.primary,
+        child: Icon(icon, size: textOnHighlight ? 20 : 20),
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontWeight: FontWeight.w800,
+          color: textOnHighlight ? Colors.white : null,
         ),
-        title: Text(
-          title,
-          style: TextStyle(
-            fontWeight: FontWeight.w800,
-            color: highlighted
-                ? Theme.of(context).colorScheme.primary
-                : null,
-          ),
-        ),
-        subtitle: Text(
-          value == null ? subtitle : '$subtitle\n$value',
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: highlighted
-              ? TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer)
-              : null,
-        ),
-        trailing: Icon(
-          Icons.chevron_right,
-          color: highlighted
-              ? Theme.of(context).colorScheme.primary
-              : null,
-        ),
+      ),
+      subtitle: Text(
+        value == null ? subtitle : '$subtitle\n$value',
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: textOnHighlight
+            ? const TextStyle(color: Color(0xE6FFFFFF), height: 1.45)
+            : null,
+      ),
+      trailing: Icon(
+        Icons.chevron_right,
+        color: textOnHighlight ? Color(0xE6FFFFFF) : null,
       ),
     );
   }

@@ -33,6 +33,9 @@ class EntitlementController extends ChangeNotifier {
   final FeatureAccessService _accessService;
   final bool _testPurchaseMode;
   StreamSubscription<PurchaseUpdate>? _purchaseSubscription;
+  Timer? _purchaseLaunchTimer;
+
+  static const _purchaseLaunchTimeout = Duration(seconds: 90);
 
   Entitlement _entitlement = Entitlement.free();
   StoreProduct? _product;
@@ -52,6 +55,9 @@ class EntitlementController extends ChangeNotifier {
 
   bool canCreateOrder(int currentOrderCount) =>
       _accessService.canCreateOrder(_entitlement, currentOrderCount);
+
+  bool canCreateCustomer(int currentCustomerCount) =>
+      _accessService.canCreateCustomer(_entitlement, currentCustomerCount);
 
   Future<void> initialize() async {
     if (_initialized) return;
@@ -114,10 +120,15 @@ class EntitlementController extends ChangeNotifier {
       }
       _entitlement = Entitlement.free(state: EntitlementState.purchasing);
       notifyListeners();
+      _startPurchaseLaunchTimeout();
       final launched = await _billingGateway.buyNonConsumable();
-      if (!launched) _setError('未能打开应用内购买页面');
+      if (!launched) {
+        _clearPurchaseLaunchTimeout();
+        _failPurchase('未能打开应用内购买页面');
+      }
     } catch (error) {
-      _setError(error.toString());
+      _clearPurchaseLaunchTimeout();
+      _failPurchase(error.toString());
     }
   }
 
@@ -144,24 +155,37 @@ class EntitlementController extends ChangeNotifier {
   }
 
   Future<void> _handlePurchaseUpdate(PurchaseUpdate update) async {
-    if (update.productId != proProductId) return;
+    // Google Play can emit a synthetic canceled/error PurchaseDetails with an
+    // empty product ID when the user closes the payment sheet. It is still the
+    // active one-product purchase flow and must clear the loading state.
+    final emptyProductCancellation = update.productId.isEmpty &&
+        (update.status == PurchaseStatus.canceled ||
+            update.status == PurchaseStatus.error) &&
+        (_entitlement.state == EntitlementState.purchasing ||
+            _entitlement.state == EntitlementState.pending);
+    if (update.productId != proProductId && !emptyProductCancellation) return;
+
     switch (update.status) {
       case PurchaseStatus.pending:
+        _clearPurchaseLaunchTimeout();
         _entitlement = _entitlement.isPro
             ? _entitlement
             : Entitlement.free(state: EntitlementState.pending);
         notifyListeners();
         return;
       case PurchaseStatus.canceled:
+        _clearPurchaseLaunchTimeout();
         if (!_entitlement.isPro) _entitlement = Entitlement.free();
         _setError('购买已取消');
         return;
       case PurchaseStatus.error:
+        _clearPurchaseLaunchTimeout();
         if (!_entitlement.isPro) _entitlement = Entitlement.free();
         _setError(update.errorMessage ?? '购买失败，请稍后重试');
         return;
       case PurchaseStatus.purchased:
       case PurchaseStatus.restored:
+        _clearPurchaseLaunchTimeout();
         _entitlement = _entitlement.isPro
             ? _entitlement
             : Entitlement.free(state: EntitlementState.pending);
@@ -169,6 +193,24 @@ class EntitlementController extends ChangeNotifier {
         await _verifyAndComplete(update);
         return;
     }
+  }
+
+  void _startPurchaseLaunchTimeout() {
+    _purchaseLaunchTimer?.cancel();
+    _purchaseLaunchTimer = Timer(_purchaseLaunchTimeout, () {
+      if (_entitlement.state != EntitlementState.purchasing) return;
+      _failPurchase('购买窗口未返回结果，请稍后重试');
+    });
+  }
+
+  void _clearPurchaseLaunchTimeout() {
+    _purchaseLaunchTimer?.cancel();
+    _purchaseLaunchTimer = null;
+  }
+
+  void _failPurchase(String message) {
+    if (!_entitlement.isPro) _entitlement = Entitlement.free();
+    _setError(message);
   }
 
   Future<void> _verifyAndComplete(PurchaseUpdate update) async {
@@ -220,6 +262,7 @@ class EntitlementController extends ChangeNotifier {
 
   @override
   void dispose() {
+    _clearPurchaseLaunchTimeout();
     unawaited(_purchaseSubscription?.cancel());
     _billingGateway.dispose();
     super.dispose();

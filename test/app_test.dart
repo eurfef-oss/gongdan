@@ -153,10 +153,6 @@ void main() {
     expect(find.text('系统设置'), findsOneWidget);
     expect(find.text('门店资料'), findsOneWidget);
     expect(find.text('门店名称'), findsNothing);
-    expect(find.text('概览设置'), findsNothing);
-
-    await tester.tap(find.text('显示设置'));
-    await tester.pumpAndSettle();
     expect(find.text('概览设置'), findsOneWidget);
 
     await tester.tap(find.text('概览设置'));

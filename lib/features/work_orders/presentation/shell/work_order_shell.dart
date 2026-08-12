@@ -169,6 +169,11 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
       _pageIndex == 3 || _pageIndex == 4 || _pageIndex == 6;
 
   void _selectPage(int index) {
+    if (index == 4 &&
+        !entitlementController.canUse(ProFeature.statistics)) {
+      unawaited(_showProPrompt(ProFeature.statistics));
+      return;
+    }
     final resetSettingsMenu = index == 5 && _pageIndex == 5;
     _exitTimer?.cancel();
     _exitTimer = null;
@@ -214,14 +219,19 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
       case 1:
         return _OrdersPage(
           controller: controller,
+          entitlementController: entitlementController,
           onCreate: _createOrder,
           onOpen: _openOrder,
+          onPurchasePro: () => _showProPrompt(ProFeature.unlimitedOrders),
         );
       case 2:
         return _CustomersPage(
           controller: controller,
+          entitlementController: entitlementController,
           onCreate: _createCustomer,
           onOpen: _openCustomer,
+          onPurchasePro: () =>
+              _showProPrompt(ProFeature.unlimitedCustomers),
         );
       case 3:
         return _TemplatesPage(
@@ -270,6 +280,7 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
       default:
         return _DashboardPage(
           controller: controller,
+          entitlementController: entitlementController,
           onCreate: _createOrder,
           onCustomer: _createCustomer,
           onTemplate: () => _requirePro(
@@ -278,6 +289,7 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
           ),
           onOpen: _openOrder,
           onAllOrders: () => _selectPage(1),
+          onPurchasePro: () => _showProPrompt(ProFeature.unlimitedOrders),
         );
     }
   }
@@ -318,6 +330,11 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
           controller: controller,
           initial: order,
           asPage: true,
+          canCreateCustomer: () => entitlementController.canCreateCustomer(
+                controller.data.customers.length,
+              ),
+          onPremiumRequired: () =>
+              _showProPrompt(ProFeature.unlimitedCustomers),
         ),
       ),
     );
@@ -355,13 +372,24 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
           controller: controller,
           initial: current,
           asPage: true,
+          canCreateCustomer: () => entitlementController.canCreateCustomer(
+                controller.data.customers.length,
+              ),
+          onPremiumRequired: () =>
+              _showProPrompt(ProFeature.unlimitedCustomers),
         ),
       ),
     );
   }
 
-  Future<void> _createCustomer() =>
-      _showDialog(CustomerEditorDialog(controller: controller));
+  Future<void> _createCustomer() async {
+    if (!entitlementController
+        .canCreateCustomer(controller.data.customers.length)) {
+      await _showProPrompt(ProFeature.unlimitedCustomers);
+      return;
+    }
+    await _showDialog(CustomerEditorDialog(controller: controller));
+  }
 
   Future<void> _openCustomer(Customer customer) => _showDialog(
         CustomerDetailDialog(
@@ -459,7 +487,8 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
 
   Future<void> _showProPrompt(ProFeature feature) async {
     final description = switch (feature) {
-      ProFeature.unlimitedOrders => '免费版最多创建 30 张工单。',
+      ProFeature.unlimitedOrders => '免费版最多创建 5 张工单。',
+      ProFeature.unlimitedCustomers => '普通版最多设置 3 个客户档案。',
       ProFeature.customTemplates => '自定义项目模板是专业版功能。',
       ProFeature.statistics => '统计复盘是专业版功能。',
       ProFeature.documentExport => 'PDF / PNG 单据导出是专业版功能。',
@@ -470,7 +499,7 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
       context: context,
       builder: (dialogContext) => Dialog(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 520, maxHeight: 720),
+          constraints: const BoxConstraints(maxWidth: 560, maxHeight: 720),
           child: Padding(
             padding: const EdgeInsets.all(18),
             child: Column(
@@ -1033,12 +1062,14 @@ class _PageHeader extends StatelessWidget {
     required this.kicker,
     required this.title,
     this.actions = const [],
+    this.headerActions = const [],
     this.actionsBelowTitle = false,
   });
 
   final String kicker;
   final String title;
   final List<Widget> actions;
+  final List<Widget> headerActions;
   final bool actionsBelowTitle;
 
   @override
@@ -1076,6 +1107,7 @@ class _PageHeader extends StatelessWidget {
                   ],
                 ),
               ),
+              if (headerActions.isNotEmpty) ...headerActions,
               if (!actionsBelowTitle) ...actions,
             ],
           ),

@@ -95,6 +95,36 @@ void main() {
     controller.dispose();
   });
 
+  test('empty product cancellation clears the purchase loading state',
+      () async {
+    final gateway = _FakeBillingGateway();
+    final controller = EntitlementController(
+      repository: _MemoryEntitlementRepository(),
+      billingGateway: gateway,
+      verifier: _FakeVerifier(),
+    );
+    await controller.initialize();
+
+    await controller.purchase();
+    expect(controller.entitlement.state, EntitlementState.purchasing);
+
+    gateway.updates.add(const PurchaseUpdate(
+      eventId: 'cancel-event',
+      productId: '',
+      status: PurchaseStatus.canceled,
+      purchaseId: null,
+      localVerificationData: '',
+      serverVerificationData: '',
+      verificationSource: 'google_play',
+    ));
+    await Future<void>.delayed(Duration.zero);
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+
+    expect(controller.entitlement.state, EntitlementState.free);
+    expect(controller.errorMessage, '购买已取消');
+    controller.dispose();
+  });
+
   test('local test purchase activates and caches professional entitlement',
       () async {
     final repository = _MemoryEntitlementRepository();

@@ -2,6 +2,7 @@ import { createHash, createPrivateKey, sign } from 'node:crypto';
 
 export const proFeatures = Object.freeze([
   'unlimited_orders',
+  'unlimited_customers',
   'custom_templates',
   'statistics',
   'document_export',

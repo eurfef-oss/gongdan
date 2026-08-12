@@ -111,6 +111,14 @@ class _SettingsPageState extends State<_SettingsPage> {
             description: '按需进入对应的二级设置页面。',
           ),
           _SettingsMenuEntry(
+            icon: Icons.workspace_premium_outlined,
+            title: '专业版',
+            subtitle: '一次性买断，解锁更多工具',
+            value: widget.entitlementController.isPro ? '已激活' : '未激活',
+            highlighted: true,
+            onTap: () => _openSection(_SettingsSection.pro),
+          ),
+          _SettingsMenuEntry(
             icon: Icons.storefront_outlined,
             title: '门店资料',
             subtitle: '门店名称、负责人、电话、地址和单据说明',
@@ -120,16 +128,15 @@ class _SettingsPageState extends State<_SettingsPage> {
           _SettingsMenuEntry(
             icon: Icons.palette_outlined,
             title: '显示设置',
-            subtitle: '主题模式和概览显示方式',
+            subtitle: '主题模式',
             value: modeText,
             onTap: () => _openSection(_SettingsSection.appearance),
           ),
           _SettingsMenuEntry(
-            icon: Icons.workspace_premium_outlined,
-            title: '专业版',
-            subtitle: '一次性买断，解锁更多工具',
-            value: widget.entitlementController.isPro ? '已激活' : '未激活',
-            onTap: () => _openSection(_SettingsSection.pro),
+            icon: Icons.space_dashboard_outlined,
+            title: '概览设置',
+            subtitle: '调整概览卡片的显示和排序',
+            onTap: () => _openSection(_SettingsSection.dashboard),
           ),
           _SettingsMenuEntry(
             icon: Icons.import_export_outlined,
@@ -232,15 +239,6 @@ class _SettingsPageState extends State<_SettingsPage> {
               onChanged: (value) => widget.controller.updateSettings(
                 settings.copyWith(darkMode: value),
               ),
-            ),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('概览设置'),
-              subtitle: Text(
-                '${widget.controller.dashboardCardOrder.length - widget.controller.dashboardHiddenCards.length} 张显示 · 可拖动排序',
-              ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => _openSection(_SettingsSection.dashboard),
             ),
           ],
         );
@@ -452,34 +450,66 @@ class _SettingsMenuEntry extends StatelessWidget {
     required this.subtitle,
     required this.onTap,
     this.value,
+    this.highlighted = false,
   });
 
   final IconData icon;
   final String title;
   final String subtitle;
   final String? value;
+  final bool highlighted;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
+      color: highlighted
+          ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: .5)
+          : null,
+      shape: highlighted
+          ? RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: .35),
+              ),
+            )
+          : null,
       child: ListTile(
         onTap: onTap,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
         leading: CircleAvatar(
           backgroundColor:
-              Theme.of(context).colorScheme.primary.withValues(alpha: .1),
+              Theme.of(context)
+                  .colorScheme
+                  .primary
+                  .withValues(alpha: highlighted ? .2 : .1),
           foregroundColor: Theme.of(context).colorScheme.primary,
           child: Icon(icon, size: 20),
         ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
+        title: Text(
+          title,
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            color: highlighted
+                ? Theme.of(context).colorScheme.primary
+                : null,
+          ),
+        ),
         subtitle: Text(
           value == null ? subtitle : '$subtitle\n$value',
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
+          style: highlighted
+              ? TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer)
+              : null,
         ),
-        trailing: const Icon(Icons.chevron_right),
+        trailing: Icon(
+          Icons.chevron_right,
+          color: highlighted
+              ? Theme.of(context).colorScheme.primary
+              : null,
+        ),
       ),
     );
   }

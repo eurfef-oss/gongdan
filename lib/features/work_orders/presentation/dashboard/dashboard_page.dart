@@ -3,19 +3,23 @@ part of '../work_order_page.dart';
 class _DashboardPage extends StatelessWidget {
   const _DashboardPage({
     required this.controller,
+    required this.entitlementController,
     required this.onCreate,
     required this.onCustomer,
     required this.onTemplate,
     required this.onOpen,
     required this.onAllOrders,
+    required this.onPurchasePro,
   });
 
   final WorkOrderController controller;
+  final EntitlementController entitlementController;
   final Future<void> Function({String? customerId}) onCreate;
   final Future<void> Function() onCustomer;
   final Future<void> Function() onTemplate;
   final Future<void> Function(WorkOrder order) onOpen;
   final VoidCallback onAllOrders;
+  final Future<void> Function() onPurchasePro;
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +47,12 @@ class _DashboardPage extends StatelessWidget {
     return _Shell(
       kicker: '工作台 / OVERVIEW',
       title: '今天，先把现场安排好。',
+      headerActions: [
+        _ProPurchaseButton(
+          entitlementController: entitlementController,
+          onPressed: onPurchasePro,
+        ),
+      ],
       actionsBelowTitle: true,
       actions: [
         FilledButton.icon(

@@ -6,6 +6,7 @@ class _Shell extends StatelessWidget {
     required this.title,
     required this.child,
     this.actions = const [],
+    this.headerActions = const [],
     this.actionsBelowTitle = false,
     this.showPageHeader = true,
   });
@@ -14,6 +15,7 @@ class _Shell extends StatelessWidget {
   final String title;
   final Widget child;
   final List<Widget> actions;
+  final List<Widget> headerActions;
   final bool actionsBelowTitle;
   final bool showPageHeader;
 
@@ -43,6 +45,7 @@ class _Shell extends StatelessWidget {
                           kicker: kicker,
                           title: title,
                           actions: actions,
+                          headerActions: headerActions,
                           actionsBelowTitle: actionsBelowTitle,
                         ),
                       )
@@ -72,6 +75,34 @@ class _Shell extends StatelessWidget {
       },
     );
   }
+}
+
+class _ProPurchaseButton extends StatelessWidget {
+  const _ProPurchaseButton({
+    required this.entitlementController,
+    required this.onPressed,
+  });
+
+  final EntitlementController entitlementController;
+  final Future<void> Function() onPressed;
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+        listenable: entitlementController,
+        builder: (context, _) {
+          if (entitlementController.isPro) return const SizedBox.shrink();
+          return FilledButton.icon(
+            onPressed: onPressed,
+            icon: const Icon(Icons.workspace_premium_outlined, size: 18),
+            label: const Text('购买专业版'),
+            style: FilledButton.styleFrom(
+              minimumSize: Size.zero,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              textStyle: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+          );
+        },
+      );
 }
 
 class _PageActions extends StatelessWidget {

@@ -3,13 +3,17 @@ part of '../work_order_page.dart';
 class _CustomersPage extends StatefulWidget {
   const _CustomersPage({
     required this.controller,
+    required this.entitlementController,
     required this.onCreate,
     required this.onOpen,
+    required this.onPurchasePro,
   });
 
   final WorkOrderController controller;
+  final EntitlementController entitlementController;
   final Future<void> Function() onCreate;
   final Future<void> Function(Customer customer) onOpen;
+  final Future<void> Function() onPurchasePro;
 
   @override
   State<_CustomersPage> createState() => _CustomersPageState();
@@ -35,6 +39,12 @@ class _CustomersPageState extends State<_CustomersPage> {
     return _Shell(
       kicker: '工作台 / CUSTOMERS',
       title: '客户档案',
+      headerActions: [
+        _ProPurchaseButton(
+          entitlementController: widget.entitlementController,
+          onPressed: widget.onPurchasePro,
+        ),
+      ],
       actionsBelowTitle: true,
       actions: [
         FilledButton.icon(

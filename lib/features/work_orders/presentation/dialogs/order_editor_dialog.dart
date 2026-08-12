@@ -5,11 +5,15 @@ class OrderEditorDialog extends StatefulWidget {
       {required this.controller,
       required this.initial,
       this.asPage = false,
+      this.canCreateCustomer,
+      this.onPremiumRequired,
       super.key});
 
   final WorkOrderController controller;
   final WorkOrder initial;
   final bool asPage;
+  final bool Function()? canCreateCustomer;
+  final Future<void> Function()? onPremiumRequired;
 
   @override
   State<OrderEditorDialog> createState() => _OrderEditorDialogState();
@@ -466,6 +470,11 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
       money(double.tryParse(controller.text.trim()) ?? 0);
 
   Future<void> _createCustomer() async {
+    final canCreate = widget.canCreateCustomer;
+    if (canCreate != null && !canCreate()) {
+      await widget.onPremiumRequired?.call();
+      return;
+    }
     final customer = await showDialog<Customer>(
       context: context,
       builder: (context) => CustomerEditorDialog(

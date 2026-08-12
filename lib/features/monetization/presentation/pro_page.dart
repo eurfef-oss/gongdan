@@ -21,7 +21,12 @@ class ProPage extends StatelessWidget {
             _ProFeatureRow(
               icon: Icons.all_inclusive,
               title: '无限工单',
-              description: '免费版最多创建 30 张工单',
+              description: '免费版最多创建 5 张工单',
+            ),
+            _ProFeatureRow(
+              icon: Icons.people_outline,
+              title: '无限客户档案',
+              description: '普通版最多设置 3 个客户档案',
             ),
             _ProFeatureRow(
               icon: Icons.category_outlined,

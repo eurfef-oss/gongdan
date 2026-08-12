@@ -109,10 +109,19 @@ class InAppPurchaseBillingGateway implements BillingGateway {
       throw BillingException(response.error!.message);
     }
     if (response.productDetails.isEmpty) return null;
-    _product = response.productDetails.firstWhere(
-      (product) => product.id == proProductId,
-      orElse: () => response.productDetails.first,
-    );
+
+    // Android returns a runtime list of GooglePlayProductDetails. Avoid
+    // firstWhere(orElse: ...) here: its reified generic return type can make
+    // the ProductDetails fallback closure fail at runtime on Android.
+    ProductDetails? matchingProduct;
+    for (final product in response.productDetails) {
+      if (product.id == proProductId) {
+        matchingProduct = product;
+        break;
+      }
+    }
+    if (matchingProduct == null) return null;
+    _product = matchingProduct;
     return StoreProduct(
       id: _product!.id,
       title: _product!.title,

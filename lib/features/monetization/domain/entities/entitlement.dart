@@ -1,7 +1,8 @@
 import 'dart:convert';
 
 const proProductId = 'repair_pro_lifetime';
-const freeWorkOrderLimit = 30;
+const freeWorkOrderLimit = 5;
+const freeCustomerLimit = 3;
 
 enum EntitlementState {
   free,
@@ -14,6 +15,7 @@ enum EntitlementState {
 
 enum ProFeature {
   unlimitedOrders('unlimited_orders'),
+  unlimitedCustomers('unlimited_customers'),
   customTemplates('custom_templates'),
   statistics('statistics'),
   documentExport('document_export'),
@@ -154,4 +156,7 @@ class FeatureAccessService {
 
   bool canCreateOrder(Entitlement entitlement, int currentOrderCount) =>
       entitlement.isPro || currentOrderCount < freeWorkOrderLimit;
+
+  bool canCreateCustomer(Entitlement entitlement, int currentCustomerCount) =>
+      entitlement.isPro || currentCustomerCount < freeCustomerLimit;
 }

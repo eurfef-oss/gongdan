@@ -20,7 +20,7 @@
            ▼
 ┌──────────────────────┐       ┌──────────────────────┐
 │ Nginx / TLS           │──────▶│ Node.js License API  │
-│ license.example.com   │       │ port 8787             │
+│ play.cosdk.com        │       │ port 8787             │
 └──────────────────────┘       └──────────┬───────────┘
                                           │ MariaDB
                                           ▼
@@ -70,7 +70,7 @@ server/
 
 | 表 | 用途 |
 | --- | --- |
-| `purchases` | 平台、商品 ID、交易 ID、验证来源和交易状态；交易标识唯一 |
+| `purchases` | 平台、商品 ID、Google 订单号、购买 token、验证来源和交易状态；交易身份唯一 |
 | `entitlements` | 授权状态、专业版功能集合、激活时间和签发时间 |
 | `webhook_events` | Apple/Google 通知事件 ID 和 payload 哈希，用于幂等去重 |
 
@@ -90,7 +90,7 @@ POST /v1/webhooks/google
 
 ## 4. 部署步骤
 
-以下示例以 Ubuntu 22.04/24.04、Node.js 20+、MariaDB 10.6+、Nginx 和域名 `license.example.com` 为例。
+以下示例以 Ubuntu 22.04/24.04、Node.js 20+、MariaDB 10.6+、Nginx 和域名 `play.cosdk.com` 为例。
 
 ### 4.1 创建系统用户和目录
 
@@ -145,9 +145,25 @@ DB_USER=repair_license
 DB_PASSWORD=替换为数据库密码
 DB_CONNECTION_LIMIT=10
 
-ANDROID_PACKAGE_NAME=com.example.repairworkorderassistant
-IOS_BUNDLE_ID=com.example.repairworkorderassistant
+ANDROID_PACKAGE_NAME=com.cosdk.repairdesk
+IOS_BUNDLE_ID=com.cosdk.repairdesk
 ENTITLEMENT_PRIVATE_KEY_BASE64=服务端私钥
+
+GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_BASE64=Google 服务账号 JSON 的 Base64
+GOOGLE_PLAY_REQUEST_TIMEOUT_MS=10000
+GOOGLE_PLAY_ACKNOWLEDGE_PURCHASES=true
+```
+
+Linux 服务器生成 Base64 示例：
+
+```bash
+base64 -w 0 google-play-service-account.json
+```
+
+Windows PowerShell 示例：
+
+```powershell
+[Convert]::ToBase64String([IO.File]::ReadAllBytes('.\\google-play-service-account.json'))
 ```
 
 ```bash
@@ -156,12 +172,41 @@ sudo chmod 600 /etc/repair-license.env
 
 ### 4.5 生成授权签名密钥
 
+首次部署时，在服务端项目根目录执行：
+
 ```bash
 cd /opt/repair-license/server
-node src/generate-keys.js
+npm run generate-keys
 ```
 
-`ENTITLEMENT_PRIVATE_KEY_BASE64` 只放服务端；`ENTITLEMENT_PUBLIC_KEY_BASE64` 可以作为 Flutter 构建参数编译进 App。不要将任一密钥提交到 Git。
+命令会输出一对 Ed25519 密钥：
+
+```text
+ENTITLEMENT_PRIVATE_KEY_BASE64=...
+ENTITLEMENT_PUBLIC_KEY_BASE64=...
+```
+
+将输出值按以下方式使用：
+
+1. 将 `ENTITLEMENT_PRIVATE_KEY_BASE64` 的完整值写入 `/etc/repair-license.env`，只放在服务端，不要放入 Flutter 项目；
+2. 将 `ENTITLEMENT_PUBLIC_KEY_BASE64` 的值作为 Flutter 构建参数：
+
+   ```powershell
+   flutter build appbundle --release `
+     --dart-define=ENTITLEMENT_SERVER_URL=https://play.cosdk.com `
+     --dart-define=ENTITLEMENT_PUBLIC_KEY_BASE64=VMldFKpeLYde9nrAXCWIqAinjieV8zed51G2pZy3NT0
+   ```
+
+   当前 `play.cosdk.com` 服务对应的公钥为：
+
+   ```text
+   VMldFKpeLYde9nrAXCWIqAinjieV8zed51G2pZy3NT0
+   ```
+
+3. 将这对密钥备份到受限的密码管理器或密钥管理服务中；
+4. 后续重启服务、更新 Node.js 代码或重新部署时继续使用同一对密钥，不要重复生成，否则已安装 App 的离线授权缓存可能无法通过签名验证。
+
+密钥不得提交到 Git、写入公开文档或放入 `server.zip`。如果私钥泄露，应生成新密钥并重新构建发布 App；密钥轮换期间旧版本 App 无法验证新签发的授权，需要安排版本升级。
 
 ### 4.6 配置 systemd
 
@@ -206,7 +251,7 @@ Node 只监听内部端口，公网只开放 80/443。Nginx 示例：
 ```nginx
 server {
     listen 80;
-    server_name license.example.com;
+    server_name play.cosdk.com;
 
     location / {
         proxy_pass http://127.0.0.1:8787;
@@ -221,22 +266,24 @@ server {
 配置证书：
 
 ```bash
-sudo certbot --nginx -d license.example.com
+sudo certbot --nginx -d play.cosdk.com
 ```
 
 检查服务：
 
 ```bash
-curl https://license.example.com/healthz
+curl https://play.cosdk.com/healthz
 ```
 
 ### 4.8 编译 App
 
 ```powershell
 flutter build apk --release `
-  --dart-define=ENTITLEMENT_SERVER_URL=https://license.example.com `
-  --dart-define=ENTITLEMENT_PUBLIC_KEY_BASE64=...
+  --dart-define=ENTITLEMENT_SERVER_URL=https://play.cosdk.com `
+  --dart-define=ENTITLEMENT_PUBLIC_KEY_BASE64=VMldFKpeLYde9nrAXCWIqAinjieV8zed51G2pZy3NT0
 ```
+
+仅用于本地 Debug 流程验证时，可以额外使用 `--dart-define=ENABLE_LOCAL_TEST_PURCHASE=true`。该开关不会启用真实商店购买，Release 构建不可用；正式 Google Play 测试必须通过内部测试轨道安装并去掉该参数。
 
 如果正式包的 Bundle ID 或 Android application ID 不同，还要同步修改服务端环境变量和 App 的 `APP_IDENTIFIER` 构建参数。
 
@@ -246,11 +293,13 @@ flutter build apk --release `
 
 - `ALLOW_TEST_PURCHASES=false`；
 - 使用 HTTPS，Node 端口不直接暴露公网；
-- 完成 Apple App Store Server API 和 Google Play Developer API 验证；
+- 完成 Apple App Store Server API 验证（当前仍未实现）；
+- 在 Google Cloud 启用 Google Play Android Developer API，并为服务账号配置 Play Console 权限；
+- 配置 `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_BASE64`，完成 Google Play 内部测试购买；
 - 验证 Apple App Store Server Notifications V2 和 Google RTDN；
 - 数据库每日备份，并定期验证恢复；
 - 授权私钥放入密钥管理服务或受限环境变量；
 - 购买、恢复、离线、退款、撤销和重新安装流程通过真实商店测试；
 - 当前 JSON 存储中的开发数据若需保留，必须在切换前单独完成迁移；本项目不自动迁移旧 JSON 文件。
 
-当前 `store-verifier.js` 的真实 Apple/Google 验证仍需完成后，才可以将服务用于正式收费。
+当前 `store-verifier.js` 的 Google Play 验证已实现；Apple App Store 验证和 Apple/Google Webhook 签名校验仍需完成后，才可以将双平台服务用于正式收费。

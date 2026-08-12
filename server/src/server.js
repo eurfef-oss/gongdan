@@ -82,7 +82,13 @@ async function verifyPurchase(body) {
   const request = validatePurchaseRequest(body, config.productId);
   const verified = await verifyStorePurchase(request, config);
   const key = purchaseKey(request.platform, verified.purchaseId);
-  const existing = await store.findPurchaseByIdentity(request.identityKey) ??
+  const identityKey = verified.identityKey ?? request.identityKey;
+  const existing = await store.findPurchaseByIdentity(identityKey) ??
+    await store.findPurchaseByToken(
+      request.platform,
+      request.productId,
+      verified.purchaseToken ?? request.verificationData.server,
+    ) ??
     await store.findPurchase(request.platform, verified.purchaseId);
   if (existing) {
     const current = await store.findEntitlement(existing.purchaseKey);
@@ -92,13 +98,14 @@ async function verifyPurchase(body) {
   const now = new Date().toISOString();
   const purchase = {
     purchaseKey: key,
-    identityKey: verified.identityKey,
+    identityKey,
     platform: request.platform,
     productId: request.productId,
     purchaseId: verified.purchaseId,
+    purchaseToken: verified.purchaseToken ?? request.verificationData.server ?? null,
     source: verified.source,
     status: 'active',
-    purchasedAtUtc: now,
+    purchasedAtUtc: verified.purchasedAtUtc ?? now,
     updatedAtUtc: now,
   };
   const entitlement = createEntitlement({

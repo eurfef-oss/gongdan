@@ -111,7 +111,7 @@ POST /v1/webhooks/google
 
 当前不添加账号，因此购买记录使用平台、商品 ID 和交易标识关联。服务端不保存工单内容。
 
-开发模式可以设置 `ALLOW_TEST_PURCHASES=true` 生成测试授权。正式环境必须关闭该开关，并在 `src/store-verifier.js` 接入真实的 Apple App Store Server API 和 Google Play Developer API。
+开发模式可以设置 `ALLOW_TEST_PURCHASES=true` 生成测试授权。正式环境必须关闭该开关。Android 已接入 Google Play Developer API 的真实购买查询和购买确认；Apple App Store Server API 尚未实现。
 
 ## 6. 构建参数
 
@@ -119,11 +119,21 @@ App 通过构建参数指定授权服务和授权公钥：
 
 ```powershell
 flutter build apk --release `
-  --dart-define=ENTITLEMENT_SERVER_URL=https://license.example.com `
-  --dart-define=ENTITLEMENT_PUBLIC_KEY_BASE64=...
+  --dart-define=ENTITLEMENT_SERVER_URL=https://play.cosdk.com `
+  --dart-define=ENTITLEMENT_PUBLIC_KEY_BASE64=VMldFKpeLYde9nrAXCWIqAinjieV8zed51G2pZy3NT0
 ```
 
 开发时可以只设置服务地址并允许无签名响应；Release 构建必须配置公钥并要求签名授权。
+
+为了在尚未接入真实 Apple 凭证验证时测试 App 内页面和离线缓存，Debug 构建可以显式开启本地测试购买：
+
+```powershell
+flutter build apk --debug `
+  --dart-define=ENTITLEMENT_SERVER_URL=https://play.cosdk.com `
+  --dart-define=ENABLE_LOCAL_TEST_PURCHASE=true
+```
+
+该模式下点击“购买专业版”或“恢复购买”会直接生成并缓存本地测试授权，不会调用真实商店，也不会写入服务端；`kDebugMode` 会确保 Release 构建不会启用此开关。正式测试 Google Play 购买时必须去掉该参数，并通过 Google Play 内部测试轨道安装。
 
 服务端生成 Ed25519 密钥：
 
@@ -143,11 +153,13 @@ npm run generate-keys
 - [x] 加入 `in_app_purchase`、`flutter_secure_storage`、`cryptography` 和 `http` 依赖；
 - [x] 将专业版页面和设置入口接入应用壳层；
 - [x] 将模板、统计、单据导出、签名、照片和工单数量限制接入权限判断；
-- [ ] 完成 Node 服务端真实 Apple / Google 凭证验证；
+- [x] 完成 Node 服务端 Google Play Developer API 购买凭证验证和购买确认；
+- [ ] 完成 Node 服务端真实 Apple 凭证验证；
 - [ ] 配置商店商品、生产 HTTPS、Webhook 和正式签名密钥；
-- [ ] 补充购买、恢复、离线、退款和撤销测试。
+- [x] 补充 Google Play 购买状态、购买确认、未配置凭证和离线缓存测试；
+- [ ] 补充真实商店购买、恢复、退款和撤销测试。
 
-当前代码已完成开发测试链路：Flutter 静态分析和 31 项 Flutter 测试已通过，Node 授权服务的 4 项测试（含启动级集成测试）已通过；真实商店购买、退款/撤销回调和生产环境凭证验证仍需在商店测试环境及正式服务端配置完成后验证。
+当前代码已完成开发测试链路：Flutter 静态分析和 32 项 Flutter 测试已通过，Node 授权服务的 7 项测试（含 Google API 模拟测试）已通过；真实商店购买、退款/撤销回调和生产环境服务账号配置仍需在商店测试环境完成验证。
 
 ## 8. 上线前必须完成
 

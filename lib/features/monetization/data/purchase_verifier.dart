@@ -204,7 +204,7 @@ class RemotePurchaseVerifier implements PurchaseVerifier {
 
   String get _appId => const String.fromEnvironment(
         'APP_IDENTIFIER',
-        defaultValue: 'com.example.repairworkorderassistant',
+        defaultValue: 'com.cosdk.repairdesk',
       );
 }
 

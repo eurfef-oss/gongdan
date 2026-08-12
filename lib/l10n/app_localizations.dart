@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In zh, this message translates to:
-  /// **'维修工单助手'**
+  /// **'RepairDesk'**
   String get appTitle;
 
   /// No description provided for @retry.

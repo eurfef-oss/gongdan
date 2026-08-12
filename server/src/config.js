@@ -20,9 +20,29 @@ export const config = Object.freeze({
       Number.parseInt(process.env.DB_CONNECTION_LIMIT ?? '10', 10) || 10,
   },
   androidPackageName:
-    process.env.ANDROID_PACKAGE_NAME ?? 'com.example.repairworkorderassistant',
+    process.env.ANDROID_PACKAGE_NAME ?? 'com.cosdk.repairdesk',
   iosBundleId:
-    process.env.IOS_BUNDLE_ID ?? 'com.example.repairworkorderassistant',
+    process.env.IOS_BUNDLE_ID ?? 'com.cosdk.repairdesk',
   entitlementPrivateKeyBase64:
     process.env.ENTITLEMENT_PRIVATE_KEY_BASE64 ?? '',
+  googlePlay: {
+    packageName: process.env.ANDROID_PACKAGE_NAME ?? 'com.cosdk.repairdesk',
+    serviceAccountJsonBase64:
+      process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_BASE64 ?? '',
+    serviceAccountJson: process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON ?? '',
+    serviceAccountEmail: process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL ?? '',
+    serviceAccountPrivateKey:
+      process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_PRIVATE_KEY ?? '',
+    tokenUrl: process.env.GOOGLE_OAUTH_TOKEN_URL ??
+      'https://oauth2.googleapis.com/token',
+    apiBaseUrl: process.env.GOOGLE_PLAY_API_BASE_URL ??
+      'https://androidpublisher.googleapis.com/androidpublisher/v3',
+    requestTimeoutMs:
+      Number.parseInt(process.env.GOOGLE_PLAY_REQUEST_TIMEOUT_MS ?? '10000', 10) ||
+      10000,
+    acknowledgePurchases: booleanFromEnv(
+      process.env.GOOGLE_PLAY_ACKNOWLEDGE_PURCHASES,
+      true,
+    ),
+  },
 });

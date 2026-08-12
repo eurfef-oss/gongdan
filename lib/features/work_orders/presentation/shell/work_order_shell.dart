@@ -539,9 +539,9 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
     final bytes = Uint8List.fromList(
       utf8.encode(isJson ? controller.exportJson() : controller.exportCsv()),
     );
-    final fileName = isJson ? '维修工单助手-备份.json' : '维修工单.csv';
+    final fileName = isJson ? 'RepairDesk-备份.json' : '维修工单.csv';
     await _shareService.share(
-      text: isJson ? '维修工单助手完整备份（请妥善保管）' : '维修工单助手工单 CSV 导出',
+      text: isJson ? 'RepairDesk 完整备份（请妥善保管）' : 'RepairDesk 工单 CSV 导出',
       file: ShareFile(
         bytes: bytes,
         fileName: fileName,
@@ -696,7 +696,7 @@ class _WelcomePageState extends State<_WelcomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '维修工单助手',
+                    'RepairDesk',
                     style: Theme.of(context).textTheme.labelLarge?.copyWith(
                           color: scheme.primary,
                           letterSpacing: 1.4,
@@ -864,7 +864,7 @@ class _SideNavigation extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '维修工单助手',
+                        'RepairDesk',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,

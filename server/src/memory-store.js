@@ -19,6 +19,15 @@ export class MemoryLicenseStore {
     return this.purchases.find((item) => item.identityKey === identityKey);
   }
 
+  findPurchaseByToken(platform, productId, purchaseToken) {
+    if (!purchaseToken) return undefined;
+    return this.purchases.find(
+      (item) => item.platform === platform &&
+        item.productId === productId &&
+        item.purchaseToken === purchaseToken,
+    );
+  }
+
   findEntitlement(purchaseKey) {
     return this.entitlements.find((item) => item.purchaseKey === purchaseKey);
   }

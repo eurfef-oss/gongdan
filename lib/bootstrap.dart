@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'app/base_app.dart';
@@ -15,6 +16,8 @@ import 'features/work_orders/services/document_service.dart';
 
 Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
+  const testPurchaseMode = kDebugMode &&
+      bool.fromEnvironment('ENABLE_LOCAL_TEST_PURCHASE', defaultValue: false);
   final controller = WorkOrderController(LocalWorkOrderRepository());
   final fileSelectionService = PlatformFileSelectionService();
   final shareService = const PlatformShareService();
@@ -26,6 +29,7 @@ Future<void> bootstrap() async {
     repository: LocalEntitlementRepository(),
     billingGateway: InAppPurchaseBillingGateway(),
     verifier: RemotePurchaseVerifier(),
+    testPurchaseMode: testPurchaseMode,
   );
   runApp(
     BaseApp(

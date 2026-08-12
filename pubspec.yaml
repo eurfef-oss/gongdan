@@ -1,7 +1,7 @@
 name: repair_work_order_assistant
 description: Offline-first work order, quotation, payment and service record assistant.
 publish_to: none
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
   sdk: ">=3.3.0 <4.0.0"

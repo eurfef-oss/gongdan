@@ -36,6 +36,7 @@ const mapPurchase = (row) => row && ({
   platform: row.platform,
   productId: row.product_id,
   purchaseId: row.purchase_id,
+  purchaseToken: row.purchase_token,
   source: row.source,
   status: row.status,
   purchasedAtUtc: fromDatabaseDateTime(row.purchased_at_utc),
@@ -61,6 +62,7 @@ const purchaseColumns = `
   platform,
   product_id,
   purchase_id,
+  purchase_token,
   source,
   status,
   purchased_at_utc,
@@ -102,6 +104,7 @@ export class MariaDbLicenseStore {
         platform VARCHAR(16) NOT NULL,
         product_id VARCHAR(128) NOT NULL,
         purchase_id VARCHAR(1024) NOT NULL,
+        purchase_token VARCHAR(8192) NULL,
         source VARCHAR(64) NOT NULL,
         status VARCHAR(32) NOT NULL,
         purchased_at_utc DATETIME(3) NOT NULL,
@@ -110,6 +113,10 @@ export class MariaDbLicenseStore {
         UNIQUE KEY uq_purchases_identity (identity_key),
         KEY idx_purchases_platform (platform)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+    await this.pool.query(`
+      ALTER TABLE purchases
+        ADD COLUMN IF NOT EXISTS purchase_token VARCHAR(8192) NULL AFTER purchase_id
     `);
     await this.pool.query(`
       CREATE TABLE IF NOT EXISTS entitlements (
@@ -157,6 +164,20 @@ export class MariaDbLicenseStore {
     return mapPurchase(rows[0]);
   }
 
+  async findPurchaseByToken(platform, productId, purchaseToken) {
+    if (!purchaseToken) return undefined;
+    const rows = await this.pool.query(
+      `
+        SELECT ${purchaseColumns}
+        FROM purchases
+        WHERE platform = ? AND product_id = ? AND purchase_token = ?
+        LIMIT 1
+      `,
+      [platform, productId, purchaseToken],
+    );
+    return mapPurchase(rows[0]);
+  }
+
   async findEntitlement(purchaseKey) {
     const rows = await this.pool.query(
       `SELECT ${entitlementColumns} FROM entitlements WHERE purchase_key = ? LIMIT 1`,
@@ -169,12 +190,13 @@ export class MariaDbLicenseStore {
     await connection.query(
       `
         INSERT INTO purchases (${purchaseColumns})
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE
           identity_key = VALUES(identity_key),
           platform = VALUES(platform),
           product_id = VALUES(product_id),
           purchase_id = VALUES(purchase_id),
+          purchase_token = VALUES(purchase_token),
           source = VALUES(source),
           status = VALUES(status),
           purchased_at_utc = VALUES(purchased_at_utc),
@@ -186,6 +208,7 @@ export class MariaDbLicenseStore {
         purchase.platform,
         purchase.productId,
         purchase.purchaseId,
+        purchase.purchaseToken ?? null,
         purchase.source,
         purchase.status,
         toDatabaseDateTime(purchase.purchasedAtUtc),

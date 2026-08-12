@@ -94,4 +94,23 @@ void main() {
     expect(gateway.completed, 1);
     controller.dispose();
   });
+
+  test('local test purchase activates and caches professional entitlement',
+      () async {
+    final repository = _MemoryEntitlementRepository();
+    final controller = EntitlementController(
+      repository: repository,
+      billingGateway: _FakeBillingGateway(),
+      verifier: _FakeVerifier(),
+      testPurchaseMode: true,
+    );
+
+    await controller.initialize();
+    expect(controller.storeAvailable, isTrue);
+    await controller.purchase();
+
+    expect(controller.isPro, isTrue);
+    expect(repository.value.purchaseId, 'debug-local-test-purchase');
+    controller.dispose();
+  });
 }

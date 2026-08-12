@@ -19,7 +19,7 @@
 - 应用私有目录 JSON 主存储、旧 SharedPreferences 数据迁移和存储异常内存兜底；
 - Material 3、浅色 / 深色模式和中英文本地化基础设施。
 
-专业版收费功能按“非消耗型一次性买断 + 本地离线授权缓存”实现。授权不上传工单业务数据，购买验证服务位于根目录 `server/`，授权记录使用 MariaDB；当前已完成 Flutter 页面、设置入口、专业权限拦截和开发期服务端测试链路，真实商店凭证验证及生产配置仍需联调。
+专业版收费功能按“非消耗型一次性买断 + 本地离线授权缓存”实现。授权不上传工单业务数据，购买验证服务位于根目录 `server/`，授权记录使用 MariaDB；当前已完成 Flutter 页面、设置入口、专业权限拦截和 Android Google Play 真实购买验证，生产服务账号和商店联调仍需配置。
 
 ## 目录
 
@@ -129,13 +129,13 @@ $env:Path="$env:JAVA_HOME\bin;$env:Path"
 
 ## 发布前
 
-- Android application ID 当前为 `com.example.repairworkorderassistant`；正式发布前配置独立签名；
+- Android application ID 当前为 `com.cosdk.repairdesk`；正式发布前配置独立签名；
 - 不提交 keystore、密钥或密码；
 - 提高版本号和构建号；
 - 完成格式化、分析、测试和正式构建；
 - 默认构建命令：`flutter build apk --release`；调试构建需显式使用 `flutter build apk --debug`；
 - 验证命令：`flutter analyze`、`flutter test --no-pub`；
-- 当前自动化测试基线：Flutter 31 项、Node 4 项全部通过；
+- 当前自动化测试基线：Flutter 32 项、Node 7 项全部通过；
 - 真机验证安装、升级、深色模式、语言、大字体和系统安全区；
 - 保存正式产物的 SHA-256 和版本说明。
 

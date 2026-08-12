@@ -4,7 +4,7 @@
 
 - [x] `dart format lib test` 已执行
 - [x] `flutter analyze` 无问题
-- [x] `flutter test --no-pub` 全部通过（31 项）
+- [x] `flutter test --no-pub` 全部通过（32 项）
 - [x] 关键失败和边界场景有测试（部分收款、关闭限制、字段清空、报价重新确认、PDF 编码、回收站、自定义类型、概览卡片设置）
 
 ## 本次功能变更记录（2026-08-11）

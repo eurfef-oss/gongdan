@@ -14,10 +14,12 @@ class EntitlementController extends ChangeNotifier {
     required BillingGateway billingGateway,
     required PurchaseVerifier verifier,
     FeatureAccessService accessService = const FeatureAccessService(),
+    bool testPurchaseMode = false,
   })  : _repository = repository,
         _billingGateway = billingGateway,
         _verifier = verifier,
-        _accessService = accessService;
+        _accessService = accessService,
+        _testPurchaseMode = testPurchaseMode;
 
   factory EntitlementController.disabled() => EntitlementController(
         repository: _MemoryEntitlementRepository(),
@@ -29,6 +31,7 @@ class EntitlementController extends ChangeNotifier {
   final BillingGateway _billingGateway;
   final PurchaseVerifier _verifier;
   final FeatureAccessService _accessService;
+  final bool _testPurchaseMode;
   StreamSubscription<PurchaseUpdate>? _purchaseSubscription;
 
   Entitlement _entitlement = Entitlement.free();
@@ -68,6 +71,18 @@ class EntitlementController extends ChangeNotifier {
     _initialized = true;
     notifyListeners();
 
+    if (_testPurchaseMode) {
+      _storeAvailable = true;
+      _product = const StoreProduct(
+        id: proProductId,
+        title: '专业版（测试）',
+        description: '仅用于 Debug 构建测试',
+        price: '测试模式',
+      );
+      notifyListeners();
+      return;
+    }
+
     try {
       _storeAvailable = await _billingGateway.isAvailable();
       if (_storeAvailable) {
@@ -83,6 +98,10 @@ class EntitlementController extends ChangeNotifier {
     _clearError();
     if (_entitlement.isPro) return;
     if (!_initialized) await initialize();
+    if (_testPurchaseMode) {
+      await _activateLocalTestEntitlement();
+      return;
+    }
     if (!_storeAvailable) {
       _setError('应用商店当前不可用，请稍后重试');
       return;
@@ -105,6 +124,10 @@ class EntitlementController extends ChangeNotifier {
   Future<void> restorePurchases() async {
     _clearError();
     if (!_initialized) await initialize();
+    if (_testPurchaseMode) {
+      await _activateLocalTestEntitlement();
+      return;
+    }
     if (!_storeAvailable) {
       _setError('恢复购买需要连接应用商店');
       return;
@@ -164,6 +187,24 @@ class EntitlementController extends ChangeNotifier {
       }
       _setError(error.toString());
     }
+  }
+
+  Future<void> _activateLocalTestEntitlement() async {
+    final now = DateTime.now().toUtc();
+    final entitlement = Entitlement(
+      state: EntitlementState.active,
+      plan: 'pro',
+      features: ProFeature.values.map((feature) => feature.key).toList(),
+      productId: proProductId,
+      purchaseId: 'debug-local-test-purchase',
+      platform: 'test',
+      activatedAt: now,
+      verifiedAt: now,
+    );
+    await _repository.save(entitlement);
+    _entitlement = entitlement;
+    _clearError();
+    notifyListeners();
   }
 
   void _setError(String message) {

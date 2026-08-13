@@ -124,7 +124,11 @@ class _SettingsPageState extends State<_SettingsPage> {
             icon: Icons.workspace_premium_outlined,
             title: '专业版',
             subtitle: '一次性买断，解锁更多工具',
-            value: widget.entitlementController.isPro ? '已激活' : '未激活',
+            value: widget.entitlementController.isPreviewPro
+                ? '预览开放'
+                : widget.entitlementController.isPro
+                    ? '已激活'
+                    : '未激活',
             highlighted: true,
             onTap: () => _openSection(_SettingsSection.pro),
           ),
@@ -473,8 +477,7 @@ const _workOrderFieldLabels = <String, String>{
   'model': '型号',
   'serialNumber': '序列号',
   'faultDescription': '故障描述',
-  'customerRequest': '客户需求 / 备注',
-  'customerNote': '客户备注',
+  'customerRequest': '备注',
   'serviceItems': '报价项目',
   'discount': '优惠金额',
   'warrantyDays': '保修天数',

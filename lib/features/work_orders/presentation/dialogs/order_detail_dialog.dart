@@ -509,10 +509,8 @@ class _DetailInfo extends StatelessWidget {
                 value: order.faultDescription.isEmpty
                     ? '未填写'
                     : order.faultDescription),
-            if (order.customerRequest.isNotEmpty)
-              _MiniInfo(label: '客户需求', value: order.customerRequest),
-            if (order.customerNote.isNotEmpty)
-              _MiniInfo(label: '客户备注', value: order.customerNote),
+            if (_workOrderNote(order).isNotEmpty)
+              _MiniInfo(label: '备注', value: _workOrderNote(order)),
             if (order.serialNumber.isNotEmpty)
               _MiniInfo(label: '序列号', value: order.serialNumber),
           ],

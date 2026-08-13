@@ -17,6 +17,7 @@ class ProPage extends StatelessWidget {
           final busy = entitlement.state == EntitlementState.purchasing ||
               entitlement.state == EntitlementState.pending;
           final isPro = entitlement.isPro;
+          final isPreview = controller.isPreviewPro;
           final features = [
             _ProFeatureRow(
               icon: Icons.all_inclusive,
@@ -80,7 +81,11 @@ class ProPage extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  isPro ? '专业版已激活' : '升级专业版',
+                                  isPreview
+                                      ? '专业版预览'
+                                      : isPro
+                                          ? '专业版已激活'
+                                          : '升级专业版',
                                   style: Theme.of(context)
                                       .textTheme
                                       .titleLarge
@@ -91,9 +96,11 @@ class ProPage extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 5),
                                 Text(
-                                  isPro
-                                      ? '本设备可以在没有网络时继续使用专业功能。'
-                                      : '一次购买，解锁现场维修工作流中的完整工具。',
+                                  isPreview
+                                      ? 'Release APK 已开放全部专业功能；该预览授权不会保存，正式 AAB 需购买。'
+                                      : isPro
+                                          ? '本设备可以在没有网络时继续使用专业功能。'
+                                          : '一次购买，解锁现场维修工作流中的完整工具。',
                                   style: const TextStyle(
                                     color: Color(0xE6FFFFFF),
                                     height: 1.45,
@@ -170,20 +177,6 @@ class ProPage extends StatelessWidget {
                     ),
                   ),
                 ],
-                const SizedBox(height: 14),
-                Card(
-                  child: ListTile(
-                    leading: Icon(
-                      Icons.receipt_long_outlined,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    title: const Text(
-                      'PDF / PNG 单据、客户签名和照片附件',
-                      style: TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                    subtitle: const Text('所有版本均可使用，不受专业版权限限制'),
-                  ),
-                ),
                 const SizedBox(height: 14),
                 Text(
                   '购买通过系统应用商店完成。专业版授权只保存在设备安全存储中，不会上传工单、客户、照片或签名数据。',

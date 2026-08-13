@@ -54,6 +54,17 @@ class Entitlement {
         features: const [],
       );
 
+  /// In-memory entitlement used only by the internal Release APK preview.
+  /// It is deliberately not a purchase record and must never be persisted.
+  factory Entitlement.releasePreview() => Entitlement(
+        state: EntitlementState.active,
+        plan: 'pro',
+        features: ProFeature.values
+            .map((feature) => feature.key)
+            .toList(growable: false),
+        platform: 'release-apk-preview',
+      );
+
   factory Entitlement.fromJson(
     Map<String, Object?> json, {
     String? payload,

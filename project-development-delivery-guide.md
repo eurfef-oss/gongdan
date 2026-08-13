@@ -118,7 +118,7 @@
 
 本项目当前 Windows 构建环境的 SDK 路径如下：Flutter SDK 为 `I:\sdk\flutter`，Android SDK 为 `I:\sdk\android-sdk`，JDK 17 为 `I:\sdk\jdk17\jdk-17.0.19+10`，Gradle Wrapper 位于 `android\gradle\wrapper`。更换构建机器时，应同步更新 README、发布检查清单和本段记录。
 
-本项目默认构建 Release APK，命令为 `flutter build apk --release`，产物位于 `build/app/outputs/flutter-apk/app-release.apk`。Debug 仅用于明确的调试场景，需使用 `flutter build apk --debug` 显式构建。当前 Release 构建使用 Android 模板的 Debug 签名，仅适合内部安装测试；正式发布前必须配置独立签名。记录产物大小时应同时记录构建变体和签名状态。
+本项目的 Release APK 是内部专业版预览包，命令必须为 `flutter build apk --release --dart-define=ENABLE_RELEASE_PRO_PREVIEW=true`，产物位于 `build/app/outputs/flutter-apk/app-release.apk`。该预览授权只在内存中生效，不保存购买记录；正式 Google Play 包必须构建 AAB，且禁止传入该参数，未购买时按免费版权限运行。Debug 仅用于明确的调试场景，需使用 `flutter build apk --debug` 显式构建。当前 Release 构建使用 Android 模板的 Debug 签名，仅适合内部安装测试；正式发布前必须配置独立签名。记录产物大小时应同时记录构建变体、预览开关和签名状态。
 
 ## 3. 项目启动阶段
 
@@ -361,6 +361,12 @@ test        单元、组件和集成测试
 7. 只在[发布检查清单](docs/release-checklist.md)集中更新版本、产物和校验值，再同步版本说明和商店资料；
 8. 再进入正式发布流程。
 
+构建变体规则：
+
+- 内部 Release APK：允许直接使用完整专业版功能，必须显式传入 `ENABLE_RELEASE_PRO_PREVIEW=true`；该授权不保存、不代表购买；
+- 正式 Release AAB：禁止传入 `ENABLE_RELEASE_PRO_PREVIEW=true`，专业版必须通过 Google Play 购买、恢复和服务端验证；
+- 发布前必须检查构建命令和最终产物，确认预览开关没有进入 AAB。
+
 注意事项：
 
 - 每个独立应用必须使用独立的应用标识、签名和商店记录；
@@ -459,5 +465,5 @@ test        单元、组件和集成测试
 - PNG / PDF 单据支持保存到本地并调用系统分享；
 - 概览设置提供独立二级页面，支持拖动模块排序和控制显示；数据概览中的四项指标作为合并卡片使用一个开关；工单进度卡片展示待确认、维修中（含已确认）、待收款和已完成且每项单独一行，不展示草稿与已取消；工单、客户、项目模板页滚动时收起顶部说明区域；
 - 应用私有目录 JSON 主存储、SharedPreferences 旧数据迁移、v1 → v2 → v3 逐版本迁移、异常时的内存兜底，以及数据备份页提供的 JSON / CSV 导入导出；
-- 当前质量基线：`dart format lib test`、`flutter analyze` 和 `flutter test --no-pub` 均通过，自动化测试共 26 项；
+- 当前质量基线：`dart format lib test`、`flutter analyze` 和 `flutter test --no-pub` 均通过，自动化测试共 38 项；
 - 默认 Release 产物路径、版本号、版本代码、构建时间、大小和 SHA-256 统一维护在[发布检查清单](docs/release-checklist.md)；本指南只维护发布流程和规则。

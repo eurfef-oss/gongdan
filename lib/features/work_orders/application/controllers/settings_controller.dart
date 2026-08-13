@@ -18,7 +18,6 @@ const workOrderFieldIds = <String>[
   'serialNumber',
   'faultDescription',
   'customerRequest',
-  'customerNote',
   'serviceItems',
   'discount',
   'warrantyDays',

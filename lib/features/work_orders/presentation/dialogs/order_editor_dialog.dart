@@ -27,7 +27,6 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
   late final TextEditingController _serialNumber;
   late final TextEditingController _fault;
   late final TextEditingController _request;
-  late final TextEditingController _customerNote;
   late final TextEditingController _result;
   late final TextEditingController _discount;
   late final TextEditingController _warrantyDays;
@@ -53,8 +52,7 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
     _model = TextEditingController(text: order.model);
     _serialNumber = TextEditingController(text: order.serialNumber);
     _fault = TextEditingController(text: order.faultDescription);
-    _request = TextEditingController(text: order.customerRequest);
-    _customerNote = TextEditingController(text: order.customerNote);
+    _request = TextEditingController(text: _workOrderNote(order));
     _result = TextEditingController(text: order.result);
     _discount = TextEditingController(
       text: order.discount == 0 ? '' : order.discount.toStringAsFixed(2),
@@ -82,7 +80,6 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
       _serialNumber,
       _fault,
       _request,
-      _customerNote,
       _result,
       _discount,
       _warrantyDays,
@@ -212,7 +209,6 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
       'serialNumber',
       'faultDescription',
       'customerRequest',
-      'customerNote',
     };
     if (basic.contains(id)) return '基本信息';
     if (id == 'serviceItems' ||
@@ -339,19 +335,10 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
       case 'customerRequest':
         return TextField(
           controller: _request,
-          maxLines: 2,
+          maxLines: 3,
           decoration: const InputDecoration(
-            labelText: '客户需求 / 备注',
-            hintText: '例如：希望今晚前恢复使用',
-          ),
-        );
-      case 'customerNote':
-        return TextField(
-          controller: _customerNote,
-          maxLines: 2,
-          decoration: const InputDecoration(
-            labelText: '客户备注',
-            hintText: '需要在维修凭证中留存的客户说明',
+            labelText: '备注',
+            hintText: '记录客户需求、说明或其他备注',
           ),
         );
       case 'serviceItems':
@@ -599,6 +586,7 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
     final warrantyDays = int.tryParse(_warrantyDays.text.trim()) ?? 0;
     final warrantyStart = warrantyDays > 0 ? (_warrantyStart ?? now) : null;
     final warrantyEnd = warrantyStart?.add(Duration(days: warrantyDays));
+    final note = _request.text.trim();
     final order = widget.initial.copyWith(
       customerId: _customerId,
       serviceAddress: _address.text.trim(),
@@ -607,8 +595,10 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
       model: _model.text.trim(),
       serialNumber: _serialNumber.text.trim(),
       faultDescription: _fault.text.trim(),
-      customerRequest: _request.text.trim(),
-      customerNote: _customerNote.text.trim(),
+      customerRequest: note,
+      // Keep the legacy field in sync so old exports and receipt rendering
+      // continue to expose the single note without duplicating it visually.
+      customerNote: note,
       result: _result.text.trim(),
       internalNote: _internalNote.text.trim(),
       status: _status,

@@ -20,6 +20,14 @@ String _dialogDateTime(DateTime? value, {String empty = '未安排'}) {
   return DateFormat('yyyy/MM/dd HH:mm').format(value);
 }
 
+String _workOrderNote(WorkOrder order) {
+  final request = order.customerRequest.trim();
+  final note = order.customerNote.trim();
+  if (request.isEmpty) return note;
+  if (note.isEmpty || note == request) return request;
+  return '$request\n$note';
+}
+
 String _dialogDevice(WorkOrder order) {
   final value = [order.deviceType, order.brand, order.model]
       .where((item) => item.isNotEmpty)

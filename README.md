@@ -97,9 +97,9 @@ npm start
 | JDK 17 | `I:\sdk\jdk17\jdk-17.0.19+10` |
 | Gradle Wrapper | `android\gradle\wrapper` |
 
-## APK 构建（默认 Release）
+## APK 构建（内部 Release 预览包）
 
-本项目默认构建 Release APK。使用 Flutter 命令打包时显式指定 `--release`；只有需要调试 Dart 代码时才使用 `--debug`。
+Release APK 用于内部安装和验收，默认开启专业版预览：可以直接看到和使用专业版功能，但这是临时预览授权，不代表真实购买，也不会写入授权缓存。正式商店包必须使用下面的 AAB 构建规则。
 
 ```powershell
 $env:FLUTTER_SUPPRESS_ANALYTICS='true'
@@ -108,12 +108,15 @@ $env:ANDROID_HOME='I:\sdk\android-sdk'
 $env:ANDROID_SDK_ROOT='I:\sdk\android-sdk'
 $env:JAVA_HOME='I:\sdk\jdk17\jdk-17.0.19+10'
 $env:Path="$env:JAVA_HOME\bin;$env:Path"
-& 'I:\sdk\flutter\bin\flutter.bat' build apk --release
+& 'I:\sdk\flutter\bin\flutter.bat' build apk --release `
+  --dart-define=ENABLE_RELEASE_PRO_PREVIEW=true
 ```
 
-产物位于 `build/app/outputs/flutter-apk/app-release.apk`。当前 Release 构建仍使用 Android 模板的 Debug 签名，适合内部安装测试；正式上架前必须配置独立的正式签名。调试包使用 `flutter build apk --debug` 显式构建。具体版本、构建号、产物大小和 SHA-256 统一记录在[发布检查清单](docs/release-checklist.md)。
+产物位于 `build/app/outputs/flutter-apk/app-release.apk`。`ENABLE_RELEASE_PRO_PREVIEW=true` 只允许在内部 Release APK 命令中使用；它不保存授权、不调用真实购买，也不能随 AAB 上传。当前 Release APK 适合内部安装测试；正式上架前必须配置独立的正式签名。调试包使用 `flutter build apk --debug` 显式构建。
 
 ## AAB 构建（Google Play）
+
+AAB 是正式商店包，专业版功能默认必须通过 Google Play 购买并完成服务端验证。AAB 构建命令禁止传入 `ENABLE_RELEASE_PRO_PREVIEW=true`，否则会把内部预览规则带入正式包。
 
 ```powershell
 & 'I:\sdk\flutter\bin\flutter.bat' build appbundle --release
@@ -148,9 +151,9 @@ $env:Path="$env:JAVA_HOME\bin;$env:Path"
 - 不提交 keystore、密钥或密码；
 - 按“版本号与构建号”规则确认 `versionCode` 严格递增；
 - 完成格式化、分析、测试和正式构建；
-- 默认构建命令：`flutter build apk --release`；调试构建需显式使用 `flutter build apk --debug`；
+- 内部 Release APK 命令必须带 `--dart-define=ENABLE_RELEASE_PRO_PREVIEW=true`；正式 AAB 禁止带该参数；调试构建需显式使用 `flutter build apk --debug`；
 - 验证命令：`flutter analyze`、`flutter test --no-pub`；
-- 当前自动化测试基线：Flutter 32 项、Node 7 项全部通过；
+- 当前自动化测试基线：Flutter 38 项、Node 7 项全部通过；
 - 真机验证安装、升级、深色模式、语言、大字体和系统安全区；
 - 保存正式产物的 SHA-256 和版本说明。
 

@@ -1,6 +1,6 @@
 # 专业版内购与离线授权实现说明
 
-更新时间：2026-08-11
+更新时间：2026-08-13
 适用范围：一次性专业版买断，不添加用户注册，不上传工单业务数据
 
 ## 1. 目标和边界
@@ -114,7 +114,7 @@ POST /v1/webhooks/google
 
 开发模式可以设置 `ALLOW_TEST_PURCHASES=true` 生成测试授权。正式环境必须关闭该开关。Android 已接入 Google Play Developer API 的真实购买查询和购买确认；Apple App Store Server API 尚未实现。
 
-## 6. 构建参数
+## 6. 构建参数与 APK/AAB 规则
 
 App 通过构建参数指定授权服务和授权公钥：
 
@@ -123,6 +123,31 @@ flutter build apk --release `
   --dart-define=ENTITLEMENT_SERVER_URL=https://play.cosdk.com `
   --dart-define=ENTITLEMENT_PUBLIC_KEY_BASE64=VMldFKpeLYde9nrAXCWIqAinjieV8zed51G2pZy3NT0
 ```
+
+### 6.1 内部 Release APK：专业版预览
+
+Release APK 是内部预览包。为了让验收人员可以直接看到和使用完整专业版功能，内部 APK 必须额外传入：
+
+```powershell
+flutter build apk --release `
+  --dart-define=ENTITLEMENT_SERVER_URL=https://play.cosdk.com `
+  --dart-define=ENTITLEMENT_PUBLIC_KEY_BASE64=VMldFKpeLYde9nrAXCWIqAinjieV8zed51G2pZy3NT0 `
+  --dart-define=ENABLE_RELEASE_PRO_PREVIEW=true
+```
+
+该预览授权只在当前进程内存中生效，不读取或写入真实授权缓存，不调用应用商店，不调用购买验证服务。页面会标记为“专业版预览”。它仅适用于内部 Release APK，不是购买凭证，也不能作为正式授权依据。
+
+### 6.2 正式 Release AAB：必须购买专业版
+
+AAB 是 Google Play 正式商店包，构建时不传 `ENABLE_RELEASE_PRO_PREVIEW`：
+
+```powershell
+flutter build appbundle --release `
+  --dart-define=ENTITLEMENT_SERVER_URL=https://play.cosdk.com `
+  --dart-define=ENTITLEMENT_PUBLIC_KEY_BASE64=VMldFKpeLYde9nrAXCWIqAinjieV8zed51G2pZy3NT0
+```
+
+未购买或未恢复到有效授权时，AAB 必须按免费版权限运行；购买、恢复购买和服务端签名验证仍走正常流程。发布前应检查最终 AAB 的构建参数和页面行为，确认没有带入 `ENABLE_RELEASE_PRO_PREVIEW=true`。
 
 开发时可以只设置服务地址并允许无签名响应；Release 构建必须配置公钥并要求签名授权。
 
@@ -134,7 +159,7 @@ flutter build apk --debug `
   --dart-define=ENABLE_LOCAL_TEST_PURCHASE=true
 ```
 
-该模式下点击“购买专业版”或“恢复购买”会直接生成并缓存本地测试授权，不会调用真实商店，也不会写入服务端；`kDebugMode` 会确保 Release 构建不会启用此开关。正式测试 Google Play 购买时必须去掉该参数，并通过 Google Play 内部测试轨道安装。
+该模式下点击“购买专业版”或“恢复购买”会直接生成并缓存本地测试授权，不会调用真实商店，也不会写入服务端；`kDebugMode` 会确保 Release 构建不会启用此开关。正式测试 Google Play 购买时必须去掉该参数，并通过 Google Play 内部测试轨道安装。不要把 `ENABLE_LOCAL_TEST_PURCHASE` 或 `ENABLE_RELEASE_PRO_PREVIEW` 传给正式 AAB。
 
 服务端生成 Ed25519 密钥：
 

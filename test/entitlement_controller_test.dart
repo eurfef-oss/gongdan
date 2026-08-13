@@ -143,4 +143,29 @@ void main() {
     expect(repository.value.purchaseId, 'debug-local-test-purchase');
     controller.dispose();
   });
+
+  test('Release APK preview unlocks features without persisting or using store',
+      () async {
+    final repository = _MemoryEntitlementRepository();
+    final gateway = _FakeBillingGateway();
+    final controller = EntitlementController(
+      repository: repository,
+      billingGateway: gateway,
+      verifier: _FakeVerifier(),
+      releaseProPreview: true,
+    );
+
+    await controller.initialize();
+    await controller.purchase();
+    await controller.restorePurchases();
+
+    expect(controller.isPro, isTrue);
+    expect(controller.isPreviewPro, isTrue);
+    expect(controller.canUse(ProFeature.statistics), isTrue);
+    expect(controller.canCreateOrder(freeWorkOrderLimit + 1), isTrue);
+    expect(controller.storeAvailable, isFalse);
+    expect(repository.value.isPro, isFalse);
+    expect(gateway.completed, 0);
+    controller.dispose();
+  });
 }

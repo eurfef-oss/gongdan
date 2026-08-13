@@ -18,6 +18,8 @@ Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
   const testPurchaseMode = kDebugMode &&
       bool.fromEnvironment('ENABLE_LOCAL_TEST_PURCHASE', defaultValue: false);
+  const releaseProPreview = kReleaseMode &&
+      bool.fromEnvironment('ENABLE_RELEASE_PRO_PREVIEW', defaultValue: false);
   final controller = WorkOrderController(LocalWorkOrderRepository());
   final fileSelectionService = PlatformFileSelectionService();
   final shareService = const PlatformShareService();
@@ -29,6 +31,7 @@ Future<void> bootstrap() async {
     repository: LocalEntitlementRepository(),
     billingGateway: InAppPurchaseBillingGateway(),
     verifier: RemotePurchaseVerifier(),
+    releaseProPreview: releaseProPreview,
     testPurchaseMode: testPurchaseMode,
   );
   runApp(

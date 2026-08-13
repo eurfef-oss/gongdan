@@ -15,11 +15,13 @@ class EntitlementController extends ChangeNotifier {
     required PurchaseVerifier verifier,
     FeatureAccessService accessService = const FeatureAccessService(),
     bool testPurchaseMode = false,
+    bool releaseProPreview = false,
   })  : _repository = repository,
         _billingGateway = billingGateway,
         _verifier = verifier,
         _accessService = accessService,
-        _testPurchaseMode = testPurchaseMode;
+        _testPurchaseMode = testPurchaseMode,
+        _releaseProPreview = releaseProPreview;
 
   factory EntitlementController.disabled() => EntitlementController(
         repository: _MemoryEntitlementRepository(),
@@ -32,6 +34,7 @@ class EntitlementController extends ChangeNotifier {
   final PurchaseVerifier _verifier;
   final FeatureAccessService _accessService;
   final bool _testPurchaseMode;
+  final bool _releaseProPreview;
   StreamSubscription<PurchaseUpdate>? _purchaseSubscription;
   Timer? _purchaseLaunchTimer;
 
@@ -49,6 +52,7 @@ class EntitlementController extends ChangeNotifier {
   bool get storeAvailable => _storeAvailable;
   String? get errorMessage => _errorMessage;
   bool get isPro => _entitlement.isPro;
+  bool get isPreviewPro => _releaseProPreview;
 
   bool canUse(ProFeature feature) =>
       _accessService.canUse(_entitlement, feature);
@@ -61,6 +65,14 @@ class EntitlementController extends ChangeNotifier {
 
   Future<void> initialize() async {
     if (_initialized) return;
+    if (_releaseProPreview) {
+      // The preview must remain entirely in memory. It intentionally does not
+      // load or save a purchase, contact the store, or contact the verifier.
+      _entitlement = Entitlement.releasePreview();
+      _initialized = true;
+      notifyListeners();
+      return;
+    }
     // Subscribe before awaiting storage or store queries so a pending platform
     // transaction delivered during app launch is not missed.
     _purchaseSubscription = _billingGateway.purchaseUpdates.listen(
@@ -135,6 +147,7 @@ class EntitlementController extends ChangeNotifier {
   Future<void> restorePurchases() async {
     _clearError();
     if (!_initialized) await initialize();
+    if (_releaseProPreview) return;
     if (_testPurchaseMode) {
       await _activateLocalTestEntitlement();
       return;

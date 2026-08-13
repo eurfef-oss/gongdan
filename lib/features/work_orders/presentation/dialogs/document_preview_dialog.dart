@@ -379,12 +379,12 @@ class _DocumentPaper extends StatelessWidget {
                   style: const TextStyle(
                       color: Color(0xFF607080), fontSize: 14, height: 1.55)),
             ],
-            if (order.customerNote.isNotEmpty) ...[
+            if (_workOrderNote(order).isNotEmpty) ...[
               const SizedBox(height: 14),
-              const Text('客户备注',
+              const Text('备注',
                   style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
               const SizedBox(height: 5),
-              Text(order.customerNote,
+              Text(_workOrderNote(order),
                   style: const TextStyle(
                       color: Color(0xFF607080), fontSize: 14, height: 1.55)),
             ],

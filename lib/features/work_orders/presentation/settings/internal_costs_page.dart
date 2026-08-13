@@ -61,13 +61,16 @@ class _InternalCostsContent extends StatelessWidget {
                   child: const Icon(Icons.receipt_long_outlined, size: 19),
                 ),
                 title: Text(
-                  '${order.number} · ${deviceText(order)}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  order.number,
                   style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
-                subtitle: Text(
-                  '应收 ${moneyText(order.total)}  ·  ${order.internalCosts.length} 条成本记录',
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(deviceText(order)),
+                    Text('应收 ${moneyText(order.total)}'),
+                    Text('${order.internalCosts.length} 条成本记录'),
+                  ],
                 ),
                 trailing: Column(
                   mainAxisAlignment: MainAxisAlignment.center,

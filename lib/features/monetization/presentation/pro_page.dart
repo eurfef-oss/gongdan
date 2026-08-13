@@ -22,12 +22,12 @@ class ProPage extends StatelessWidget {
             _ProFeatureRow(
               icon: Icons.all_inclusive,
               title: '无限工单',
-              description: '免费版最多创建 5 张工单',
+              description: '普通版最多创建 10 张工单',
             ),
             _ProFeatureRow(
               icon: Icons.people_outline,
               title: '无限客户档案',
-              description: '普通版最多设置 3 个客户档案',
+              description: '普通版最多设置 10 个客户档案',
             ),
             _ProFeatureRow(
               icon: Icons.category_outlined,
@@ -38,6 +38,11 @@ class ProPage extends StatelessWidget {
               icon: Icons.insights_outlined,
               title: '统计复盘',
               description: '查看工单、收入和待收款趋势',
+            ),
+            _ProFeatureRow(
+              icon: Icons.account_balance_wallet_outlined,
+              title: '内部成本',
+              description: '录入工单成本，并查看成本与利润统计',
             ),
           ];
 

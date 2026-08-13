@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 const proProductId = 'repair_pro_lifetime';
-const freeWorkOrderLimit = 5;
-const freeCustomerLimit = 3;
+const freeWorkOrderLimit = 10;
+const freeCustomerLimit = 10;
 
 enum EntitlementState {
   free,
@@ -18,6 +18,7 @@ enum ProFeature {
   unlimitedCustomers('unlimited_customers'),
   customTemplates('custom_templates'),
   statistics('statistics'),
+  internalCosts('internal_costs'),
   documentExport('document_export'),
   customerSignature('customer_signature'),
   photoAttachments('photo_attachments');

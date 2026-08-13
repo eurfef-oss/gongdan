@@ -103,7 +103,7 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
                 }
                 if (_isSecondaryPage) return _selectPage(5);
                 if (_settingsSectionOpen) {
-                  return _settingsKey.currentState?.showMenu();
+                  return _settingsKey.currentState?.handleBack();
                 }
                 _armExit(context);
               },
@@ -472,10 +472,11 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
 
   Future<void> _showProPrompt(ProFeature feature) async {
     final description = switch (feature) {
-      ProFeature.unlimitedOrders => '免费版最多创建 5 张工单。',
-      ProFeature.unlimitedCustomers => '普通版最多设置 3 个客户档案。',
+      ProFeature.unlimitedOrders => '普通版最多创建 10 张工单。',
+      ProFeature.unlimitedCustomers => '普通版最多设置 10 个客户档案。',
       ProFeature.customTemplates => '自定义项目模板是专业版功能。',
       ProFeature.statistics => '统计复盘是专业版功能。',
+      ProFeature.internalCosts => '内部成本录入和成本利润统计是专业版功能。',
       ProFeature.documentExport => 'PDF / PNG 单据对所有版本开放。',
       ProFeature.customerSignature => '客户电子签名对所有版本开放。',
       ProFeature.photoAttachments => '维修照片附件对所有版本开放。',

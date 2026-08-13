@@ -8,7 +8,6 @@ enum _SettingsSection {
   pro,
   data,
   internalCosts,
-  costTypes,
   demo,
 }
 
@@ -45,16 +44,36 @@ class _SettingsPageState extends State<_SettingsPage> {
   late final TextEditingController _address;
   late final TextEditingController _note;
   _SettingsSection? _section;
+  bool _showCostTypes = false;
 
-  void showMenu() => _closeSection();
+  void showMenu() {
+    if (!mounted) return;
+    setState(() {
+      _section = null;
+      _showCostTypes = false;
+    });
+    widget.onSectionChanged(false);
+  }
+
+  void handleBack() => _closeSection();
 
   void _openSection(_SettingsSection section) {
-    setState(() => _section = section);
+    setState(() {
+      _section = section;
+      _showCostTypes = false;
+    });
     widget.onSectionChanged(true);
   }
 
+  void _openCostTypes() => setState(() => _showCostTypes = true);
+
   void _closeSection() {
-    if (_section == null || !mounted) return;
+    if (!mounted) return;
+    if (_showCostTypes) {
+      setState(() => _showCostTypes = false);
+      return;
+    }
+    if (_section == null) return;
     setState(() => _section = null);
     widget.onSectionChanged(false);
   }
@@ -84,19 +103,22 @@ class _SettingsPageState extends State<_SettingsPage> {
   Widget build(BuildContext context) {
     final section = _section;
     if (section == null) return _buildMenu(context);
+    final title = _showCostTypes ? '成本类型设置' : _sectionTitle(section);
 
     return Column(
       children: [
         AppBackBar(
-          title: _sectionTitle(section),
+          title: title,
           onBack: _closeSection,
         ),
         Expanded(
           child: _Shell(
             kicker: 'SYSTEM / SETTINGS',
-            title: _sectionTitle(section),
+            title: title,
             showPageHeader: false,
-            child: _sectionContent(context, section),
+            child: _showCostTypes
+                ? _CostTypesContent(controller: widget.controller)
+                : _sectionContent(context, section),
           ),
         ),
       ],
@@ -167,14 +189,8 @@ class _SettingsPageState extends State<_SettingsPage> {
           _SettingsMenuEntry(
             icon: Icons.account_balance_wallet_outlined,
             title: '内部成本',
-            subtitle: '为每张工单录入成本，并管理成本类型',
+            subtitle: '专业版功能：为每张工单录入成本，并管理成本类型',
             onTap: () => _openSection(_SettingsSection.internalCosts),
-          ),
-          _SettingsMenuEntry(
-            icon: Icons.sell_outlined,
-            title: '成本类型设置',
-            subtitle: '维护配件、人工、交通等内部成本分类',
-            onTap: () => _openSection(_SettingsSection.costTypes),
           ),
           _SettingsMenuEntry(
             icon: Icons.auto_awesome_outlined,
@@ -225,8 +241,6 @@ class _SettingsPageState extends State<_SettingsPage> {
         return '数据备份';
       case _SettingsSection.internalCosts:
         return '内部成本';
-      case _SettingsSection.costTypes:
-        return '成本类型设置';
       case _SettingsSection.demo:
         return '演示数据';
     }
@@ -320,12 +334,13 @@ class _SettingsPageState extends State<_SettingsPage> {
           ],
         );
       case _SettingsSection.internalCosts:
+        if (!widget.entitlementController.canUse(ProFeature.internalCosts)) {
+          return ProPage(controller: widget.entitlementController);
+        }
         return _InternalCostsContent(
           controller: widget.controller,
-          onOpenCostTypes: () => _openSection(_SettingsSection.costTypes),
+          onOpenCostTypes: _openCostTypes,
         );
-      case _SettingsSection.costTypes:
-        return _CostTypesContent(controller: widget.controller);
       case _SettingsSection.demo:
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

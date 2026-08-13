@@ -11,7 +11,7 @@
 | 产物 | 构建日期 | 大小 | SHA-256 |
 | --- | --- | ---: | --- |
 | `build/app/outputs/flutter-apk/app-release.apk` | 2026-08-13 | 59,594,332 bytes（56.79 MB） | `B4808B67391A5A8BB913E85105CDDA8060A5D633538C10B249B365535A0CC31C` |
-| `build/app/outputs/bundle/release/app-release.aab` | 2026-08-13 | 59,809,079 bytes（57.04 MB） | `BDA9014F50421382CBBA4937632CD40FDA4792E945A91FF307611C94C0A348CD` |
+| `build/app/outputs/bundle/release/app-release.aab` | 2026-08-13 | 59,821,147 bytes（57.08 MB） | `3CB4ACA45EC820D555E7A012EA926DCA962BA995320AA84C2396C674FBA4BC5D` |
 
 版本代码记录：
 
@@ -41,6 +41,13 @@
 - [x] 工单详情页顶部新增“更多操作”菜单，集中提供“取消工单”和“移入回收站”入口；
 - [x] 专业版页面、设置入口、专业功能权限拦截和本地离线授权缓存接入；
 - [x] Node 授权服务开发期验证、恢复、幂等和授权签名链路接入；
+
+## 本次功能变更记录（2026-08-13）
+
+- [x] 普通版工单和客户档案数量上限由 5/3 调整为 10/10，专业版继续按授权解锁无限数量；
+- [x] 内部成本录入、成本类型设置和成本利润统计纳入专业版权限；
+- [x] 成本类型设置从设置二级入口移除，改为内部成本页面下的三级页面；
+- [x] 内部成本列表将单号、设备名称、应收金额和成本记录数量分行显示，避免窄屏内容截断；
 
 ## 体验
 
@@ -90,6 +97,6 @@
 - Flutter 验证：`flutter analyze` 无问题，38 项测试全部通过。
 - 内部 APK：使用 `--dart-define=ENABLE_RELEASE_PRO_PREVIEW=true` 重新构建成功；预览授权仅用于内部验收，不写入购买缓存。
 - APK 校验：文件大小 `59,594,332` bytes，SHA-256 为 `B4808B67391A5A8BB913E85105CDDA8060A5D633538C10B249B365535A0CC31C`。
-- 正式 AAB：不含专业版预览开关，构建成功；文件大小 `59,809,079` bytes，SHA-256 为 `BDA9014F50421382CBBA4937632CD40FDA4792E945A91FF307611C94C0A348CD`，`jarsigner -verify` 通过。
+- 正式 AAB：不含专业版预览开关，构建成功；文件大小 `59,821,147` bytes，SHA-256 为 `3CB4ACA45EC820D555E7A012EA926DCA962BA995320AA84C2396C674FBA4BC5D`，`jarsigner -verify` 通过。
 
 仍需在 Google Play 内部测试轨道完成 AAB 上传、测试账号安装、真实购买、恢复购买、离线使用和重新安装验证。

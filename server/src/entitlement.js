@@ -5,6 +5,7 @@ export const proFeatures = Object.freeze([
   'unlimited_customers',
   'custom_templates',
   'statistics',
+  'internal_costs',
 ]);
 
 export const hashPurchaseIdentity = (value) =>

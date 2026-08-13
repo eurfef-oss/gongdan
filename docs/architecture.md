@@ -21,7 +21,7 @@ features/work_orders/
 ├── domain/entities/             客户、工单、付款、附件、设置及应用数据实体
 ├── data/                        本地 JSON 文件仓库与 SharedPreferences 迁移入口
 ├── application/
-│   ├── controllers/             Order、Customer、Template、Settings、Backup 控制器
+│   ├── controllers/             Order、Customer、Template、Settings、Cost、Backup 控制器
 │   ├── services/                BackupService 与 WorkOrderExportService
 │   ├── work_order_store.dart    控制器共享状态与持久化协调
 │   └── work_order_controller.dart 兼容旧调用方的轻量入口

@@ -15,6 +15,9 @@ void main() {
       isFalse,
     );
     expect(entitlement.canUse(ProFeature.statistics), isFalse);
+    expect(entitlement.canUse(ProFeature.documentExport), isTrue);
+    expect(entitlement.canUse(ProFeature.customerSignature), isTrue);
+    expect(entitlement.canUse(ProFeature.photoAttachments), isTrue);
   });
 
   test('free plan enforces the 3 customer profile limit', () {

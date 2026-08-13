@@ -350,11 +350,6 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
           onPayment: () => _showPayment(order.id),
           onSignature: () => _showSignature(order.id),
           onDocument: (kind) => _showDocument(order.id, kind),
-          canUsePhotoAttachments:
-              entitlementController.canUse(ProFeature.photoAttachments),
-          onPremiumRequired: () => unawaited(
-            _showProPrompt(ProFeature.photoAttachments),
-          ),
           onMoveToTrash: () => _moveOrderToTrash(order.id),
         ),
       ),
@@ -448,20 +443,12 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
       );
 
   Future<void> _showSignature(String orderId) async {
-    if (!entitlementController.canUse(ProFeature.customerSignature)) {
-      await _showProPrompt(ProFeature.customerSignature);
-      return;
-    }
     await _showDialog(
       SignatureDialog(controller: controller, orderId: orderId),
     );
   }
 
   Future<void> _showDocument(String orderId, String kind) async {
-    if (!entitlementController.canUse(ProFeature.documentExport)) {
-      await _showProPrompt(ProFeature.documentExport);
-      return;
-    }
     await _showDialog(
       DocumentPreviewDialog(
         controller: controller,
@@ -489,9 +476,9 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
       ProFeature.unlimitedCustomers => '普通版最多设置 3 个客户档案。',
       ProFeature.customTemplates => '自定义项目模板是专业版功能。',
       ProFeature.statistics => '统计复盘是专业版功能。',
-      ProFeature.documentExport => 'PDF / PNG 单据导出是专业版功能。',
-      ProFeature.customerSignature => '客户电子签名是专业版功能。',
-      ProFeature.photoAttachments => '维修照片附件是专业版功能。',
+      ProFeature.documentExport => 'PDF / PNG 单据对所有版本开放。',
+      ProFeature.customerSignature => '客户电子签名对所有版本开放。',
+      ProFeature.photoAttachments => '维修照片附件对所有版本开放。',
     };
     await showDialog<void>(
       context: context,

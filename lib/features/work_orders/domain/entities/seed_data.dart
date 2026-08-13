@@ -52,6 +52,7 @@ WorkOrder emptyWorkOrder({
     attachments: const [],
     signatureData: null,
     quoteConfirmedAt: null,
+    internalCosts: const [],
     createdAt: current,
     updatedAt: current,
   );

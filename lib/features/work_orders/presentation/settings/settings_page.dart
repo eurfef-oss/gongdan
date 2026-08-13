@@ -1,6 +1,16 @@
 part of '../work_order_page.dart';
 
-enum _SettingsSection { shop, appearance, dashboard, pro, data, demo }
+enum _SettingsSection {
+  shop,
+  appearance,
+  dashboard,
+  workOrder,
+  pro,
+  data,
+  internalCosts,
+  costTypes,
+  demo,
+}
 
 class _SettingsPage extends StatefulWidget {
   const _SettingsPage({
@@ -139,10 +149,28 @@ class _SettingsPageState extends State<_SettingsPage> {
             onTap: () => _openSection(_SettingsSection.dashboard),
           ),
           _SettingsMenuEntry(
+            icon: Icons.tune_outlined,
+            title: '工单设置',
+            subtitle: '设置工单表单字段的显示和顺序',
+            onTap: () => _openSection(_SettingsSection.workOrder),
+          ),
+          _SettingsMenuEntry(
             icon: Icons.import_export_outlined,
             title: '数据备份',
             subtitle: 'JSON 完整备份、CSV 导入和导出',
             onTap: () => _openSection(_SettingsSection.data),
+          ),
+          _SettingsMenuEntry(
+            icon: Icons.account_balance_wallet_outlined,
+            title: '内部成本',
+            subtitle: '为每张工单录入成本，并管理成本类型',
+            onTap: () => _openSection(_SettingsSection.internalCosts),
+          ),
+          _SettingsMenuEntry(
+            icon: Icons.sell_outlined,
+            title: '成本类型设置',
+            subtitle: '维护配件、人工、交通等内部成本分类',
+            onTap: () => _openSection(_SettingsSection.costTypes),
           ),
           _SettingsMenuEntry(
             icon: Icons.auto_awesome_outlined,
@@ -185,10 +213,16 @@ class _SettingsPageState extends State<_SettingsPage> {
         return '显示设置';
       case _SettingsSection.dashboard:
         return '概览设置';
+      case _SettingsSection.workOrder:
+        return '工单设置';
       case _SettingsSection.pro:
         return '专业版';
       case _SettingsSection.data:
         return '数据备份';
+      case _SettingsSection.internalCosts:
+        return '内部成本';
+      case _SettingsSection.costTypes:
+        return '成本类型设置';
       case _SettingsSection.demo:
         return '演示数据';
     }
@@ -244,6 +278,8 @@ class _SettingsPageState extends State<_SettingsPage> {
         );
       case _SettingsSection.dashboard:
         return _DashboardSettingsContent(controller: widget.controller);
+      case _SettingsSection.workOrder:
+        return _WorkOrderSettingsContent(controller: widget.controller);
       case _SettingsSection.pro:
         return ProPage(controller: widget.entitlementController);
       case _SettingsSection.data:
@@ -279,6 +315,13 @@ class _SettingsPageState extends State<_SettingsPage> {
             ),
           ],
         );
+      case _SettingsSection.internalCosts:
+        return _InternalCostsContent(
+          controller: widget.controller,
+          onOpenCostTypes: () => _openSection(_SettingsSection.costTypes),
+        );
+      case _SettingsSection.costTypes:
+        return _CostTypesContent(controller: widget.controller);
       case _SettingsSection.demo:
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -313,6 +356,138 @@ class _DashboardSettingsContent extends StatefulWidget {
   State<_DashboardSettingsContent> createState() =>
       _DashboardSettingsContentState();
 }
+
+class _WorkOrderSettingsContent extends StatefulWidget {
+  const _WorkOrderSettingsContent({required this.controller});
+
+  final WorkOrderController controller;
+
+  @override
+  State<_WorkOrderSettingsContent> createState() =>
+      _WorkOrderSettingsContentState();
+}
+
+class _WorkOrderSettingsContentState extends State<_WorkOrderSettingsContent> {
+  late List<String> _order;
+
+  @override
+  void initState() {
+    super.initState();
+    _order = [...widget.controller.workOrderFieldOrder];
+  }
+
+  @override
+  void didUpdateWidget(covariant _WorkOrderSettingsContent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final next = widget.controller.workOrderFieldOrder;
+    if (!_sameOrder(_order, next)) _order = [...next];
+  }
+
+  bool _sameOrder(List<String> first, List<String> second) {
+    if (first.length != second.length) return false;
+    for (var index = 0; index < first.length; index++) {
+      if (first[index] != second[index]) return false;
+    }
+    return true;
+  }
+
+  void _onReorder(int oldIndex, int newIndex) {
+    if (oldIndex == newIndex) return;
+    final next = [..._order]..insert(newIndex, _order.removeAt(oldIndex));
+    setState(() => _order = next);
+    unawaited(widget.controller.updateWorkOrderFieldOrder(next));
+  }
+
+  void _onVisibilityChanged(String id, bool visible) {
+    unawaited(widget.controller.setWorkOrderFieldVisible(id, visible));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hidden = widget.controller.workOrderHiddenFields;
+    final visibleCount = _order.where((id) => !hidden.contains(id)).length;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _Section(
+          title: '工单表单字段',
+          trailing: Text(
+            '$visibleCount/${_order.length} 项显示',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontSize: 13,
+            ),
+          ),
+          child: Text(
+            '拖动左侧手柄调整字段在工单表单中的顺序，使用右侧开关控制字段是否显示。隐藏字段不会删除已有数据。',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+        ReorderableListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          buildDefaultDragHandles: false,
+          itemCount: _order.length,
+          onReorderItem: _onReorder,
+          itemBuilder: (context, index) {
+            final id = _order[index];
+            final visible = !hidden.contains(id);
+            return Card(
+              key: ValueKey(id),
+              margin: const EdgeInsets.only(bottom: 10),
+              child: ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                leading: ReorderableDragStartListener(
+                  index: index,
+                  child: Icon(
+                    Icons.drag_indicator,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                title: Text(
+                  _workOrderFieldLabel(id),
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+                subtitle: Text(visible ? '在新建/编辑工单中显示' : '已隐藏'),
+                trailing: Switch.adaptive(
+                  value: visible,
+                  onChanged: (value) => _onVisibilityChanged(id, value),
+                ),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+const _workOrderFieldLabels = <String, String>{
+  'customer': '客户',
+  'serviceAddress': '服务地址',
+  'deviceType': '设备类型',
+  'brand': '品牌',
+  'model': '型号',
+  'serialNumber': '序列号',
+  'faultDescription': '故障描述',
+  'customerRequest': '客户需求 / 备注',
+  'customerNote': '客户备注',
+  'serviceItems': '报价项目',
+  'discount': '优惠金额',
+  'warrantyDays': '保修天数',
+  'warrantyScope': '保修范围',
+  'warrantyExclusions': '不保修说明',
+  'status': '工单状态',
+  'appointmentAt': '预约时间',
+  'warrantyStart': '保修开始日期',
+  'result': '维修结果',
+  'internalNote': '内部备注',
+};
+
+String _workOrderFieldLabel(String id) => _workOrderFieldLabels[id] ?? id;
 
 class _DashboardSettingsContentState extends State<_DashboardSettingsContent> {
   late List<String> _order;

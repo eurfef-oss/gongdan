@@ -28,6 +28,7 @@ class WorkOrder {
     required this.attachments,
     required this.signatureData,
     required this.quoteConfirmedAt,
+    this.internalCosts = const [],
     this.quoteConfirmedTotal,
     this.repairStartedAt,
     this.trashedAt,
@@ -61,6 +62,7 @@ class WorkOrder {
   final List<Attachment> attachments;
   final String? signatureData;
   final DateTime? quoteConfirmedAt;
+  final List<WorkOrderCost> internalCosts;
   final double? quoteConfirmedTotal;
   final DateTime? repairStartedAt;
   final DateTime? trashedAt;
@@ -71,6 +73,14 @@ class WorkOrder {
   double get total => money(math.max(subtotal - math.max(discount, 0), 0));
   double get normalizedPaid => money(math.min(math.max(paid, 0), total));
   double get outstanding => money(math.max(total - normalizedPaid, 0));
+  double get internalCostTotal => money(
+        internalCosts.fold<double>(
+          0,
+          (sum, cost) => sum + math.max(cost.amount, 0),
+        ),
+      );
+  double get grossProfit => money(total - internalCostTotal);
+  double get grossMargin => total <= 0 ? 0 : grossProfit / total;
   PaymentStatus get paymentStatus {
     if (normalizedPaid <= 0) return PaymentStatus.unpaid;
     if (normalizedPaid >= total) return PaymentStatus.paid;
@@ -109,6 +119,7 @@ class WorkOrder {
     List<Attachment>? attachments,
     Object? signatureData = _copyWithUnset,
     Object? quoteConfirmedAt = _copyWithUnset,
+    List<WorkOrderCost>? internalCosts,
     Object? quoteConfirmedTotal = _copyWithUnset,
     Object? repairStartedAt = _copyWithUnset,
     Object? trashedAt = _copyWithUnset,
@@ -151,6 +162,7 @@ class WorkOrder {
         quoteConfirmedAt: quoteConfirmedAt == _copyWithUnset
             ? this.quoteConfirmedAt
             : quoteConfirmedAt as DateTime?,
+        internalCosts: internalCosts ?? this.internalCosts,
         quoteConfirmedTotal: quoteConfirmedTotal == _copyWithUnset
             ? this.quoteConfirmedTotal
             : quoteConfirmedTotal == null
@@ -193,6 +205,7 @@ class WorkOrder {
         'attachments': attachments.map((item) => item.toJson()).toList(),
         'signatureData': signatureData,
         'quoteConfirmedAt': dateString(quoteConfirmedAt),
+        'internalCosts': internalCosts.map((item) => item.toJson()).toList(),
         'quoteConfirmedTotal':
             quoteConfirmedTotal == null ? null : money(quoteConfirmedTotal!),
         'repairStartedAt': dateString(repairStartedAt),
@@ -236,6 +249,11 @@ class WorkOrder {
             .toList(),
         signatureData: json['signatureData']?.toString(),
         quoteConfirmedAt: dateValue(json['quoteConfirmedAt']),
+        internalCosts: (json['internalCosts'] as List? ?? const [])
+            .whereType<Map>()
+            .map((item) =>
+                WorkOrderCost.fromJson(Map<String, Object?>.from(item)))
+            .toList(),
         quoteConfirmedTotal: json['quoteConfirmedTotal'] == null
             ? null
             : money(numberValue(json['quoteConfirmedTotal'])),

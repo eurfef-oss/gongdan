@@ -46,6 +46,9 @@ class WorkOrderExportService {
         '创建时间',
         '服务项目',
         '收款记录',
+        '内部成本',
+        '毛利',
+        '成本明细',
       ],
       ...data.workOrders.map((order) {
         final customer = _customerById(data, order.customerId);
@@ -70,6 +73,14 @@ class WorkOrderExportService {
           _paymentsFor(data, order.id)
               .map((payment) =>
                   '${payment.method.label} ${payment.amount.toStringAsFixed(2)} ${payment.paidAt.toIso8601String()}${payment.note.isEmpty ? '' : ' ${payment.note}'}')
+              .join('；'),
+          order.internalCostTotal.toStringAsFixed(2),
+          order.grossProfit.toStringAsFixed(2),
+          order.internalCosts
+              .map(
+                (cost) =>
+                    '${cost.typeName} ¥${cost.amount.toStringAsFixed(2)}${cost.note.isEmpty ? '' : ' ${cost.note}'}',
+              )
               .join('；'),
         ];
       }),
@@ -140,6 +151,13 @@ class WorkOrderExportService {
         );
         var status = _statusFromCsv(_csvValue(row, indexes, '状态'));
         final paid = numberValue(_csvValue(row, indexes, '已收金额'));
+        final hasCostColumns =
+            indexes.containsKey('内部成本') || indexes.containsKey('成本明细');
+        final importedCosts = _costsFromCsv(
+          _csvValue(row, indexes, '成本明细'),
+          numberValue(_csvValue(row, indexes, '内部成本')),
+          data.settings.costTypes,
+        );
         final importedOrder = emptyWorkOrder(
           id: existing?.id ?? idFor('ord'),
           number: number,
@@ -153,6 +171,9 @@ class WorkOrderExportService {
           status: status,
           items: items,
           paid: paid,
+          internalCosts: hasCostColumns
+              ? importedCosts
+              : existing?.internalCosts ?? const [],
           attachments: existing?.attachments,
           signatureData: existing?.signatureData,
           quoteConfirmedAt: existing?.quoteConfirmedAt,
@@ -343,6 +364,55 @@ class WorkOrderExportService {
       ));
     }
     return items;
+  }
+
+  static List<WorkOrderCost> _costsFromCsv(
+    String details,
+    double total,
+    List<CostType> costTypes,
+  ) {
+    final costs = <WorkOrderCost>[];
+    for (final part in details.split('；')) {
+      final value = part.trim();
+      if (value.isEmpty) continue;
+      final match = RegExp(
+        r'^(.+?)\s+¥?([0-9]+(?:\.[0-9]+)?)(?:\s+(.*))?$',
+      ).firstMatch(value);
+      if (match == null) continue;
+      final typeName = match.group(1)!.trim();
+      final type = costTypes.cast<CostType?>().firstWhere(
+            (item) => item!.name.toLowerCase() == typeName.toLowerCase(),
+            orElse: () => null,
+          );
+      costs.add(
+        WorkOrderCost(
+          id: idFor('cost'),
+          typeId: type?.id ?? 'csv:$typeName',
+          typeName: typeName,
+          amount: money(numberValue(match.group(2))),
+          note: match.group(3)?.trim() ?? '',
+        ),
+      );
+    }
+    if (costs.isEmpty && total > 0) {
+      final fallback = costTypes.firstWhere(
+        (item) => item.id == 'other',
+        orElse: () => const CostType(
+          id: 'other',
+          name: '其他',
+          enabled: true,
+        ),
+      );
+      costs.add(
+        WorkOrderCost(
+          id: idFor('cost'),
+          typeId: fallback.id,
+          typeName: 'CSV 导入成本',
+          amount: money(total),
+        ),
+      );
+    }
+    return costs;
   }
 
   static WorkOrderStatus _statusFromCsv(String raw) {

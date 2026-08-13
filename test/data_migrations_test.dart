@@ -23,7 +23,7 @@ void main() {
     expect(data.workOrders.single.attachments, isEmpty);
   });
 
-  test('normalizes a version 2 settings snapshot in version 3', () {
+  test('normalizes a version 2 settings snapshot in the current version', () {
     final data = RepairAppData.fromJson({
       'version': 2,
       'customers': const [],
@@ -36,7 +36,7 @@ void main() {
       },
     });
 
-    expect(data.toJson()['version'], 3);
+    expect(data.toJson()['version'], currentWorkOrderDataVersion);
     expect(data.settings.customServiceItemTypes, ['清洗']);
     expect(data.settings.dashboardCardOrder, ['summaryMetrics']);
   });

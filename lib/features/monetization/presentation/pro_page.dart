@@ -38,16 +38,6 @@ class ProPage extends StatelessWidget {
               title: '统计复盘',
               description: '查看工单、收入和待收款趋势',
             ),
-            _ProFeatureRow(
-              icon: Icons.picture_as_pdf_outlined,
-              title: 'PDF / PNG 单据',
-              description: '导出报价单和维修凭证',
-            ),
-            _ProFeatureRow(
-              icon: Icons.draw_outlined,
-              title: '客户签名和照片附件',
-              description: '完整保存现场服务证据',
-            ),
           ];
 
           return SingleChildScrollView(
@@ -180,6 +170,20 @@ class ProPage extends StatelessWidget {
                     ),
                   ),
                 ],
+                const SizedBox(height: 14),
+                Card(
+                  child: ListTile(
+                    leading: Icon(
+                      Icons.receipt_long_outlined,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    title: const Text(
+                      'PDF / PNG 单据、客户签名和照片附件',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    subtitle: const Text('所有版本均可使用，不受专业版权限限制'),
+                  ),
+                ),
                 const SizedBox(height: 14),
                 Text(
                   '购买通过系统应用商店完成。专业版授权只保存在设备安全存储中，不会上传工单、客户、照片或签名数据。',

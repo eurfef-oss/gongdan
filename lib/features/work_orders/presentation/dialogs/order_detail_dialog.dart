@@ -11,8 +11,6 @@ class OrderDetailDialog extends StatefulWidget {
       required this.onSignature,
       required this.onDocument,
       required this.onMoveToTrash,
-      this.canUsePhotoAttachments = true,
-      this.onPremiumRequired,
       this.fileSelectionService,
       this.asPage = false,
       super.key});
@@ -24,8 +22,6 @@ class OrderDetailDialog extends StatefulWidget {
   final VoidCallback onSignature;
   final ValueChanged<String> onDocument;
   final Future<void> Function() onMoveToTrash;
-  final bool canUsePhotoAttachments;
-  final VoidCallback? onPremiumRequired;
   final FileSelectionService? fileSelectionService;
   final bool asPage;
 
@@ -87,11 +83,7 @@ class _OrderDetailDialogState extends State<OrderDetailDialog> {
                     const SizedBox(height: 16),
                     _FieldOperationsCard(
                       onSignature: locked ? null : widget.onSignature,
-                      onPhoto: locked
-                          ? null
-                          : widget.canUsePhotoAttachments
-                              ? () => _addPhoto(order)
-                              : widget.onPremiumRequired,
+                      onPhoto: locked ? null : () => _addPhoto(order),
                       onPayment: canReceivePayment ? widget.onPayment : null,
                       onReceipt: () => widget.onDocument('receipt'),
                     ),
@@ -154,7 +146,7 @@ class _OrderDetailDialogState extends State<OrderDetailDialog> {
                       controller: widget.controller,
                       order: order,
                       category: _photoCategory,
-                      editable: !locked && widget.canUsePhotoAttachments,
+                      editable: !locked,
                       fileSelectionService: _fileSelectionService,
                       onCategoryChanged: (value) =>
                           setState(() => _photoCategory = value),

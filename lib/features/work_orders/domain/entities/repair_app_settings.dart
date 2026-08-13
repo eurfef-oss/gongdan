@@ -13,6 +13,9 @@ class RepairAppSettings {
     this.deletedBuiltInServiceItemTypes = const [],
     this.dashboardCardOrder = const [],
     this.dashboardHiddenCards = const [],
+    this.workOrderFieldOrder = const [],
+    this.workOrderHiddenFields = const [],
+    this.costTypes = defaultCostTypes,
   });
 
   final String shopName;
@@ -26,6 +29,9 @@ class RepairAppSettings {
   final List<String> deletedBuiltInServiceItemTypes;
   final List<String> dashboardCardOrder;
   final List<String> dashboardHiddenCards;
+  final List<String> workOrderFieldOrder;
+  final List<String> workOrderHiddenFields;
+  final List<CostType> costTypes;
 
   RepairAppSettings copyWith({
     String? shopName,
@@ -39,6 +45,9 @@ class RepairAppSettings {
     List<String>? deletedBuiltInServiceItemTypes,
     List<String>? dashboardCardOrder,
     List<String>? dashboardHiddenCards,
+    List<String>? workOrderFieldOrder,
+    List<String>? workOrderHiddenFields,
+    List<CostType>? costTypes,
   }) =>
       RepairAppSettings(
         shopName: shopName ?? this.shopName,
@@ -54,6 +63,10 @@ class RepairAppSettings {
             this.deletedBuiltInServiceItemTypes,
         dashboardCardOrder: dashboardCardOrder ?? this.dashboardCardOrder,
         dashboardHiddenCards: dashboardHiddenCards ?? this.dashboardHiddenCards,
+        workOrderFieldOrder: workOrderFieldOrder ?? this.workOrderFieldOrder,
+        workOrderHiddenFields:
+            workOrderHiddenFields ?? this.workOrderHiddenFields,
+        costTypes: costTypes ?? this.costTypes,
       );
 
   Map<String, Object?> toJson() => {
@@ -68,6 +81,9 @@ class RepairAppSettings {
         'deletedBuiltInServiceItemTypes': deletedBuiltInServiceItemTypes,
         'dashboardCardOrder': dashboardCardOrder,
         'dashboardHiddenCards': dashboardHiddenCards,
+        'workOrderFieldOrder': workOrderFieldOrder,
+        'workOrderHiddenFields': workOrderHiddenFields,
+        'costTypes': costTypes.map((item) => item.toJson()).toList(),
       };
 
   factory RepairAppSettings.fromJson(Map<String, Object?> json) =>
@@ -85,7 +101,19 @@ class RepairAppSettings {
             _stringList(json['deletedBuiltInServiceItemTypes']),
         dashboardCardOrder: _stringList(json['dashboardCardOrder']),
         dashboardHiddenCards: _stringList(json['dashboardHiddenCards']),
+        workOrderFieldOrder: _stringList(json['workOrderFieldOrder']),
+        workOrderHiddenFields: _stringList(json['workOrderHiddenFields']),
+        costTypes: _costTypes(json['costTypes']),
       );
+}
+
+List<CostType> _costTypes(Object? value) {
+  if (value is! List) return defaultCostTypes;
+  return value
+      .whereType<Map>()
+      .map((item) => CostType.fromJson(Map<String, Object?>.from(item)))
+      .where((item) => item.id.trim().isNotEmpty && item.name.trim().isNotEmpty)
+      .toList();
 }
 
 List<String> _stringList(Object? value) => (value as List? ?? const [])

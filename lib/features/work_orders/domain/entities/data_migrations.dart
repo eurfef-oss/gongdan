@@ -1,6 +1,6 @@
 part of 'work_order.dart';
 
-const currentWorkOrderDataVersion = 3;
+const currentWorkOrderDataVersion = 4;
 
 Map<String, Object?> migrateWorkOrderData(Map<String, Object?> input) {
   var version = _dataVersion(input['version']);
@@ -17,6 +17,10 @@ Map<String, Object?> migrateWorkOrderData(Map<String, Object?> input) {
   }
   if (version < 3) {
     migrated = _migrateV2ToV3(migrated);
+    version = 3;
+  }
+  if (version < 4) {
+    migrated = _migrateV3ToV4(migrated);
   }
   migrated['version'] = currentWorkOrderDataVersion;
   return migrated;
@@ -74,6 +78,21 @@ Map<String, Object?> _migrateV2ToV3(Map<String, Object?> input) {
   migrated['settings'] = settings;
   migrated['payments'] = _listOrEmpty(migrated['payments']);
   migrated['version'] = 3;
+  return migrated;
+}
+
+Map<String, Object?> _migrateV3ToV4(Map<String, Object?> input) {
+  final migrated = _cloneDataMap(input);
+  final settings = _mapOrEmpty(migrated['settings']);
+  settings['costTypes'] ??=
+      defaultCostTypes.map((item) => item.toJson()).toList();
+  migrated['settings'] = settings;
+  migrated['workOrders'] = _listOrEmpty(migrated['workOrders']).map((value) {
+    final order = _mapOrEmpty(value);
+    order['internalCosts'] = _listOrEmpty(order['internalCosts']);
+    return order;
+  }).toList();
+  migrated['version'] = 4;
   return migrated;
 }
 

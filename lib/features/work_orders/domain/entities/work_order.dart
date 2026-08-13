@@ -7,6 +7,8 @@ part 'work_order_item.dart';
 part 'attachment.dart';
 part 'work_order_record.dart';
 part 'payment_record.dart';
+part 'work_order_cost.dart';
+part 'cost_type.dart';
 part 'repair_app_settings.dart';
 part 'repair_app_data.dart';
 part 'data_migrations.dart';

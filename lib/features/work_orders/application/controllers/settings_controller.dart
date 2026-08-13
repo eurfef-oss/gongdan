@@ -9,6 +9,28 @@ const dashboardCardIds = <String>[
   'warrantyReminder',
 ];
 
+const workOrderFieldIds = <String>[
+  'customer',
+  'serviceAddress',
+  'deviceType',
+  'brand',
+  'model',
+  'serialNumber',
+  'faultDescription',
+  'customerRequest',
+  'customerNote',
+  'serviceItems',
+  'discount',
+  'warrantyDays',
+  'warrantyScope',
+  'warrantyExclusions',
+  'status',
+  'appointmentAt',
+  'warrantyStart',
+  'result',
+  'internalNote',
+];
+
 class SettingsController {
   SettingsController(this._store);
 
@@ -30,6 +52,24 @@ class SettingsController {
   Set<String> get dashboardHiddenCards =>
       _store.data.settings.dashboardHiddenCards
           .where(dashboardCardIds.contains)
+          .toSet();
+
+  List<String> get workOrderFieldOrder {
+    final result = <String>[];
+    for (final id in _store.data.settings.workOrderFieldOrder) {
+      if (workOrderFieldIds.contains(id) && !result.contains(id)) {
+        result.add(id);
+      }
+    }
+    for (final id in workOrderFieldIds) {
+      if (!result.contains(id)) result.add(id);
+    }
+    return result;
+  }
+
+  Set<String> get workOrderHiddenFields =>
+      _store.data.settings.workOrderHiddenFields
+          .where(workOrderFieldIds.contains)
           .toSet();
 
   Future<bool> updateDashboardCardOrder(List<String> order) async {
@@ -72,6 +112,51 @@ class SettingsController {
         settings: _store.data.settings.copyWith(
           dashboardHiddenCards:
               dashboardCardIds.where(hidden.contains).toList(),
+        ),
+      ),
+    );
+  }
+
+  Future<bool> updateWorkOrderFieldOrder(List<String> order) async {
+    final normalized = <String>[];
+    for (final id in order) {
+      if (workOrderFieldIds.contains(id) && !normalized.contains(id)) {
+        normalized.add(id);
+      }
+    }
+    for (final id in workOrderFieldIds) {
+      if (!normalized.contains(id)) normalized.add(id);
+    }
+    return _store.commit(
+      _store.data.copyWith(
+        settings: _store.data.settings.copyWith(
+          workOrderFieldOrder: normalized,
+        ),
+      ),
+    );
+  }
+
+  Future<bool> setWorkOrderFieldVisible(String id, bool visible) {
+    return setWorkOrderFieldsVisible([id], visible);
+  }
+
+  Future<bool> setWorkOrderFieldsVisible(
+    Iterable<String> ids,
+    bool visible,
+  ) async {
+    final validIds = ids.where(workOrderFieldIds.contains).toSet();
+    if (validIds.isEmpty) return false;
+    final hidden = {...workOrderHiddenFields};
+    if (visible) {
+      hidden.removeAll(validIds);
+    } else {
+      hidden.addAll(validIds);
+    }
+    return _store.commit(
+      _store.data.copyWith(
+        settings: _store.data.settings.copyWith(
+          workOrderHiddenFields:
+              workOrderFieldIds.where(hidden.contains).toList(),
         ),
       ),
     );

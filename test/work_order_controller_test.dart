@@ -466,6 +466,36 @@ void main() {
     controller.dispose();
   });
 
+  test('work order field visibility and order survive JSON backup restore',
+      () async {
+    final repository = _FakeWorkOrderRepository();
+    final controller = WorkOrderController(repository);
+    await controller.initialize();
+
+    await controller.updateWorkOrderFieldOrder([
+      'faultDescription',
+      'customer',
+    ]);
+    await controller.setWorkOrderFieldVisible('internalNote', false);
+
+    expect(controller.workOrderFieldOrder.first, 'faultDescription');
+    expect(controller.workOrderFieldOrder, contains('customer'));
+    expect(controller.workOrderHiddenFields, contains('internalNote'));
+
+    final backup = controller.exportJson();
+    await controller.importJson(
+      '{"customers": [], "serviceItems": [], "workOrders": [], '
+      '"payments": [], "settings": {}}',
+    );
+    expect(controller.workOrderHiddenFields, isEmpty);
+    expect(controller.workOrderFieldOrder.first, 'customer');
+
+    expect(await controller.importJson(backup), isTrue);
+    expect(controller.workOrderFieldOrder.first, 'faultDescription');
+    expect(controller.workOrderHiddenFields, contains('internalNote'));
+    controller.dispose();
+  });
+
   test('imports the CSV format produced by the app', () async {
     final sourceRepository = _FakeWorkOrderRepository()..value = seedData();
     final source = WorkOrderController(sourceRepository);
@@ -492,5 +522,97 @@ void main() {
 
     source.dispose();
     target.dispose();
+  });
+
+  test('internal costs calculate gross profit and survive JSON backup',
+      () async {
+    final repository = _FakeWorkOrderRepository();
+    final controller = WorkOrderController(repository);
+    await controller.initialize();
+    final order = emptyWorkOrder(
+      id: 'order-cost',
+      number: '20260805-012',
+      customerId: 'customer-cost',
+    ).copyWith(
+      faultDescription: '设备故障',
+      items: [
+        const WorkOrderItem(
+          id: 'item-cost',
+          name: '维修服务',
+          type: ServiceItemType.labor,
+          quantity: 1,
+          unit: '次',
+          unitPrice: 300,
+        ),
+      ],
+    );
+    await controller.saveOrder(order);
+    final costType = controller.costTypes.first;
+    expect(
+      await controller.saveInternalCosts(order.id, [
+        WorkOrderCost(
+          id: 'cost-1',
+          typeId: costType.id,
+          typeName: costType.name,
+          amount: 120,
+        ),
+        const WorkOrderCost(
+          id: 'cost-2',
+          typeId: 'other',
+          typeName: '其他',
+          amount: 30,
+        ),
+      ]),
+      isTrue,
+    );
+    final saved = controller.orderById(order.id)!;
+    expect(saved.internalCostTotal, 150);
+    expect(saved.grossProfit, 150);
+    expect(saved.grossMargin, .5);
+    expect(saved.status, WorkOrderStatus.pendingConfirmation);
+
+    final restoredRepository = _FakeWorkOrderRepository();
+    final restored = WorkOrderController(restoredRepository);
+    await restored.initialize();
+    expect(await restored.importJson(controller.exportJson()), isTrue);
+    expect(restored.orderById(order.id)!.internalCostTotal, 150);
+    expect(restored.costTypes, hasLength(defaultCostTypes.length));
+    controller.dispose();
+    restored.dispose();
+  });
+
+  test('cost types support lifecycle and protect types used by orders',
+      () async {
+    final repository = _FakeWorkOrderRepository();
+    final controller = WorkOrderController(repository);
+    await controller.initialize();
+
+    expect(await controller.addCostType('平台服务费'), isTrue);
+    expect(await controller.addCostType('平台服务费'), isFalse);
+    final added = controller.costTypes.singleWhere(
+      (item) => item.name == '平台服务费',
+    );
+    expect(await controller.setCostTypeEnabled(added.id, false), isTrue);
+    expect(
+        controller.costTypes.singleWhere((item) => item.id == added.id).enabled,
+        isFalse);
+    expect(await controller.renameCostType(added.id, '支付平台费'), isTrue);
+
+    final order = emptyWorkOrder(
+      id: 'order-cost-type',
+      number: '20260805-013',
+    );
+    await controller.saveOrder(order);
+    await controller.saveInternalCosts(order.id, [
+      WorkOrderCost(
+        id: 'cost-type-use',
+        typeId: added.id,
+        typeName: '支付平台费',
+        amount: 10,
+      ),
+    ]);
+    expect(await controller.deleteCostType(added.id), isFalse);
+    expect(await controller.setCostTypeEnabled(added.id, true), isTrue);
+    controller.dispose();
   });
 }

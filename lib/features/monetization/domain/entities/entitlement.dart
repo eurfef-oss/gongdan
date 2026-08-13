@@ -25,6 +25,11 @@ enum ProFeature {
   const ProFeature(this.key);
 
   final String key;
+
+  bool get availableWithoutPro =>
+      this == ProFeature.documentExport ||
+      this == ProFeature.customerSignature ||
+      this == ProFeature.photoAttachments;
 }
 
 class Entitlement {
@@ -92,7 +97,10 @@ class Entitlement {
 
   bool get isPro => state == EntitlementState.active && plan == 'pro';
 
-  bool canUse(ProFeature feature) => isPro && features.contains(feature.key);
+  bool canUse(ProFeature feature) {
+    if (feature.availableWithoutPro) return true;
+    return isPro && features.contains(feature.key);
+  }
 
   Entitlement copyWith({
     EntitlementState? state,

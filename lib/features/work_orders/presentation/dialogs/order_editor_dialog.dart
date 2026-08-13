@@ -111,300 +111,7 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
             padding: const EdgeInsets.fromLTRB(11, 4, 11, 22),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const _DialogSectionLabel(title: '基本信息'),
-                const SizedBox(height: 12),
-                if (customers.isEmpty)
-                  Container(
-                    padding: const EdgeInsets.all(13),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.errorContainer,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      children: [
-                        const Expanded(
-                          child: Text(
-                            '还没有客户档案，可以先新建客户，也可以保存未关联客户的草稿。',
-                            style: TextStyle(fontSize: 14),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        OutlinedButton.icon(
-                          onPressed: _createCustomer,
-                          icon: const Icon(Icons.person_add_alt_1, size: 16),
-                          label: const Text('新建客户'),
-                        ),
-                      ],
-                    ),
-                  )
-                else
-                  DropdownButtonFormField<String>(
-                    initialValue:
-                        customers.any((customer) => customer.id == _customerId)
-                            ? _customerId
-                            : null,
-                    decoration: const InputDecoration(
-                      labelText: '客户',
-                      prefixIcon: Icon(Icons.person_outline),
-                    ),
-                    items: [
-                      ...customers.map(
-                        (customer) => DropdownMenuItem(
-                          value: customer.id,
-                          child: Text(
-                            '${customer.name} · ${customer.phone.isEmpty ? '无手机号' : customer.phone}',
-                          ),
-                        ),
-                      ),
-                      const DropdownMenuItem<String>(
-                        value: _newCustomerValue,
-                        child: Row(
-                          children: [
-                            Icon(Icons.person_add_alt_1, size: 18),
-                            SizedBox(width: 8),
-                            Text('新建客户'),
-                          ],
-                        ),
-                      ),
-                    ],
-                    onChanged: (value) {
-                      if (value == _newCustomerValue) {
-                        _createCustomer();
-                        return;
-                      }
-                      setState(() {
-                        _customerId = value ?? '';
-                        if (_address.text.isEmpty) {
-                          _address.text = widget.controller
-                                  .customerById(_customerId)
-                                  ?.address ??
-                              '';
-                        }
-                      });
-                    },
-                  ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _address,
-                  decoration: const InputDecoration(
-                    labelText: '服务地址',
-                    prefixIcon: Icon(Icons.location_on_outlined),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                _DeviceFields(
-                  deviceType: _deviceType,
-                  brand: _brand,
-                  model: _model,
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _serialNumber,
-                  decoration: const InputDecoration(labelText: '序列号（可选）'),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _fault,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                    labelText: '故障描述',
-                    hintText: '客户说了什么、现场看到什么',
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _request,
-                  maxLines: 2,
-                  decoration: const InputDecoration(
-                    labelText: '客户需求 / 备注',
-                    hintText: '例如：希望今晚前恢复使用',
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _customerNote,
-                  maxLines: 2,
-                  decoration: const InputDecoration(
-                    labelText: '客户备注',
-                    hintText: '需要在维修凭证中留存的客户说明',
-                  ),
-                ),
-                const SizedBox(height: 20),
-                _DialogSectionLabel(
-                  title: '报价项目',
-                  trailing: '${_items.length} 项 · 数量 × 单价 = 小计',
-                ),
-                const SizedBox(height: 10),
-                if (_items.isEmpty)
-                  Container(
-                    padding: const EdgeInsets.all(18),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .surfaceContainerHighest
-                          .withValues(alpha: .45),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      '还没有报价项目，请在下方添加。',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                ..._items.asMap().entries.map(
-                      (entry) => Padding(
-                        padding: const EdgeInsets.only(bottom: 9),
-                        child: _ItemDraftEditor(
-                          key: ObjectKey(entry.value),
-                          item: entry.value,
-                          templates: widget.controller.data.serviceItems,
-                          typeOptions: widget.controller.serviceItemTypeOptions,
-                          onChanged: () => setState(() {}),
-                          onRemove: () =>
-                              setState(() => _items.removeAt(entry.key)),
-                        ),
-                      ),
-                    ),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    OutlinedButton.icon(
-                      onPressed: () => setState(
-                        () => _items.add(
-                          _ItemDraft(
-                            name: '',
-                            type: ServiceItemType.labor,
-                            quantity: 1,
-                            unit: '次',
-                            unitPrice: 0,
-                          ),
-                        ),
-                      ),
-                      icon: const Icon(Icons.add, size: 16),
-                      label: const Text('添加空白项目'),
-                    ),
-                    ...widget.controller.data.serviceItems
-                        .where((item) => item.enabled)
-                        .take(3)
-                        .map(
-                          (item) => TextButton(
-                            onPressed: () => setState(
-                              () => _items.add(
-                                _ItemDraft(
-                                  name: item.name,
-                                  type: item.type,
-                                  customType: item.customType,
-                                  quantity: 1,
-                                  unit: item.unit,
-                                  unitPrice: item.defaultPrice,
-                                ),
-                              ),
-                            ),
-                            child: Text('+ ${item.name}'),
-                          ),
-                        ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final fields = [
-                      TextField(
-                        controller: _discount,
-                        onChanged: (_) => setState(() {}),
-                        keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true),
-                        decoration: const InputDecoration(labelText: '优惠金额'),
-                      ),
-                      TextField(
-                        controller: _warrantyDays,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(labelText: '保修天数'),
-                      ),
-                    ];
-                    if (constraints.maxWidth < 480) {
-                      return Column(
-                        children: [
-                          fields[0],
-                          const SizedBox(height: 12),
-                          fields[1],
-                        ],
-                      );
-                    }
-                    return Row(
-                      children: [
-                        Expanded(child: fields[0]),
-                        const SizedBox(width: 10),
-                        Expanded(child: fields[1]),
-                      ],
-                    );
-                  },
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _warrantyScope,
-                  decoration: const InputDecoration(labelText: '保修范围'),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _warrantyExclusions,
-                  maxLines: 2,
-                  decoration: const InputDecoration(labelText: '不保修说明'),
-                ),
-                const SizedBox(height: 20),
-                const _DialogSectionLabel(title: '服务记录'),
-                const SizedBox(height: 10),
-                InputDecorator(
-                  decoration: const InputDecoration(labelText: '工单状态'),
-                  child: Text(
-                    '${_status.label} · 状态由工单流程自动推进',
-                    style: TextStyle(fontSize: 14),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                _DateActionField(
-                  label: '预约时间',
-                  value: _dialogDateTime(_appointmentAt),
-                  onTap: _pickAppointment,
-                  onClear: _appointmentAt == null
-                      ? null
-                      : () => setState(() => _appointmentAt = null),
-                ),
-                const SizedBox(height: 12),
-                _DateActionField(
-                  label: '保修开始日期',
-                  value: _dialogDate(_warrantyStart),
-                  onTap: _pickWarrantyStart,
-                  onClear: _warrantyStart == null
-                      ? null
-                      : () => setState(() => _warrantyStart = null),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _result,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                    labelText: '维修结果',
-                    hintText: '完成服务后补充处理结果',
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _internalNote,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                    labelText: '内部备注',
-                    hintText: '仅自己查看的记录',
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _DialogTotals(items: _items, discount: _parseMoney(_discount)),
-              ],
+              children: _buildFormFields(context, customers),
             ),
           ),
         ),
@@ -463,6 +170,348 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
         constraints: BoxConstraints(maxWidth: 1040, maxHeight: maxHeight),
         child: editor,
       ),
+    );
+  }
+
+  List<Widget> _buildFormFields(
+    BuildContext context,
+    List<Customer> customers,
+  ) {
+    final hidden = widget.controller.workOrderHiddenFields;
+    final fields = widget.controller.workOrderFieldOrder
+        .where((id) => !hidden.contains(id))
+        .toList();
+    final children = <Widget>[];
+    String? previousGroup;
+    for (final id in fields) {
+      final group = _workOrderFieldGroup(id);
+      if (group != previousGroup) {
+        if (children.isNotEmpty) children.add(const SizedBox(height: 8));
+        children.add(_DialogSectionLabel(title: group));
+        children.add(const SizedBox(height: 12));
+        previousGroup = group;
+      }
+      children.add(_buildWorkOrderField(context, id, customers));
+      children.add(const SizedBox(height: 12));
+    }
+    if (fields.contains('serviceItems') || fields.contains('discount')) {
+      children.add(const SizedBox(height: 4));
+      children
+          .add(_DialogTotals(items: _items, discount: _parseMoney(_discount)));
+    }
+    return children;
+  }
+
+  String _workOrderFieldGroup(String id) {
+    const basic = {
+      'customer',
+      'serviceAddress',
+      'deviceType',
+      'brand',
+      'model',
+      'serialNumber',
+      'faultDescription',
+      'customerRequest',
+      'customerNote',
+    };
+    if (basic.contains(id)) return '基本信息';
+    if (id == 'serviceItems' ||
+        id == 'discount' ||
+        id == 'warrantyDays' ||
+        id == 'warrantyScope' ||
+        id == 'warrantyExclusions') {
+      return '报价与保修';
+    }
+    return '服务记录';
+  }
+
+  Widget _buildWorkOrderField(
+    BuildContext context,
+    String id,
+    List<Customer> customers,
+  ) {
+    switch (id) {
+      case 'customer':
+        if (customers.isEmpty) {
+          return Container(
+            padding: const EdgeInsets.all(13),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.errorContainer,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    '还没有客户档案，可以先新建客户，也可以保存未关联客户的草稿。',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                OutlinedButton.icon(
+                  onPressed: _createCustomer,
+                  icon: const Icon(Icons.person_add_alt_1, size: 16),
+                  label: const Text('新建客户'),
+                ),
+              ],
+            ),
+          );
+        }
+        return DropdownButtonFormField<String>(
+          initialValue: customers.any((customer) => customer.id == _customerId)
+              ? _customerId
+              : null,
+          decoration: const InputDecoration(
+            labelText: '客户',
+            prefixIcon: Icon(Icons.person_outline),
+          ),
+          items: [
+            ...customers.map(
+              (customer) => DropdownMenuItem(
+                value: customer.id,
+                child: Text(
+                  '${customer.name} · ${customer.phone.isEmpty ? '无手机号' : customer.phone}',
+                ),
+              ),
+            ),
+            const DropdownMenuItem<String>(
+              value: _newCustomerValue,
+              child: Row(
+                children: [
+                  Icon(Icons.person_add_alt_1, size: 18),
+                  SizedBox(width: 8),
+                  Text('新建客户'),
+                ],
+              ),
+            ),
+          ],
+          onChanged: (value) {
+            if (value == _newCustomerValue) {
+              _createCustomer();
+              return;
+            }
+            setState(() {
+              _customerId = value ?? '';
+              if (_address.text.isEmpty) {
+                _address.text =
+                    widget.controller.customerById(_customerId)?.address ?? '';
+              }
+            });
+          },
+        );
+      case 'serviceAddress':
+        return TextField(
+          controller: _address,
+          decoration: const InputDecoration(
+            labelText: '服务地址',
+            prefixIcon: Icon(Icons.location_on_outlined),
+          ),
+        );
+      case 'deviceType':
+        return TextField(
+          controller: _deviceType,
+          decoration: const InputDecoration(labelText: '设备类型'),
+        );
+      case 'brand':
+        return TextField(
+          controller: _brand,
+          decoration: const InputDecoration(labelText: '品牌'),
+        );
+      case 'model':
+        return TextField(
+          controller: _model,
+          decoration: const InputDecoration(labelText: '型号'),
+        );
+      case 'serialNumber':
+        return TextField(
+          controller: _serialNumber,
+          decoration: const InputDecoration(labelText: '序列号（可选）'),
+        );
+      case 'faultDescription':
+        return TextField(
+          controller: _fault,
+          maxLines: 3,
+          decoration: const InputDecoration(
+            labelText: '故障描述',
+            hintText: '客户说了什么、现场看到什么',
+          ),
+        );
+      case 'customerRequest':
+        return TextField(
+          controller: _request,
+          maxLines: 2,
+          decoration: const InputDecoration(
+            labelText: '客户需求 / 备注',
+            hintText: '例如：希望今晚前恢复使用',
+          ),
+        );
+      case 'customerNote':
+        return TextField(
+          controller: _customerNote,
+          maxLines: 2,
+          decoration: const InputDecoration(
+            labelText: '客户备注',
+            hintText: '需要在维修凭证中留存的客户说明',
+          ),
+        );
+      case 'serviceItems':
+        return _buildServiceItemsField(context);
+      case 'discount':
+        return TextField(
+          controller: _discount,
+          onChanged: (_) => setState(() {}),
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: const InputDecoration(labelText: '优惠金额'),
+        );
+      case 'warrantyDays':
+        return TextField(
+          controller: _warrantyDays,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(labelText: '保修天数'),
+        );
+      case 'warrantyScope':
+        return TextField(
+          controller: _warrantyScope,
+          decoration: const InputDecoration(labelText: '保修范围'),
+        );
+      case 'warrantyExclusions':
+        return TextField(
+          controller: _warrantyExclusions,
+          maxLines: 2,
+          decoration: const InputDecoration(labelText: '不保修说明'),
+        );
+      case 'status':
+        return InputDecorator(
+          decoration: const InputDecoration(labelText: '工单状态'),
+          child: Text(
+            '${_status.label} · 状态由工单流程自动推进',
+            style: const TextStyle(fontSize: 14),
+          ),
+        );
+      case 'appointmentAt':
+        return _DateActionField(
+          label: '预约时间',
+          value: _dialogDateTime(_appointmentAt),
+          onTap: _pickAppointment,
+          onClear: _appointmentAt == null
+              ? null
+              : () => setState(() => _appointmentAt = null),
+        );
+      case 'warrantyStart':
+        return _DateActionField(
+          label: '保修开始日期',
+          value: _dialogDate(_warrantyStart),
+          onTap: _pickWarrantyStart,
+          onClear: _warrantyStart == null
+              ? null
+              : () => setState(() => _warrantyStart = null),
+        );
+      case 'result':
+        return TextField(
+          controller: _result,
+          maxLines: 3,
+          decoration: const InputDecoration(
+            labelText: '维修结果',
+            hintText: '完成服务后补充处理结果',
+          ),
+        );
+      case 'internalNote':
+        return TextField(
+          controller: _internalNote,
+          maxLines: 3,
+          decoration: const InputDecoration(
+            labelText: '内部备注',
+            hintText: '仅自己查看的记录',
+          ),
+        );
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  Widget _buildServiceItemsField(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _DialogSectionLabel(
+          title: '报价项目',
+          trailing: '${_items.length} 项 · 数量 × 单价 = 小计',
+        ),
+        const SizedBox(height: 10),
+        if (_items.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(18),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: Theme.of(context)
+                  .colorScheme
+                  .surfaceContainerHighest
+                  .withValues(alpha: .45),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              '还没有报价项目，请在下方添加。',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ..._items.asMap().entries.map(
+              (entry) => Padding(
+                padding: const EdgeInsets.only(bottom: 9),
+                child: _ItemDraftEditor(
+                  key: ObjectKey(entry.value),
+                  item: entry.value,
+                  templates: widget.controller.data.serviceItems,
+                  typeOptions: widget.controller.serviceItemTypeOptions,
+                  onChanged: () => setState(() {}),
+                  onRemove: () => setState(() => _items.removeAt(entry.key)),
+                ),
+              ),
+            ),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            OutlinedButton.icon(
+              onPressed: () => setState(
+                () => _items.add(
+                  _ItemDraft(
+                    name: '',
+                    type: ServiceItemType.labor,
+                    quantity: 1,
+                    unit: '次',
+                    unitPrice: 0,
+                  ),
+                ),
+              ),
+              icon: const Icon(Icons.add, size: 16),
+              label: const Text('添加空白项目'),
+            ),
+            ...widget.controller.data.serviceItems
+                .where((item) => item.enabled)
+                .take(3)
+                .map(
+                  (item) => TextButton(
+                    onPressed: () => setState(
+                      () => _items.add(
+                        _ItemDraft(
+                          name: item.name,
+                          type: item.type,
+                          customType: item.customType,
+                          quantity: 1,
+                          unit: item.unit,
+                          unitPrice: item.defaultPrice,
+                        ),
+                      ),
+                    ),
+                    child: Text('+ ${item.name}'),
+                  ),
+                ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -581,58 +630,6 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
       return;
     }
     Navigator.of(context).pop();
-  }
-}
-
-class _DeviceFields extends StatelessWidget {
-  const _DeviceFields(
-      {required this.deviceType, required this.brand, required this.model});
-
-  final TextEditingController deviceType;
-  final TextEditingController brand;
-  final TextEditingController model;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final fields = [
-          TextField(
-              controller: deviceType,
-              decoration: const InputDecoration(labelText: '设备类型')),
-          TextField(
-              controller: brand,
-              decoration: const InputDecoration(labelText: '品牌')),
-          TextField(
-              controller: model,
-              decoration: const InputDecoration(labelText: '型号')),
-        ];
-        if (constraints.maxWidth < 500) {
-          return Column(
-            children: [
-              fields[0],
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(child: fields[1]),
-                  const SizedBox(width: 10),
-                  Expanded(child: fields[2]),
-                ],
-              ),
-            ],
-          );
-        }
-        return Row(
-          children: [
-            Expanded(child: fields[0]),
-            const SizedBox(width: 10),
-            Expanded(child: fields[1]),
-            const SizedBox(width: 10),
-            Expanded(child: fields[2]),
-          ],
-        );
-      },
-    );
   }
 }
 

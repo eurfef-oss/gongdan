@@ -25,3 +25,4 @@ part 'customers/customers_page.dart';
 part 'templates/templates_page.dart';
 part 'statistics/statistics_page.dart';
 part 'settings/settings_page.dart';
+part 'settings/internal_costs_page.dart';

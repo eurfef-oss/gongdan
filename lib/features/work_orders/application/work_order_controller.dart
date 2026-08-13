@@ -4,6 +4,7 @@ import '../domain/entities/work_order.dart';
 import '../domain/repositories/work_order_repository.dart';
 import 'controllers/backup_controller.dart';
 import 'controllers/customer_controller.dart';
+import 'controllers/cost_controller.dart';
 import 'controllers/order_controller.dart';
 import 'controllers/settings_controller.dart';
 import 'controllers/template_controller.dart';
@@ -12,9 +13,10 @@ import 'work_order_store.dart';
 
 export 'controllers/backup_controller.dart' show BackupController;
 export 'controllers/customer_controller.dart' show CustomerController;
+export 'controllers/cost_controller.dart' show CostController;
 export 'controllers/order_controller.dart' show OrderController;
 export 'controllers/settings_controller.dart'
-    show SettingsController, dashboardCardIds;
+    show SettingsController, dashboardCardIds, workOrderFieldIds;
 export 'controllers/template_controller.dart' show TemplateController;
 export 'services/work_order_export_service.dart'
     show CsvImportOutcome, CsvImportResult, WorkOrderExportService;
@@ -24,6 +26,7 @@ class WorkOrderController extends ChangeNotifier {
   WorkOrderController(WorkOrderRepository repository) {
     _store = WorkOrderStore(repository, notifyListeners);
     orders = OrderController(_store);
+    costs = CostController(_store);
     customers = CustomerController(_store);
     templates = TemplateController(_store);
     settings = SettingsController(_store);
@@ -33,6 +36,7 @@ class WorkOrderController extends ChangeNotifier {
   late final WorkOrderStore _store;
 
   late final OrderController orders;
+  late final CostController costs;
   late final CustomerController customers;
   late final TemplateController templates;
   late final SettingsController settings;
@@ -58,6 +62,10 @@ class WorkOrderController extends ChangeNotifier {
       templates.serviceItemTypeOptions;
   List<String> get dashboardCardOrder => settings.dashboardCardOrder;
   Set<String> get dashboardHiddenCards => settings.dashboardHiddenCards;
+  List<String> get workOrderFieldOrder => settings.workOrderFieldOrder;
+  Set<String> get workOrderHiddenFields => settings.workOrderHiddenFields;
+  List<CostType> get costTypes => costs.costTypes;
+  List<CostType> get enabledCostTypes => costs.enabledCostTypes;
 
   Future<void> initialize() => _store.initialize();
 
@@ -105,6 +113,19 @@ class WorkOrderController extends ChangeNotifier {
   Future<void> removeAttachment(String orderId, String attachmentId) =>
       orders.removeAttachment(orderId, attachmentId);
 
+  Future<bool> saveInternalCosts(
+    String orderId,
+    List<WorkOrderCost> values,
+  ) =>
+      costs.saveInternalCosts(orderId, values);
+
+  Future<bool> addCostType(String value) => costs.addCostType(value);
+  Future<bool> renameCostType(String id, String value) =>
+      costs.renameCostType(id, value);
+  Future<bool> setCostTypeEnabled(String id, bool enabled) =>
+      costs.setCostTypeEnabled(id, enabled);
+  Future<bool> deleteCostType(String id) => costs.deleteCostType(id);
+
   Future<void> saveCustomer(Customer customer) =>
       customers.saveCustomer(customer);
   Future<bool> deleteCustomer(String customerId) =>
@@ -132,6 +153,15 @@ class WorkOrderController extends ChangeNotifier {
     bool visible,
   ) =>
       settings.setDashboardCardsVisible(ids, visible);
+  Future<bool> updateWorkOrderFieldOrder(List<String> order) =>
+      settings.updateWorkOrderFieldOrder(order);
+  Future<bool> setWorkOrderFieldVisible(String id, bool visible) =>
+      settings.setWorkOrderFieldVisible(id, visible);
+  Future<bool> setWorkOrderFieldsVisible(
+    Iterable<String> ids,
+    bool visible,
+  ) =>
+      settings.setWorkOrderFieldsVisible(ids, visible);
   Future<void> updateSettings(RepairAppSettings value) =>
       settings.updateSettings(value);
 

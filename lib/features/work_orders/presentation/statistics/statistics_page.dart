@@ -47,6 +47,20 @@ class _StatsPageState extends State<_StatsPage> {
     final revenue = orders.fold<double>(0, (sum, order) => sum + order.total);
     final received =
         orders.fold<double>(0, (sum, order) => sum + order.normalizedPaid);
+    final cost =
+        orders.fold<double>(0, (sum, order) => sum + order.internalCostTotal);
+    final grossProfit =
+        orders.fold<double>(0, (sum, order) => sum + order.grossProfit);
+    final margin = revenue <= 0 ? 0 : grossProfit / revenue;
+    final missingCostCount =
+        orders.where((order) => order.internalCosts.isEmpty).length;
+    final costsByType = <String, double>{};
+    for (final order in orders) {
+      for (final item in order.internalCosts) {
+        costsByType[item.typeName] =
+            (costsByType[item.typeName] ?? 0) + item.amount;
+      }
+    }
     final completed = orders
         .where((order) => order.status == WorkOrderStatus.completed)
         .length;
@@ -102,6 +116,21 @@ class _StatsPageState extends State<_StatsPage> {
                       value: '$completed 张',
                       icon: Icons.task_alt_outlined,
                     ),
+                    _Metric(
+                      label: '总成本',
+                      value: moneyText(cost),
+                      icon: Icons.account_balance_wallet_outlined,
+                    ),
+                    _Metric(
+                      label: '毛利',
+                      value: moneyText(grossProfit),
+                      icon: Icons.trending_up_outlined,
+                    ),
+                    _Metric(
+                      label: '毛利率',
+                      value: '${(margin * 100).toStringAsFixed(1)}%',
+                      icon: Icons.percent_outlined,
+                    ),
                   ],
                 ),
                 _Section(
@@ -140,6 +169,39 @@ class _StatsPageState extends State<_StatsPage> {
                           (revenue - received).clamp(0, double.infinity),
                         ),
                       ),
+                    ],
+                  ),
+                ),
+                _Section(
+                  title: '成本与利润',
+                  trailing: missingCostCount == 0
+                      ? null
+                      : Text(
+                          '$missingCostCount 张未录入成本',
+                          style: TextStyle(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                            fontSize: 13,
+                          ),
+                        ),
+                  child: Column(
+                    children: [
+                      _SettingLine(label: '总成本', value: moneyText(cost)),
+                      _SettingLine(
+                          label: '预计毛利', value: moneyText(grossProfit)),
+                      _SettingLine(
+                        label: '毛利率',
+                        value: '${(margin * 100).toStringAsFixed(1)}%',
+                      ),
+                      if (costsByType.isNotEmpty) ...[
+                        const Divider(height: 20),
+                        ...costsByType.entries.map(
+                          (entry) => _SettingLine(
+                            label: entry.key,
+                            value: moneyText(entry.value),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),

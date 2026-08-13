@@ -2,16 +2,16 @@
 
 ## 版本与构建登记（唯一记录）
 
-- `pubspec.yaml`：`1.0.1+7`；
+- `pubspec.yaml`：`1.0.1+8`；
 - `versionName`：`1.0.1`；
-- `versionCode`：`7`；
+- `versionCode`：`8`；
 - 已确认 Google Play 不可复用的版本代码：`5`、`6`；
-- 下一次用于商店上传的版本代码必须高于 Google Play Console 已使用的最大值；若本次 `7` 已上传，下一次使用 `8` 或更高版本代码。
+- 下一次用于商店上传的版本代码必须高于 Google Play Console 已使用的最大值；本次使用 `8`，后续如已上传则继续递增。
 
 | 产物 | 构建日期 | 大小 | SHA-256 |
 | --- | --- | ---: | --- |
 | `build/app/outputs/flutter-apk/app-release.apk` | 2026-08-13 | 59,594,332 bytes（56.79 MB） | `B4808B67391A5A8BB913E85105CDDA8060A5D633538C10B249B365535A0CC31C` |
-| `build/app/outputs/bundle/release/app-release.aab` | 2026-08-13 | 59,821,147 bytes（57.08 MB） | `3CB4ACA45EC820D555E7A012EA926DCA962BA995320AA84C2396C674FBA4BC5D` |
+| `build/app/outputs/bundle/release/app-release-1.0.1+8.aab` | 2026-08-13 | 59,821,151 bytes（57.08 MB） | `F5CCC9A1E3EBEA0BC7CE101F99D7B7AA8DBF56E3CDBBE2A7A336C7F2B2D1F1DF` |
 
 版本代码记录：
 
@@ -19,7 +19,8 @@
 | --- | ---: | --- | --- |
 | `1.0.1` | `5` | 已占用 | Google Play 提示版本代码已使用 |
 | `1.0.1` | `6` | 已占用 | Google Play 提示版本代码已使用 |
-| `1.0.1` | `7` | 当前记录 | Release AAB 已构建 |
+| `1.0.1` | `7` | 已占用 | Google Play 提示版本代码已使用 |
+| `1.0.1` | `8` | 当前记录 | Release AAB 已构建，产物文件名包含版本名和版本代码 |
 
 ## APK/AAB 专业版授权规则
 
@@ -97,6 +98,6 @@
 - Flutter 验证：`flutter analyze` 无问题，38 项测试全部通过。
 - 内部 APK：使用 `--dart-define=ENABLE_RELEASE_PRO_PREVIEW=true` 重新构建成功；预览授权仅用于内部验收，不写入购买缓存。
 - APK 校验：文件大小 `59,594,332` bytes，SHA-256 为 `B4808B67391A5A8BB913E85105CDDA8060A5D633538C10B249B365535A0CC31C`。
-- 正式 AAB：不含专业版预览开关，构建成功；文件大小 `59,821,147` bytes，SHA-256 为 `3CB4ACA45EC820D555E7A012EA926DCA962BA995320AA84C2396C674FBA4BC5D`，`jarsigner -verify` 通过。
+- 正式 AAB：不含专业版预览开关，构建成功；文件名为 `app-release-1.0.1+8.aab`，文件大小 `59,821,151` bytes，SHA-256 为 `F5CCC9A1E3EBEA0BC7CE101F99D7B7AA8DBF56E3CDBBE2A7A336C7F2B2D1F1DF`，`jarsigner -verify` 通过。
 
 仍需在 Google Play 内部测试轨道完成 AAB 上传、测试账号安装、真实购买、恢复购买、离线使用和重新安装验证。

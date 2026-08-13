@@ -57,3 +57,19 @@ kotlin {
 flutter {
     source = "../.."
 }
+
+// Keep Flutter's default output for tooling compatibility and also publish a
+// Versioned copy that is unambiguous when several bundles are archived.
+val releaseVersionedBundleName =
+    "app-release-${flutter.versionName}+${flutter.versionCode}.aab"
+
+tasks.matching { it.name == "bundleRelease" }.configureEach {
+    doLast {
+        val source = layout.buildDirectory
+            .file("outputs/bundle/release/app-release.aab")
+            .get()
+            .asFile
+        val target = source.resolveSibling(releaseVersionedBundleName)
+        source.copyTo(target, overwrite = true)
+    }
+}

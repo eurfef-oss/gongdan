@@ -191,6 +191,7 @@ void main() {
     expect(find.text('系统设置'), findsOneWidget);
     expect(find.text('门店名称'), findsNothing);
 
+    await tester.ensureVisible(find.text('项目模板'));
     await tester.tap(find.text('项目模板'));
     await tester.pumpAndSettle();
 
@@ -246,5 +247,46 @@ void main() {
 
     // The test binding does not remove the root route after SystemNavigator.pop;
     // on a phone this second back event returns to the system desktop.
+  });
+
+  testWidgets('language setting switches the app shell to English',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final repository = _FakeWorkOrderRepository();
+    repository.value = repository.value.copyWith(
+      settings: repository.value.settings.copyWith(hasSeenWelcome: true),
+    );
+    final controller = WorkOrderController(repository);
+    await controller.initialize();
+
+    await tester.pumpWidget(BaseApp(controller: controller));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('设置'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('语言'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('语言设置'), findsOneWidget);
+    await tester.tap(find.text('English'));
+    await tester.pumpAndSettle();
+
+    expect(controller.data.settings.languageCode, 'en');
+    expect(find.text('Language settings'), findsOneWidget);
+    expect(find.text('语言设置'), findsNothing);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('Settings & backup'), findsOneWidget);
+
+    final templatesEntry = find.text('Service templates');
+    await tester.ensureVisible(templatesEntry);
+    await tester.tap(templatesEntry);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Deep AC cleaning'), findsOneWidget);
+    expect(find.text('空调深度清洗'), findsNothing);
+    expect(find.textContaining('unit'), findsAtLeastNWidgets(1));
   });
 }

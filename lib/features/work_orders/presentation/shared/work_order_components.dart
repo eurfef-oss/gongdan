@@ -285,9 +285,11 @@ class _Metric extends StatelessWidget {
 class _MetricSummaryCard extends StatelessWidget {
   const _MetricSummaryCard({
     required this.metrics,
+    this.columns,
   });
 
   final List<_Metric> metrics;
+  final int? columns;
 
   @override
   Widget build(BuildContext context) {
@@ -297,10 +299,11 @@ class _MetricSummaryCard extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final columns = constraints.maxWidth >= 820 ? 4 : 2;
+            final columnCount =
+                columns ?? (constraints.maxWidth >= 820 ? 4 : 2);
             const gap = 10.0;
             final width =
-                (constraints.maxWidth - gap * (columns - 1)) / columns;
+                (constraints.maxWidth - gap * (columnCount - 1)) / columnCount;
             return Wrap(
               spacing: gap,
               runSpacing: gap,

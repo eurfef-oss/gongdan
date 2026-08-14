@@ -178,13 +178,13 @@ class _ItemDraft {
 
   double get amount => money(quantity * unitPrice);
 
-  WorkOrderItem toItem() => WorkOrderItem(
+  WorkOrderItem toItem({String defaultUnit = '次'}) => WorkOrderItem(
         id: idFor('item'),
         name: name.trim(),
         type: type,
         customType: customType,
         quantity: quantity,
-        unit: unit.trim().isEmpty ? '次' : unit.trim(),
+        unit: unit.trim().isEmpty ? defaultUnit : unit.trim(),
         unitPrice: unitPrice,
         note: note.trim(),
       );

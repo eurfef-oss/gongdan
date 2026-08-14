@@ -420,7 +420,7 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
             content: Text(
               context.trf(
                 '“{name}”将从项目目录中移除，已有工单明细不会受影响。',
-                {'name': item.name},
+                {'name': localizedServiceItemName(context, item)},
               ),
             ),
             actions: [

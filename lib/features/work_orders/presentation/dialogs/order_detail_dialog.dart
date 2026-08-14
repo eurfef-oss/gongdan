@@ -640,8 +640,13 @@ class _LineItemsCard extends StatelessWidget {
                 ...order.items.map(
                   (item) => TableRow(
                     children: [
-                      _TableCell(item.name, note: item.note),
-                      _TableCell('${item.quantity} ${item.unit}'),
+                      _TableCell(
+                        localizedWorkOrderItemName(context, item),
+                        note: item.note,
+                      ),
+                      _TableCell(
+                        '${item.quantity} ${localizedWorkOrderItemUnit(context, item)}',
+                      ),
                       _TableCell(_dialogMoney(item.amount), alignEnd: true),
                     ],
                   ),

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../../../../l10n/app_strings.dart';
+import '../../../../l10n/model_localizations.dart';
 import '../../domain/entities/work_order.dart';
 
 const _csvHeaders = <String>[
@@ -86,7 +87,7 @@ class WorkOrderExportService {
           order.createdAt.toIso8601String(),
           order.items
               .map((item) =>
-                  '${item.name} ${item.quantity}${item.unit} ¥${item.amount.toStringAsFixed(2)}')
+                  '${localizedWorkOrderItemNameForLocale(locale, item)} ${item.quantity}${localizedUnitForLocale(locale, item.unit)} ¥${item.amount.toStringAsFixed(2)}')
               .join('；'),
           _paymentsFor(data, order.id)
               .map((payment) =>

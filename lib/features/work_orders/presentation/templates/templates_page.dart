@@ -57,7 +57,11 @@ class _TemplatesPageState extends State<_TemplatesPage> {
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(0, 0, 0, 12),
-                  child: Row(
+                  child: Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 12,
+                    runSpacing: 8,
                     children: [
                       FilterChip(
                         selected: _showDisabled,
@@ -65,7 +69,6 @@ class _TemplatesPageState extends State<_TemplatesPage> {
                         onSelected: (value) =>
                             setState(() => _showDisabled = value),
                       ),
-                      const Spacer(),
                       Text(
                         context.trf('{count} 个项目', {'count': visible.length}),
                         style: TextStyle(
@@ -121,7 +124,7 @@ class _TemplateRow extends StatelessWidget {
           child: const Icon(Icons.category_outlined, size: 19),
         ),
         title: Text(
-          item.name,
+          localizedServiceItemName(context, item),
           style: TextStyle(
             fontWeight: FontWeight.w800,
             color: item.enabled
@@ -138,7 +141,7 @@ class _TemplateRow extends StatelessWidget {
                 item.type,
                 customType: item.customType,
               ),
-              'unit': item.unit,
+              'unit': localizedServiceItemUnit(context, item),
               'price': item.defaultPrice.toStringAsFixed(2),
               'days': item.warrantyDays,
             },

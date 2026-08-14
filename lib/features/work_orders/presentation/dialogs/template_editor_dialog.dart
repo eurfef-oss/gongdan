@@ -259,6 +259,7 @@ class _TemplateEditorDialogState extends State<TemplateEditorDialog> {
   late final TextEditingController _warranty;
   late String _typeKey;
   late bool _enabled;
+  bool _unitDefaulted = false;
   bool _saving = false;
 
   @override
@@ -266,7 +267,7 @@ class _TemplateEditorDialogState extends State<TemplateEditorDialog> {
     super.initState();
     final item = widget.initial;
     _name = TextEditingController(text: item?.name ?? '');
-    _unit = TextEditingController(text: item?.unit ?? '次');
+    _unit = TextEditingController(text: item?.unit ?? '');
     _price = TextEditingController(
         text: item == null ? '' : item.defaultPrice.toStringAsFixed(2));
     _warranty =
@@ -276,6 +277,15 @@ class _TemplateEditorDialogState extends State<TemplateEditorDialog> {
       item?.customType,
     );
     _enabled = item?.enabled ?? true;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_unitDefaulted && _unit.text.trim().isEmpty) {
+      _unit.text = context.tr('次');
+      _unitDefaulted = true;
+    }
   }
 
   @override
@@ -418,7 +428,7 @@ class _TemplateEditorDialogState extends State<TemplateEditorDialog> {
           name: name,
           type: type.type,
           customType: type.customType,
-          unit: _unit.text.trim().isEmpty ? '次' : _unit.text.trim(),
+          unit: _unit.text.trim().isEmpty ? context.tr('次') : _unit.text.trim(),
           defaultPrice: money(double.tryParse(_price.text) ?? 0),
           warrantyDays: int.tryParse(_warranty.text) ?? 0,
           enabled: _enabled,
@@ -428,7 +438,7 @@ class _TemplateEditorDialogState extends State<TemplateEditorDialog> {
           name: name,
           type: type.type,
           customType: type.customType,
-          unit: _unit.text.trim().isEmpty ? '次' : _unit.text.trim(),
+          unit: _unit.text.trim().isEmpty ? context.tr('次') : _unit.text.trim(),
           defaultPrice: money(double.tryParse(_price.text) ?? 0),
           warrantyDays: int.tryParse(_warranty.text) ?? 0,
           enabled: _enabled,

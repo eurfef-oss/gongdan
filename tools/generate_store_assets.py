@@ -38,22 +38,31 @@ def brand_background(size: tuple[int, int]) -> Image.Image:
 def render_app_icon(size: int = 1024) -> Image.Image:
     """Render a deterministic, geometric work-order icon without generated art."""
     scale = 2
+    glyph_scale = 0.84
+    unit = scale * glyph_scale
     canvas_size = size * scale
     canvas = brand_background((canvas_size, canvas_size)).convert("RGBA")
 
     def box(values: tuple[int, int, int, int]) -> tuple[int, int, int, int]:
-        return tuple(value * scale for value in values)
+        left, top, right, bottom = values
+        return tuple(
+            round((512 + (value - 512) * glyph_scale) * scale)
+            for value in (left, top, right, bottom)
+        )
 
     def point(values: tuple[int, int]) -> tuple[int, int]:
-        return tuple(value * scale for value in values)
+        return tuple(
+            round((512 + (value - 512) * glyph_scale) * scale)
+            for value in values
+        )
 
     # One restrained shadow system for the full card stack.
     shadow = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
     shadow_draw = ImageDraw.Draw(shadow)
     shadow_draw.rounded_rectangle(
-        box((172, 236, 852, 856)), radius=78 * scale, fill=(0, 8, 42, 92)
+        box((172, 236, 852, 856)), radius=round(78 * unit), fill=(0, 8, 42, 92)
     )
-    shadow = shadow.filter(ImageFilter.GaussianBlur(28 * scale))
+    shadow = shadow.filter(ImageFilter.GaussianBlur(round(28 * unit)))
     canvas = Image.alpha_composite(canvas, shadow)
 
     draw = ImageDraw.Draw(canvas)
@@ -61,31 +70,31 @@ def render_app_icon(size: int = 1024) -> Image.Image:
     # Two balanced background cards communicate a work-order queue.
     draw.rounded_rectangle(
         box((126, 244, 666, 824)),
-        radius=74 * scale,
+        radius=round(74 * unit),
         fill=(91, 83, 222, 255),
         outline=(119, 116, 240, 255),
-        width=3 * scale,
+        width=round(3 * unit),
     )
     draw.rounded_rectangle(
         box((358, 244, 898, 824)),
-        radius=74 * scale,
+        radius=round(74 * unit),
         fill=(54, 104, 224, 255),
         outline=(88, 137, 237, 255),
-        width=3 * scale,
+        width=round(3 * unit),
     )
 
     # Main work order, with consistent geometry and minimal depth.
     front = box((218, 164, 806, 850))
     draw.rounded_rectangle(
         front,
-        radius=74 * scale,
+        radius=round(74 * unit),
         fill=(249, 251, 255, 255),
         outline=(222, 229, 244, 255),
-        width=4 * scale,
+        width=round(4 * unit),
     )
     draw.rounded_rectangle(
         box((360, 164, 664, 264)),
-        radius=34 * scale,
+        radius=round(34 * unit),
         fill=(40, 88, 201, 255),
     )
     draw.rectangle(box((360, 164, 664, 214)), fill=(40, 88, 201, 255))
@@ -98,7 +107,7 @@ def render_app_icon(size: int = 1024) -> Image.Image:
         draw.ellipse(box((302, y - 32, 366, y + 32)), fill=color)
         draw.rounded_rectangle(
             box((414, y - 18, 414 + width, y + 18)),
-            radius=18 * scale,
+            radius=round(18 * unit),
             fill=(24, 43, 91, 255),
         )
 
@@ -107,12 +116,12 @@ def render_app_icon(size: int = 1024) -> Image.Image:
         box((610, 648, 824, 862)),
         fill=(244, 183, 64, 255),
         outline=(255, 205, 96, 255),
-        width=7 * scale,
+        width=round(7 * unit),
     )
     draw.line(
         [point((662, 756)), point((706, 800)), point((776, 714))],
         fill=(255, 255, 255, 255),
-        width=24 * scale,
+        width=round(24 * unit),
         joint="curve",
     )
 
@@ -138,7 +147,7 @@ def font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
     return ImageFont.load_default(size=size)
 
 
-def feature_graphic(master: Image.Image) -> Image.Image:
+def feature_graphic(master: Image.Image, language: str = "zh") -> Image.Image:
     canvas = brand_background((1024, 500))
     draw = ImageDraw.Draw(canvas, "RGBA")
 
@@ -161,19 +170,30 @@ def feature_graphic(master: Image.Image) -> Image.Image:
     canvas.paste(icon, (637, 75), icon_mask)
 
     draw = ImageDraw.Draw(canvas, "RGBA")
-    title_font = font(58, bold=True)
-    subtitle_font = font(26)
-    pill_font = font(20, bold=True)
-    draw.text((64, 88), "维修工单助手", font=title_font, fill=(255, 255, 255, 255))
+    if language == "en":
+        title = "Repair Work Orders"
+        subtitle = "Quotes, repairs, and payments\nin one clear workflow"
+        pills = [("Works Offline", 66), ("Clear Workflow", 242), ("Local Data", 430)]
+        title_font = font(50, bold=True)
+        subtitle_font = font(25)
+        pill_font = font(18, bold=True)
+    else:
+        title = "维修工单助手"
+        subtitle = "接单、报价、维修、收款\n一张工单全程管理"
+        pills = [("离线可用", 66), ("流程清晰", 202), ("数据本地保存", 338)]
+        title_font = font(58, bold=True)
+        subtitle_font = font(26)
+        pill_font = font(20, bold=True)
+
+    draw.text((64, 88), title, font=title_font, fill=(255, 255, 255, 255))
     draw.text(
         (66, 176),
-        "接单、报价、维修、收款\n一张工单全程管理",
+        subtitle,
         font=subtitle_font,
         fill=(226, 234, 255, 238),
         spacing=12,
     )
 
-    pills = [("离线可用", 66), ("流程清晰", 202), ("数据本地保存", 338)]
     for label, x in pills:
         bbox = draw.textbbox((0, 0), label, font=pill_font)
         width = bbox[2] - bbox[0] + 38
@@ -199,8 +219,16 @@ def main() -> None:
 
     # Google Play listing assets.
     save_rgb(master, STORE_DIR / "app-icon-512.png", (512, 512))
-    feature = feature_graphic(master)
-    save_rgb(feature, STORE_DIR / "feature-graphic-1024x500.png", (1024, 500))
+    feature_zh = feature_graphic(master, "zh")
+    save_rgb(
+        feature_zh, STORE_DIR / "feature-graphic-1024x500.png", (1024, 500)
+    )
+    feature_en = feature_graphic(master, "en")
+    save_rgb(
+        feature_en,
+        STORE_DIR / "feature-graphic-en-1024x500.png",
+        (1024, 500),
+    )
 
     # Android legacy and round launcher icons.
     android_sizes = {

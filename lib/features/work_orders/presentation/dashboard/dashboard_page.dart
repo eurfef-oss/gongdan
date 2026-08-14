@@ -91,6 +91,7 @@ class _DashboardPage extends StatelessWidget {
     switch (id) {
       case 'summaryMetrics':
         return _MetricSummaryCard(
+          columns: 1,
           metrics: [
             _Metric(
               label: context.tr('今日工单'),

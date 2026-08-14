@@ -367,8 +367,10 @@ class _DocumentPaper extends StatelessWidget {
                 ...order.items.map(
                   (item) => TableRow(
                     children: [
-                      _DocumentCell(item.name),
-                      _DocumentCell('${item.quantity} ${item.unit}'),
+                      _DocumentCell(localizedWorkOrderItemName(context, item)),
+                      _DocumentCell(
+                        '${item.quantity} ${localizedWorkOrderItemUnit(context, item)}',
+                      ),
                       _DocumentCell(_dialogMoney(item.unitPrice)),
                       _DocumentCell(_dialogMoney(item.amount), alignEnd: true),
                     ],

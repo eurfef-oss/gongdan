@@ -1,0 +1,1141 @@
+<!doctype html>
+<html lang="zh-CN" data-language="zh">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="维修工单助手（Repair Work Orders）隐私权政策。Repair Work Orders Privacy Policy.">
+    <meta name="theme-color" content="#0b2238">
+    <title>维修工单助手｜隐私权政策</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #10283d;
+        --muted: #617487;
+        --soft-muted: #8a9bac;
+        --line: #dce7eb;
+        --paper: #ffffff;
+        --canvas: #f4f8f8;
+        --teal: #12a6a2;
+        --teal-dark: #087b7e;
+        --teal-pale: #e5f8f5;
+        --gold: #f1bf67;
+        --navy: #0b2238;
+        --navy-2: #143c58;
+        --shadow: 0 22px 60px rgba(16, 40, 61, 0.09);
+        --radius-lg: 28px;
+        --radius-md: 18px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 6% 2%, rgba(18, 166, 162, 0.08), transparent 22rem),
+          var(--canvas);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+          "Noto Sans CJK SC", sans-serif;
+        line-height: 1.75;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+      }
+
+      a {
+        color: var(--teal-dark);
+        text-decoration-thickness: 1px;
+        text-underline-offset: 3px;
+      }
+
+      a:hover {
+        color: var(--ink);
+      }
+
+      .lang-en {
+        display: none;
+      }
+
+      html[data-language="en"] .lang-zh {
+        display: none;
+      }
+
+      html[data-language="en"] .lang-en {
+        display: inline;
+      }
+
+      .page {
+        min-height: 100vh;
+      }
+
+      .container {
+        width: min(1160px, calc(100% - 40px));
+        margin: 0 auto;
+      }
+
+      .site-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 28px 0 22px;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--ink);
+        font-size: 16px;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        text-decoration: none;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 40px;
+        height: 40px;
+        place-items: center;
+        color: #fff;
+        background: linear-gradient(145deg, var(--teal), #087d89);
+        border-radius: 13px;
+        box-shadow: 0 9px 18px rgba(18, 166, 162, 0.24);
+      }
+
+      .brand-mark svg {
+        width: 22px;
+        height: 22px;
+      }
+
+      .language-switcher {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        box-shadow: 0 5px 16px rgba(16, 40, 61, 0.06);
+      }
+
+      .language-switcher button {
+        min-width: 58px;
+        padding: 7px 12px;
+        color: var(--muted);
+        background: transparent;
+        border: 0;
+        border-radius: 999px;
+        cursor: pointer;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 750;
+        transition: color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+      }
+
+      .language-switcher button:hover {
+        color: var(--ink);
+      }
+
+      .language-switcher button[aria-pressed="true"] {
+        color: #fff;
+        background: var(--navy);
+        box-shadow: 0 4px 10px rgba(11, 34, 56, 0.18);
+      }
+
+      .hero {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        padding: clamp(34px, 6vw, 68px);
+        color: #fff;
+        background:
+          linear-gradient(120deg, rgba(11, 34, 56, 0.98), rgba(19, 61, 87, 0.94)),
+          var(--navy);
+        border-radius: var(--radius-lg);
+        box-shadow: 0 28px 62px rgba(11, 34, 56, 0.17);
+      }
+
+      .hero::before,
+      .hero::after {
+        position: absolute;
+        z-index: -1;
+        display: block;
+        border: 1px solid rgba(145, 242, 221, 0.18);
+        border-radius: 50%;
+        content: "";
+      }
+
+      .hero::before {
+        width: 380px;
+        height: 380px;
+        right: -120px;
+        bottom: -250px;
+        box-shadow:
+          0 0 0 38px rgba(145, 242, 221, 0.04),
+          0 0 0 76px rgba(145, 242, 221, 0.025);
+      }
+
+      .hero::after {
+        width: 120px;
+        height: 120px;
+        top: -54px;
+        right: 24%;
+        background: rgba(241, 191, 103, 0.08);
+      }
+
+      .eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0 0 18px;
+        color: #91f2dd;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .eyebrow::before {
+        width: 26px;
+        height: 2px;
+        background: var(--gold);
+        content: "";
+      }
+
+      .hero h1 {
+        max-width: 750px;
+        margin: 0;
+        font-size: clamp(34px, 6vw, 64px);
+        font-weight: 850;
+        letter-spacing: -0.055em;
+        line-height: 1.08;
+      }
+
+      .hero-intro {
+        max-width: 700px;
+        margin: 22px 0 0;
+        color: rgba(255, 255, 255, 0.78);
+        font-size: clamp(15px, 2vw, 18px);
+      }
+
+      .hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 24px;
+        margin-top: 30px;
+        color: rgba(255, 255, 255, 0.74);
+        font-size: 13px;
+      }
+
+      .hero-meta span {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .hero-meta span::before {
+        width: 6px;
+        height: 6px;
+        background: var(--gold);
+        border-radius: 50%;
+        content: "";
+      }
+
+      .content-layout {
+        display: grid;
+        grid-template-columns: 220px minmax(0, 1fr);
+        align-items: start;
+        gap: clamp(28px, 6vw, 72px);
+        padding: 68px 0 86px;
+      }
+
+      .toc {
+        position: sticky;
+        top: 24px;
+      }
+
+      .toc-label {
+        margin: 0 0 14px;
+        color: var(--soft-muted);
+        font-size: 11px;
+        font-weight: 850;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+      }
+
+      .toc nav {
+        display: grid;
+        gap: 3px;
+      }
+
+      .toc a {
+        display: block;
+        padding: 7px 12px;
+        color: var(--muted);
+        border-left: 2px solid transparent;
+        font-size: 13px;
+        line-height: 1.45;
+        text-decoration: none;
+        transition: color 160ms ease, border-color 160ms ease, padding 160ms ease;
+      }
+
+      .toc a:hover {
+        padding-left: 16px;
+        color: var(--ink);
+        border-left-color: var(--teal);
+      }
+
+      .policy-card {
+        min-width: 0;
+        padding: clamp(26px, 5vw, 56px);
+        background: var(--paper);
+        border: 1px solid rgba(220, 231, 235, 0.9);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
+      }
+
+      .policy-summary {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin: 0 0 46px;
+      }
+
+      .summary-item {
+        padding: 18px;
+        background: linear-gradient(160deg, #f6fffd, #f1f7f8);
+        border: 1px solid #d8efec;
+        border-radius: var(--radius-md);
+      }
+
+      .summary-icon {
+        display: grid;
+        width: 32px;
+        height: 32px;
+        margin-bottom: 11px;
+        place-items: center;
+        color: var(--teal-dark);
+        background: var(--teal-pale);
+        border-radius: 10px;
+      }
+
+      .summary-icon svg {
+        width: 17px;
+        height: 17px;
+      }
+
+      .summary-item strong {
+        display: block;
+        margin-bottom: 3px;
+        font-size: 14px;
+        line-height: 1.35;
+      }
+
+      .summary-item p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.55;
+      }
+
+      .policy-section {
+        scroll-margin-top: 26px;
+        padding: 34px 0;
+        border-top: 1px solid var(--line);
+      }
+
+      .policy-section:first-of-type {
+        padding-top: 0;
+        border-top: 0;
+      }
+
+      .section-heading {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        margin-bottom: 15px;
+      }
+
+      .section-number {
+        display: inline-flex;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        margin-top: 3px;
+        color: var(--teal-dark);
+        background: var(--teal-pale);
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 850;
+      }
+
+      .policy-section h2 {
+        margin: 0;
+        color: var(--ink);
+        font-size: clamp(20px, 3vw, 26px);
+        font-weight: 820;
+        letter-spacing: -0.025em;
+        line-height: 1.3;
+      }
+
+      .policy-section p {
+        margin: 0 0 14px;
+        color: #3f5567;
+        font-size: 15px;
+      }
+
+      .policy-section p:last-child {
+        margin-bottom: 0;
+      }
+
+      .policy-section ul {
+        display: grid;
+        gap: 10px;
+        margin: 14px 0 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .policy-section li {
+        position: relative;
+        padding-left: 22px;
+        color: #3f5567;
+        font-size: 15px;
+      }
+
+      .policy-section li::before {
+        position: absolute;
+        top: 0.75em;
+        left: 3px;
+        width: 7px;
+        height: 7px;
+        background: var(--teal);
+        border-radius: 50%;
+        content: "";
+      }
+
+      .info-box {
+        margin: 20px 0 0;
+        padding: 18px 20px;
+        background: #f7fbfb;
+        border-left: 3px solid var(--teal);
+        border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      }
+
+      .info-box p {
+        color: #2d5363;
+        font-size: 14px;
+      }
+
+      .data-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-top: 20px;
+      }
+
+      .data-card {
+        padding: 18px 19px;
+        background: #fbfdfd;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+      }
+
+      .data-card h3 {
+        margin: 0 0 7px;
+        color: var(--ink);
+        font-size: 15px;
+        line-height: 1.4;
+      }
+
+      .data-card p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.65;
+      }
+
+      .contact-card {
+        position: relative;
+        overflow: hidden;
+        margin-top: 20px;
+        padding: 24px;
+        color: #fff;
+        background: linear-gradient(135deg, #0d354e, #087d80);
+        border-radius: var(--radius-md);
+      }
+
+      .contact-card::after {
+        position: absolute;
+        width: 170px;
+        height: 170px;
+        right: -68px;
+        bottom: -110px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        content: "";
+      }
+
+      .contact-card p {
+        position: relative;
+        z-index: 1;
+        margin: 0;
+        color: rgba(255, 255, 255, 0.84);
+        font-size: 14px;
+      }
+
+      .contact-card a {
+        color: #a4f5e2;
+      }
+
+      .site-footer {
+        padding: 24px 0 44px;
+        color: var(--soft-muted);
+        font-size: 12px;
+        text-align: center;
+      }
+
+      .site-footer p {
+        margin: 0;
+      }
+
+      :focus-visible {
+        outline: 3px solid rgba(18, 166, 162, 0.42);
+        outline-offset: 3px;
+      }
+
+      @media (max-width: 800px) {
+        .content-layout {
+          grid-template-columns: 1fr;
+          padding-top: 38px;
+        }
+
+        .toc {
+          position: static;
+          padding: 16px 18px;
+          background: rgba(255, 255, 255, 0.75);
+          border: 1px solid var(--line);
+          border-radius: var(--radius-md);
+        }
+
+        .toc nav {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .toc a {
+          padding: 6px 8px;
+          border-left: 0;
+          border-bottom: 2px solid transparent;
+        }
+
+        .toc a:hover {
+          padding-left: 8px;
+          border-bottom-color: var(--teal);
+        }
+      }
+
+      @media (max-width: 560px) {
+        .container {
+          width: min(100% - 24px, 1160px);
+        }
+
+        .site-header {
+          padding-top: 18px;
+        }
+
+        .brand {
+          font-size: 14px;
+        }
+
+        .brand-mark {
+          width: 36px;
+          height: 36px;
+          border-radius: 11px;
+        }
+
+        .language-switcher button {
+          min-width: 48px;
+          padding: 6px 9px;
+          font-size: 12px;
+        }
+
+        .hero {
+          padding: 30px 24px 34px;
+          border-radius: 22px;
+        }
+
+        .hero h1 {
+          font-size: 38px;
+        }
+
+        .hero-intro {
+          font-size: 15px;
+        }
+
+        .policy-card {
+          padding: 24px 19px;
+          border-radius: 22px;
+        }
+
+        .policy-summary,
+        .data-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .policy-summary {
+          gap: 9px;
+          margin-bottom: 34px;
+        }
+
+        .summary-item {
+          display: grid;
+          grid-template-columns: 32px 1fr;
+          column-gap: 12px;
+          padding: 14px;
+        }
+
+        .summary-icon {
+          grid-row: span 2;
+          margin-bottom: 0;
+        }
+
+        .summary-item p {
+          margin-top: 2px;
+        }
+
+        .toc nav {
+          grid-template-columns: 1fr;
+        }
+
+        .policy-section {
+          padding: 28px 0;
+        }
+
+        .policy-section p,
+        .policy-section li {
+          font-size: 14px;
+        }
+      }
+
+      @media print {
+        body {
+          background: #fff;
+        }
+
+        .site-header,
+        .toc,
+        .language-switcher {
+          display: none;
+        }
+
+        .container {
+          width: 100%;
+        }
+
+        .hero,
+        .policy-card {
+          box-shadow: none;
+        }
+
+        .hero {
+          color: #000;
+          background: #fff;
+          border: 1px solid #aaa;
+        }
+
+        .hero-intro,
+        .hero-meta {
+          color: #333;
+        }
+      }
+    </style>
+    <script>
+      (function () {
+        var storageKey = "repairdesk-privacy-language";
+        var languages = Array.isArray(navigator.languages) && navigator.languages.length
+          ? navigator.languages
+          : [navigator.language || ""];
+        var savedLanguage = null;
+
+        try {
+          savedLanguage = localStorage.getItem(storageKey);
+        } catch (error) {
+          savedLanguage = null;
+        }
+
+        var language = savedLanguage === "zh" || savedLanguage === "en"
+          ? savedLanguage
+          : languages.some(function (item) {
+              return /^zh(?:-|$)/i.test(item);
+            })
+            ? "zh"
+            : "en";
+
+        document.documentElement.dataset.language = language;
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="page">
+      <div class="container">
+        <header class="site-header">
+          <a class="brand" href="#top" aria-label="Repair Work Orders privacy policy">
+            <span class="brand-mark" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3.2 19 6v5.2c0 4.4-2.7 7.8-7 9.6-4.3-1.8-7-5.2-7-9.6V6l7-2.8Z"/>
+                <path d="m8.7 12 2.2 2.2 4.5-4.6"/>
+              </svg>
+            </span>
+            <span>
+              <span class="lang-zh">维修工单助手</span>
+              <span class="lang-en">Repair Work Orders</span>
+            </span>
+          </a>
+
+          <div class="language-switcher" aria-label="Language / 语言">
+            <button type="button" data-language-option="zh" aria-pressed="true">中文</button>
+            <button type="button" data-language-option="en" aria-pressed="false">English</button>
+          </div>
+        </header>
+
+        <section class="hero" id="top">
+          <p class="eyebrow">
+            <span class="lang-zh">隐私与数据</span>
+            <span class="lang-en">Privacy &amp; data</span>
+          </p>
+          <h1>
+            <span class="lang-zh">隐私权政策</span>
+            <span class="lang-en">Privacy Policy</span>
+          </h1>
+          <p class="hero-intro">
+            <span class="lang-zh">我们希望你清楚了解 Repair Work Orders 如何处理信息：工单业务数据默认留在你的设备上，只有你主动发起的操作才会触发分享或网络传输。</span>
+            <span class="lang-en">We want you to understand how Repair Work Orders handles information: work-order data stays on your device by default, and sharing or network transfer happens only when you initiate an action.</span>
+          </p>
+          <div class="hero-meta">
+            <span>
+              <span class="lang-zh">生效日期：2026 年 8 月 14 日</span>
+              <span class="lang-en">Effective: August 14, 2026</span>
+            </span>
+            <span>
+              <span class="lang-zh">适用于 Repair Work Orders（维修工单助手）</span>
+              <span class="lang-en">Applies to Repair Work Orders</span>
+            </span>
+          </div>
+        </section>
+
+        <div class="content-layout">
+          <aside class="toc">
+            <p class="toc-label">
+              <span class="lang-zh">目录</span>
+              <span class="lang-en">Contents</span>
+            </p>
+            <nav>
+              <a href="#overview">
+                <span class="lang-zh">概述</span>
+                <span class="lang-en">Overview</span>
+              </a>
+              <a href="#data">
+                <span class="lang-zh">处理的信息</span>
+                <span class="lang-en">Information</span>
+              </a>
+              <a href="#local-storage">
+                <span class="lang-zh">本地存储</span>
+                <span class="lang-en">Local storage</span>
+              </a>
+              <a href="#permissions">
+                <span class="lang-zh">权限</span>
+                <span class="lang-en">Permissions</span>
+              </a>
+              <a href="#purchases">
+                <span class="lang-zh">购买与服务</span>
+                <span class="lang-en">Purchases</span>
+              </a>
+              <a href="#sharing">
+                <span class="lang-zh">分享与第三方</span>
+                <span class="lang-en">Sharing</span>
+              </a>
+              <a href="#security">
+                <span class="lang-zh">保留与安全</span>
+                <span class="lang-en">Retention &amp; security</span>
+              </a>
+              <a href="#contact">
+                <span class="lang-zh">联系我们</span>
+                <span class="lang-en">Contact</span>
+              </a>
+            </nav>
+          </aside>
+
+          <main class="policy-card">
+            <div class="policy-summary" aria-label="Policy highlights">
+              <div class="summary-item">
+                <span class="summary-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 3.2 19 6v5.2c0 4.4-2.7 7.8-7 9.6-4.3-1.8-7-5.2-7-9.6V6l7-2.8Z"/>
+                    <path d="M9 12.2h6M12 9.2v6"/>
+                  </svg>
+                </span>
+                <strong>
+                  <span class="lang-zh">本地优先</span>
+                  <span class="lang-en">Local first</span>
+                </strong>
+                <p>
+                  <span class="lang-zh">业务数据默认保存在设备</span>
+                  <span class="lang-en">Business data stays on-device by default</span>
+                </p>
+              </div>
+              <div class="summary-item">
+                <span class="summary-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 7.5h16M6.5 4h11A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5v-11A2.5 2.5 0 0 1 6.5 4Z"/>
+                    <path d="m8 12 2.2 2.2L16 8.5"/>
+                  </svg>
+                </span>
+                <strong>
+                  <span class="lang-zh">无需注册</span>
+                  <span class="lang-en">No account required</span>
+                </strong>
+                <p>
+                  <span class="lang-zh">当前版本不要求创建应用账号</span>
+                  <span class="lang-en">The current version does not require an app account</span>
+                </p>
+              </div>
+              <div class="summary-item">
+                <span class="summary-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 3.5v17M5.5 8.5 12 5l6.5 3.5L12 12 5.5 8.5Z"/>
+                    <path d="M5.5 8.5V15l6.5 3.5 6.5-3.5V8.5"/>
+                  </svg>
+                </span>
+                <strong>
+                  <span class="lang-zh">主动分享</span>
+                  <span class="lang-en">You control sharing</span>
+                </strong>
+                <p>
+                  <span class="lang-zh">导出或分享由你主动发起</span>
+                  <span class="lang-en">Exports and shares are initiated by you</span>
+                </p>
+              </div>
+            </div>
+
+            <section class="policy-section" id="overview">
+              <div class="section-heading">
+                <span class="section-number">01</span>
+                <h2>
+                  <span class="lang-zh">政策概述</span>
+                  <span class="lang-en">Overview</span>
+                </h2>
+              </div>
+              <p>
+                <span class="lang-zh">本隐私权政策适用于 Repair Work Orders（中文名称：维修工单助手，以下简称“本应用”）。本应用面向个体维修师傅和小型维修店，用于记录客户、设备、报价、维修过程、收款和保修信息。</span>
+                <span class="lang-en">This Privacy Policy applies to Repair Work Orders (Chinese name: 维修工单助手, referred to as “the App”). The App helps independent technicians and small repair shops record customers, devices, quotations, repair work, payments, and warranty information.</span>
+              </p>
+              <p>
+                <span class="lang-zh">当前版本不要求用户注册账号，也不以广告、画像或跨应用跟踪为主要功能。我们按照“最小必要”和“本地优先”的原则处理信息。</span>
+                <span class="lang-en">The current version does not require an account and is not built around advertising, profiling, or cross-app tracking. We follow data minimization and local-first principles.</span>
+              </p>
+            </section>
+
+            <section class="policy-section" id="data">
+              <div class="section-heading">
+                <span class="section-number">02</span>
+                <h2>
+                  <span class="lang-zh">我们处理哪些信息</span>
+                  <span class="lang-en">Information we process</span>
+                </h2>
+              </div>
+              <p>
+                <span class="lang-zh">你可以自行决定在工单中填写哪些内容。为了实现应用功能，可能会在设备本地处理以下信息：</span>
+                <span class="lang-en">You decide what to enter into a work order. To provide the App’s features, the following information may be processed locally on your device:</span>
+              </p>
+              <div class="data-grid">
+                <article class="data-card">
+                  <h3>
+                    <span class="lang-zh">客户与商家资料</span>
+                    <span class="lang-en">Customer and shop details</span>
+                  </h3>
+                  <p>
+                    <span class="lang-zh">姓名、电话、微信号、服务地址、备注，以及你保存的门店或维修人员信息。</span>
+                    <span class="lang-en">Names, phone numbers, WeChat IDs, service addresses, notes, and shop or technician details that you choose to save.</span>
+                  </p>
+                </article>
+                <article class="data-card">
+                  <h3>
+                    <span class="lang-zh">工单与交易记录</span>
+                    <span class="lang-en">Work-order and payment records</span>
+                  </h3>
+                  <p>
+                    <span class="lang-zh">设备信息、故障描述、维修项目、报价、成本、收款、保修和工单状态。</span>
+                    <span class="lang-en">Device information, fault descriptions, repair items, quotations, costs, payments, warranty details, and work-order status.</span>
+                  </p>
+                </article>
+                <article class="data-card">
+                  <h3>
+                    <span class="lang-zh">照片与电子签名</span>
+                    <span class="lang-en">Photos and signatures</span>
+                  </h3>
+                  <p>
+                    <span class="lang-zh">你主动添加到工单中的维修照片和客户签名，用于维修记录与凭证生成。</span>
+                    <span class="lang-en">Repair photos and customer signatures that you actively add to a work order for service records and document generation.</span>
+                  </p>
+                </article>
+                <article class="data-card">
+                  <h3>
+                    <span class="lang-zh">设置与备份</span>
+                    <span class="lang-en">Settings and backups</span>
+                  </h3>
+                  <p>
+                    <span class="lang-zh">显示设置、表单字段、项目模板，以及你主动导出的 JSON 或 CSV 文件。</span>
+                    <span class="lang-en">Display settings, form fields, project templates, and JSON or CSV files that you choose to export.</span>
+                  </p>
+                </article>
+              </div>
+              <div class="info-box">
+                <p>
+                  <span class="lang-zh">我们不会为了提供基础工单功能，主动收集与业务无关的精确位置、通讯录、短信、麦克风内容或生物识别信息。</span>
+                  <span class="lang-en">We do not proactively collect precise location, contacts, SMS, microphone content, or biometric information for the core work-order features.</span>
+                </p>
+              </div>
+            </section>
+
+            <section class="policy-section" id="local-storage">
+              <div class="section-heading">
+                <span class="section-number">03</span>
+                <h2>
+                  <span class="lang-zh">本地存储与使用目的</span>
+                  <span class="lang-en">Local storage and use</span>
+                </h2>
+              </div>
+              <p>
+                <span class="lang-zh">工单、客户、项目模板、照片索引、签名、收款记录和相关设置主要保存在应用的私有目录中，用于创建、编辑、查询、生成凭证、统计、备份和恢复。没有你的主动操作，这些业务数据不会上传到开发者的业务数据服务器。</span>
+                <span class="lang-en">Work orders, customers, project templates, photo indexes, signatures, payment records, and related settings are primarily stored in the App’s private storage for creating, editing, searching, generating documents, statistics, backup, and restore. These business data are not uploaded to the developer’s business data server without your action.</span>
+              </p>
+              <p>
+                <span class="lang-zh">如果你卸载应用、清除应用数据或在应用内删除记录，本地数据可能会被移除。你此前导出的备份、分享文件或系统备份不受应用内删除操作控制，请一并管理这些副本。</span>
+                <span class="lang-en">Uninstalling the App, clearing its data, or deleting records in the App may remove local data. Backups, shared files, or system backups that you previously created are outside the App’s control and should be managed separately.</span>
+              </p>
+            </section>
+
+            <section class="policy-section" id="permissions">
+              <div class="section-heading">
+                <span class="section-number">04</span>
+                <h2>
+                  <span class="lang-zh">设备权限</span>
+                  <span class="lang-en">Device permissions</span>
+                </h2>
+              </div>
+              <p>
+                <span class="lang-zh">本应用只在对应功能需要时请求权限。你可以拒绝权限；拒绝后，其他不依赖该权限的功能仍可继续使用。</span>
+                <span class="lang-en">The App requests permissions only when a related feature needs them. You may deny a permission; other features that do not depend on it can continue to work.</span>
+              </p>
+              <ul>
+                <li>
+                  <span class="lang-zh"><strong>相机：</strong>仅用于你主动拍摄维修前、维修中或维修后的照片。照片会添加到当前工单，并默认保存在设备上。</span>
+                  <span class="lang-en"><strong>Camera:</strong> used only when you choose to take before, during, or after repair photos. Photos are added to the current work order and stored on the device by default.</span>
+                </li>
+                <li>
+                  <span class="lang-zh"><strong>照片或文件选择：</strong>仅用于你主动选择图片、导入备份或选择导出位置。系统会按照你选择的文件和系统权限返回内容。</span>
+                  <span class="lang-en"><strong>Photo or file picker:</strong> used only when you choose images, import a backup, or select an export location. The operating system returns only the files and access allowed by your selection.</span>
+                </li>
+                <li>
+                  <span class="lang-zh"><strong>网络：</strong>仅在需要应用商店购买、恢复购买或验证专业版授权等功能时使用；离线工单功能不依赖网络。</span>
+                  <span class="lang-en"><strong>Network:</strong> used when app-store purchasing, purchase restoration, or Pro entitlement verification is needed; offline work-order features do not depend on a network connection.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section class="policy-section" id="purchases">
+              <div class="section-heading">
+                <span class="section-number">05</span>
+                <h2>
+                  <span class="lang-zh">应用内购买与授权验证</span>
+                  <span class="lang-en">In-app purchases and entitlement verification</span>
+                </h2>
+              </div>
+              <p>
+                <span class="lang-zh">如果你购买或恢复专业版，支付由 Apple App Store 或 Google Play 等应用商店处理。本应用不会获取你的银行卡号、支付密码或完整支付账户信息；具体支付信息受相应商店的隐私政策约束。</span>
+                <span class="lang-en">If you purchase or restore Pro features, payment is handled by Apple App Store, Google Play, or the applicable app store. The App does not receive your card number, payment password, or full payment-account details; payment information is governed by the applicable store’s privacy policy.</span>
+              </p>
+              <p>
+                <span class="lang-zh">为验证购买并在更换设备后恢复授权，应用可能向开发者运营的授权服务发送必要的技术信息，包括平台、商品 ID、交易标识、购买验证数据和授权状态。授权服务只处理购买与授权，不接收客户、工单、照片或签名内容。</span>
+                <span class="lang-en">To verify purchases and restore entitlement on another device, the App may send necessary technical information to the developer-operated entitlement service, including platform, product ID, transaction identifier, purchase-verification data, and entitlement status. The entitlement service handles purchases and access rights only; it does not receive customer, work-order, photo, or signature content.</span>
+              </p>
+              <div class="info-box">
+                <p>
+                  <span class="lang-zh">专业版授权快照保存在设备的安全存储中，不会写入工单 JSON 备份，也不会通过工单数据同步。</span>
+                  <span class="lang-en">The Pro entitlement snapshot is stored in the device’s secure storage. It is not included in a work-order JSON backup and is not synced through work-order data.</span>
+                </p>
+              </div>
+            </section>
+
+            <section class="policy-section" id="sharing">
+              <div class="section-heading">
+                <span class="section-number">06</span>
+                <h2>
+                  <span class="lang-zh">备份、分享与第三方服务</span>
+                  <span class="lang-en">Backups, sharing, and third parties</span>
+                </h2>
+              </div>
+              <p>
+                <span class="lang-zh">你可以通过系统文件选择器或分享面板导出、备份或发送工单数据、维修凭证和图片。此类操作由你主动发起；一旦你将文件发送给第三方，接收方如何使用这些内容由其自身的隐私政策和安全措施决定。</span>
+                <span class="lang-en">You may use the system file picker or share sheet to export, back up, or send work-order data, service documents, and images. These actions are initiated by you. Once you send a file to a third party, that recipient’s privacy policy and security practices govern its use of the content.</span>
+              </p>
+              <p>
+                <span class="lang-zh">本应用可能使用以下平台或服务来完成其功能：</span>
+                <span class="lang-en">The App may use the following platforms or services to provide its features:</span>
+              </p>
+              <ul>
+                <li>
+                  <span class="lang-zh"><strong>Apple App Store / Google Play：</strong>应用分发、支付和购买记录管理。</span>
+                  <span class="lang-en"><strong>Apple App Store / Google Play:</strong> app distribution, payment processing, and purchase-record management.</span>
+                </li>
+                <li>
+                  <span class="lang-zh"><strong>开发者授权服务：</strong>购买验证和专业版授权状态管理。生产环境可能使用 <a href="https://play.cosdk.com" target="_blank" rel="noopener noreferrer">play.cosdk.com</a>。</span>
+                  <span class="lang-en"><strong>Developer entitlement service:</strong> purchase verification and Pro entitlement management. The production environment may use <a href="https://play.cosdk.com" target="_blank" rel="noopener noreferrer">play.cosdk.com</a>.</span>
+                </li>
+                <li>
+                  <span class="lang-zh"><strong>系统分享与文件服务：</strong>由操作系统和你选择的目标应用完成文件传递。</span>
+                  <span class="lang-en"><strong>System sharing and file services:</strong> file delivery is handled by the operating system and the destination app you select.</span>
+                </li>
+              </ul>
+              <p>
+                <span class="lang-zh">当前版本不提供云端工单同步，也不集成广告网络或第三方行为分析 SDK。</span>
+                <span class="lang-en">The current version does not provide cloud work-order synchronization and does not integrate advertising networks or third-party behavioral analytics SDKs.</span>
+              </p>
+            </section>
+
+            <section class="policy-section" id="security">
+              <div class="section-heading">
+                <span class="section-number">07</span>
+                <h2>
+                  <span class="lang-zh">保留、删除与安全</span>
+                  <span class="lang-en">Retention, deletion, and security</span>
+                </h2>
+              </div>
+              <p>
+                <span class="lang-zh">本地业务数据通常会保留到你在应用内删除、清除应用数据或卸载应用为止。授权服务上的购买记录和授权事件会在为购买验证、恢复购买、欺诈防范、故障排查、财务记录或法律义务所需的期限内保留，之后会按照适用要求删除或匿名化。</span>
+                <span class="lang-en">Local business data generally remains until you delete it in the App, clear the App’s data, or uninstall the App. Purchase records and entitlement events on the entitlement service are retained for as long as needed for purchase verification, restoration, fraud prevention, troubleshooting, accounting, or legal obligations, and are then deleted or anonymized as required.</span>
+              </p>
+              <p>
+                <span class="lang-zh">我们采取合理的技术和组织措施保护信息，包括使用应用私有存储、平台安全存储和 HTTPS 传输（适用于生产授权服务）。但任何设备、网络或存储系统都不能保证绝对安全，请同时使用设备锁屏，并妥善保管导出的备份。</span>
+                <span class="lang-en">We use reasonable technical and organizational safeguards, including app-private storage, platform secure storage, and HTTPS for the production entitlement service. No device, network, or storage system can be guaranteed absolutely secure, so please use a device lock and protect exported backups.</span>
+              </p>
+            </section>
+
+            <section class="policy-section" id="rights">
+              <div class="section-heading">
+                <span class="section-number">08</span>
+                <h2>
+                  <span class="lang-zh">你的选择与权利</span>
+                  <span class="lang-en">Your choices and rights</span>
+                </h2>
+              </div>
+              <p>
+                <span class="lang-zh">你可以在设备系统设置中管理相机等权限，可以在应用内编辑或删除业务记录，也可以选择是否导出或分享数据。对于你主动导出的文件，请在分享前确认其中是否包含客户联系方式、地址、照片、签名或其他敏感内容。</span>
+                <span class="lang-en">You can manage permissions such as camera access in your device settings, edit or delete business records in the App, and choose whether to export or share data. Before sharing an exported file, check whether it contains customer contact details, addresses, photos, signatures, or other sensitive content.</span>
+              </p>
+              <p>
+                <span class="lang-zh">如果你需要咨询授权服务中的购买记录、隐私处理或数据请求，请通过应用商店页面提供的开发者联系方式联系我们。为保护账户和交易安全，我们可能需要验证你的请求与相关购买信息。</span>
+                <span class="lang-en">For questions or requests about purchase records, privacy processing, or data held by the entitlement service, contact us through the developer contact details shown on the app-store listing. To protect accounts and transactions, we may need to verify your request and related purchase information.</span>
+              </p>
+            </section>
+
+            <section class="policy-section" id="other">
+              <div class="section-heading">
+                <span class="section-number">09</span>
+                <h2>
+                  <span class="lang-zh">儿童隐私、跨境处理与政策更新</span>
+                  <span class="lang-en">Children, international processing, and updates</span>
+                </h2>
+              </div>
+              <p>
+                <span class="lang-zh">本应用不是专门面向儿童设计的服务。我们不会明知地收集儿童的个人信息。如果你认为未成年人在未经适当授权的情况下向本应用提交了个人信息，请通过下方联系方式告知我们。</span>
+                <span class="lang-en">The App is not specifically directed to children. We do not knowingly collect children’s personal information. If you believe a minor has submitted personal information without appropriate authorization, please contact us using the details below.</span>
+              </p>
+              <p>
+                <span class="lang-zh">购买验证可能由位于你所在地区以外的应用商店或授权服务处理，因此信息可能发生跨境传输或存储。我们会按照适用的数据保护法律采取相应措施。</span>
+                <span class="lang-en">Purchase verification may be processed or stored by an app store or entitlement service outside your region, so cross-border transfers may occur. We will take appropriate measures required by applicable data-protection laws.</span>
+              </p>
+              <p>
+                <span class="lang-zh">当应用功能、处理方式或适用法律发生变化时，我们会更新本政策，并在本页面显示新的生效日期。继续使用本应用即表示你已阅读更新后的政策。</span>
+                <span class="lang-en">When the App’s features, processing practices, or applicable laws change, we will update this policy and show a new effective date on this page. Continued use of the App means that you have read the updated policy.</span>
+              </p>
+            </section>
+
+            <section class="policy-section" id="contact">
+              <div class="section-heading">
+                <span class="section-number">10</span>
+                <h2>
+                  <span class="lang-zh">联系我们</span>
+                  <span class="lang-en">Contact us</span>
+                </h2>
+              </div>
+              <div class="contact-card">
+                <p>
+                  <span class="lang-zh">如对本隐私权政策、数据处理或购买授权有疑问，请通过应用商店页面中显示的开发者联系方式联系 Repair Work Orders 项目组。我们会在合理期限内处理你的咨询。</span>
+                  <span class="lang-en">If you have questions about this Privacy Policy, data processing, or purchase entitlements, contact the Repair Work Orders team through the developer contact details shown on the app-store listing. We will respond within a reasonable period.</span>
+                </p>
+              </div>
+            </section>
+          </main>
+        </div>
+
+        <footer class="site-footer">
+          <p>
+            <span class="lang-zh">© 2026 Repair Work Orders · 隐私权政策</span>
+            <span class="lang-en">© 2026 Repair Work Orders · Privacy Policy</span>
+          </p>
+        </footer>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        var storageKey = "repairdesk-privacy-language";
+        var root = document.documentElement;
+        var buttons = document.querySelectorAll("[data-language-option]");
+        var initialLanguage = root.dataset.language === "en" ? "en" : "zh";
+
+        function setLanguage(language, persist) {
+          var isEnglish = language === "en";
+          root.dataset.language = isEnglish ? "en" : "zh";
+          root.lang = isEnglish ? "en" : "zh-CN";
+          document.title = isEnglish
+            ? "Repair Work Orders | Privacy Policy"
+            : "维修工单助手｜隐私权政策";
+
+          buttons.forEach(function (button) {
+            button.setAttribute(
+              "aria-pressed",
+              button.dataset.languageOption === root.dataset.language ? "true" : "false"
+            );
+          });
+
+          if (persist) {
+            try {
+              localStorage.setItem(storageKey, root.dataset.language);
+            } catch (error) {
+              // Language switching still works when storage is unavailable.
+            }
+          }
+        }
+
+        buttons.forEach(function (button) {
+          button.addEventListener("click", function () {
+            setLanguage(button.dataset.languageOption, true);
+          });
+        });
+
+        setLanguage(initialLanguage, false);
+      })();
+    </script>
+  </body>
+</html>

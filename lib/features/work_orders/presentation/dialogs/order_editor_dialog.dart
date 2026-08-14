@@ -504,7 +504,9 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
                         ),
                       ),
                     ),
-                    child: Text('+ ${item.name}'),
+                    child: Text(
+                      '+ ${localizedServiceItemName(context, item)}',
+                    ),
                   ),
                 ),
           ],
@@ -585,7 +587,7 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
     }
     final items = _items
         .where((item) => item.name.trim().isNotEmpty)
-        .map((item) => item.toItem())
+        .map((item) => item.toItem(defaultUnit: context.tr('次')))
         .toList();
     final subtotal =
         money(items.fold<double>(0, (sum, item) => sum + item.amount));
@@ -875,7 +877,7 @@ class _ItemDraftEditorState extends State<_ItemDraftEditor> {
                     .map(
                       (item) => PopupMenuItem(
                         value: item,
-                        child: Text(item.name),
+                        child: Text(localizedServiceItemName(context, item)),
                       ),
                     )
                     .toList(),

@@ -9,7 +9,6 @@ enum _SettingsSection {
   pro,
   data,
   internalCosts,
-  demo,
 }
 
 class _SettingsPage extends StatefulWidget {
@@ -19,7 +18,6 @@ class _SettingsPage extends StatefulWidget {
     required this.onExport,
     required this.onImport,
     required this.onImportCsv,
-    required this.onReset,
     required this.onNavigate,
     required this.onSectionChanged,
     super.key,
@@ -30,7 +28,6 @@ class _SettingsPage extends StatefulWidget {
   final ValueChanged<String> onExport;
   final VoidCallback onImport;
   final VoidCallback onImportCsv;
-  final VoidCallback onReset;
   final ValueChanged<int> onNavigate;
   final ValueChanged<bool> onSectionChanged;
 
@@ -198,21 +195,15 @@ class _SettingsPageState extends State<_SettingsPage> {
             subtitle: context.tr('JSON 完整备份、CSV 导入和导出'),
             onTap: () => _openSection(_SettingsSection.data),
           ),
+          _SettingsGroupLabel(
+            title: context.tr('工作台工具'),
+            description: context.tr('这些页面也可以从这里进入。'),
+          ),
           _SettingsMenuEntry(
             icon: Icons.account_balance_wallet_outlined,
             title: context.tr('内部成本'),
             subtitle: context.tr('专业版功能：为每张工单录入成本，并管理成本类型'),
             onTap: () => _openSection(_SettingsSection.internalCosts),
-          ),
-          _SettingsMenuEntry(
-            icon: Icons.auto_awesome_outlined,
-            title: context.tr('演示数据'),
-            subtitle: context.tr('载入一组完整示例，快速查看工作流程'),
-            onTap: () => _openSection(_SettingsSection.demo),
-          ),
-          _SettingsGroupLabel(
-            title: context.tr('工作台工具'),
-            description: context.tr('这些页面也可以从这里进入。'),
           ),
           _SettingsMenuEntry(
             icon: Icons.category_outlined,
@@ -255,8 +246,6 @@ class _SettingsPageState extends State<_SettingsPage> {
         return context.tr('数据备份');
       case _SettingsSection.internalCosts:
         return context.tr('内部成本');
-      case _SettingsSection.demo:
-        return context.tr('演示数据');
     }
   }
 
@@ -356,27 +345,6 @@ class _SettingsPageState extends State<_SettingsPage> {
         return _InternalCostsContent(
           controller: widget.controller,
           onOpenCostTypes: _openCostTypes,
-        );
-      case _SettingsSection.demo:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              context.tr('这会替换当前设备上的本地数据。建议先完成 JSON 备份。'),
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: OutlinedButton.icon(
-                onPressed: widget.onReset,
-                icon: const Icon(Icons.auto_awesome_outlined),
-                label: Text(context.tr('载入演示数据')),
-              ),
-            ),
-          ],
         );
     }
   }

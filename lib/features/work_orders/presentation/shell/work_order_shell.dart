@@ -266,7 +266,6 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
           onExport: _exportData,
           onImport: _importData,
           onImportCsv: _importCsv,
-          onReset: _resetDemo,
           onNavigate: _selectPage,
           onSectionChanged: _onSettingsSectionChanged,
         );
@@ -689,28 +688,6 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
         },
       ),
     );
-  }
-
-  Future<void> _resetDemo() async {
-    final ok = await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text(context.tr('载入演示数据？')),
-            content: Text(context.tr('这会替换当前设备上的本地数据。')),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: Text(context.tr('取消')),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: Text(context.tr('确认')),
-              ),
-            ],
-          ),
-        ) ??
-        false;
-    if (ok) await controller.resetToDemo();
   }
 }
 

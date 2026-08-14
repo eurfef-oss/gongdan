@@ -96,6 +96,7 @@ class _StatsPageState extends State<_StatsPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _MetricSummaryCard(
+                  columns: 1,
                   metrics: [
                     _Metric(
                       label: context.tr('工单总数'),

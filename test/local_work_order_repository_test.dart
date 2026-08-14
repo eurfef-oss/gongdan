@@ -100,8 +100,10 @@ void main() {
     ));
     await repository.save(replacement);
 
-    expect(loaded.customers, isNotEmpty);
-    expect(loaded.workOrders, isNotEmpty);
+    expect(loaded.customers, isEmpty);
+    expect(loaded.workOrders, isEmpty);
+    expect(loaded.payments, isEmpty);
+    expect(loaded.serviceItems, isNotEmpty);
     expect(repository.persistenceAvailable, isFalse);
     expect((await repository.load()).settings.shopName, '临时内存数据');
   });

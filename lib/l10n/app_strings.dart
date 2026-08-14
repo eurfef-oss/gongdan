@@ -212,8 +212,6 @@ const _english = <String, String>{
   '内部成本': 'Internal costs',
   '专业版功能：为每张工单录入成本，并管理成本类型':
       'Pro feature: record costs per order and manage cost types',
-  '演示数据': 'Demo data',
-  '载入一组完整示例，快速查看工作流程': 'Load a complete example set to explore the workflow',
   '工作台工具': 'Workspace tools',
   '这些页面也可以从这里进入。': 'These pages are also available here.',
   '管理常用服务项目和报价模板': 'Manage common services and quote templates',
@@ -238,9 +236,6 @@ const _english = <String, String>{
   '导入工单 CSV': 'Import work order CSV',
   '按工单编号更新或追加客户与工单。':
       'Update or append customers and orders by work order number.',
-  '这会替换当前设备上的本地数据。建议先完成 JSON 备份。':
-      'This replaces local data on this device. Make a JSON backup first.',
-  '载入演示数据': 'Load demo data',
   '工单表单字段': 'Work order fields',
   '拖动左侧手柄调整字段在工单表单中的顺序，使用右侧开关控制字段是否显示。隐藏字段不会删除已有数据。':
       'Drag the handle to reorder fields and use the switch to show or hide them. Hidden fields keep their existing data.',
@@ -572,8 +567,6 @@ const _english = <String, String>{
   '项': 'item',
   'CSV 导入金额': 'CSV imported amount',
   'CSV 导入成本': 'CSV imported cost',
-  '载入演示数据？': 'Load demo data?',
-  '这会替换当前设备上的本地数据。': 'This will replace local data on this device.',
 
   // Dynamic labels, model values, and document summaries.
   '草稿': 'Draft',

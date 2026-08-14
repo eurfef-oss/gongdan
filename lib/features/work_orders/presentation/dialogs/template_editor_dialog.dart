@@ -259,6 +259,7 @@ class _TemplateEditorDialogState extends State<TemplateEditorDialog> {
   late final TextEditingController _warranty;
   late String _typeKey;
   late bool _enabled;
+  bool _nameLocalized = false;
   bool _unitDefaulted = false;
   bool _saving = false;
 
@@ -282,6 +283,13 @@ class _TemplateEditorDialogState extends State<TemplateEditorDialog> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    if (!_nameLocalized) {
+      final item = widget.initial;
+      if (item != null) {
+        _name.text = localizedServiceItemName(context, item);
+      }
+      _nameLocalized = true;
+    }
     if (!_unitDefaulted && _unit.text.trim().isEmpty) {
       _unit.text = context.tr('次');
       _unitDefaulted = true;
@@ -417,7 +425,13 @@ class _TemplateEditorDialogState extends State<TemplateEditorDialog> {
   }
 
   Future<void> _save() async {
-    final name = _name.text.trim();
+    final enteredName = _name.text.trim();
+    final initial = widget.initial;
+    final name = initial != null &&
+            isDefaultServiceItem(initial) &&
+            enteredName == localizedServiceItemName(context, initial)
+        ? initial.name
+        : enteredName;
     if (name.isEmpty) {
       showTopNotice(context, context.tr('请填写项目名称。'), error: true);
       return;

@@ -164,16 +164,4 @@ class SettingsController {
   Future<void> updateSettings(RepairAppSettings settings) async {
     await _store.commit(_store.data.copyWith(settings: settings));
   }
-
-  Future<void> resetToDemo() async {
-    final demo = seedData();
-    await _store.commit(
-      demo.copyWith(
-        settings: demo.settings.copyWith(
-          hasSeenWelcome: _store.data.settings.hasSeenWelcome,
-          languageCode: _store.data.settings.languageCode,
-        ),
-      ),
-    );
-  }
 }

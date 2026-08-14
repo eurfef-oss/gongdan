@@ -118,32 +118,53 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
         const Divider(height: 1),
         Padding(
           padding: const EdgeInsets.fromLTRB(11, 12, 11, 12),
-          child: Row(
-            children: [
-              Text(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final note = Text(
                 context.tr('保存后仍可继续编辑'),
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 14,
                 ),
-              ),
-              const Spacer(),
-              TextButton(
-                onPressed: _saving ? null : () => Navigator.of(context).pop(),
-                child: Text(context.tr('取消')),
-              ),
-              const SizedBox(width: 8),
-              FilledButton(
-                onPressed: _saving ? null : _save,
-                child: _saving
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(context.tr(isEditing ? '保存修改' : '保存工单')),
-              ),
-            ],
+              );
+              final actions = Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextButton(
+                    onPressed:
+                        _saving ? null : () => Navigator.of(context).pop(),
+                    child: Text(context.tr('取消')),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton(
+                    onPressed: _saving ? null : _save,
+                    child: _saving
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Text(context.tr(isEditing ? '保存修改' : '保存工单')),
+                  ),
+                ],
+              );
+              if (constraints.maxWidth < 560) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    note,
+                    const SizedBox(height: 8),
+                    Align(alignment: Alignment.centerRight, child: actions),
+                  ],
+                );
+              }
+              return Row(
+                children: [
+                  Expanded(child: note),
+                  actions,
+                ],
+              );
+            },
           ),
         ),
       ],

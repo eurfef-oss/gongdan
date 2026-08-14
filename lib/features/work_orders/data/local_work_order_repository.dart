@@ -108,7 +108,7 @@ class LocalWorkOrderRepository
 
   @override
   Future<RepairAppData> load() async {
-    if (!_persistenceAvailable) return _memoryData ??= seedData();
+    if (!_persistenceAvailable) return _memoryData ??= initialData();
 
     try {
       final file = await _getDataFile();
@@ -137,7 +137,7 @@ class LocalWorkOrderRepository
         return migrated;
       }
 
-      final seeded = seedData();
+      final seeded = initialData();
       _memoryData = seeded;
       try {
         await _writeFile(file, seeded);
@@ -147,7 +147,7 @@ class LocalWorkOrderRepository
       return seeded;
     } catch (_) {
       _persistenceAvailable = false;
-      return _memoryData ??= seedData();
+      return _memoryData ??= initialData();
     }
   }
 

@@ -169,5 +169,4 @@ class WorkOrderController extends ChangeNotifier {
   String exportCsv() => backup.exportCsv();
   Future<bool> importJson(String raw) => backup.importJson(raw);
   Future<CsvImportResult?> importCsv(String raw) => backup.importCsv(raw);
-  Future<void> resetToDemo() => settings.resetToDemo();
 }

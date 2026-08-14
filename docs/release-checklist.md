@@ -10,8 +10,8 @@
 
 | 产物 | 构建日期 | 大小 | SHA-256 |
 | --- | --- | ---: | --- |
-| `build/app/outputs/flutter-apk/app-release.apk` | 2026-08-13 | 59,594,332 bytes（56.79 MB） | `B4808B67391A5A8BB913E85105CDDA8060A5D633538C10B249B365535A0CC31C` |
-| `build/app/outputs/bundle/release/app-release-1.0.1+8.aab` | 2026-08-13 | 59,821,151 bytes（57.08 MB） | `F5CCC9A1E3EBEA0BC7CE101F99D7B7AA8DBF56E3CDBBE2A7A336C7F2B2D1F1DF` |
+| `build/app/outputs/flutter-apk/app-release.apk` | 2026-08-14 | 59,036,072 bytes（56.30 MB） | `16CE7FF479292CE1D0C1387F3F0A2A75C1DDA2227F0080A5A5B11A8E74514924` |
+| `build/app/outputs/bundle/release/app-release-1.0.1+8.aab` | 2026-08-14 | 59,188,192 bytes（56.45 MB） | `F3C394648D8AB08135F18706193AA93467E758A6375FC7E85FE5E77A508C5B88` |
 
 版本代码记录：
 
@@ -32,7 +32,7 @@
 
 - [x] `dart format lib test` 已执行
 - [x] `flutter analyze` 无问题
-- [x] `flutter test --no-pub` 全部通过（38 项）
+- [x] `flutter test --no-pub` 全部通过（43 项）
 - [x] 关键失败和边界场景有测试（部分收款、关闭限制、字段清空、报价重新确认、PDF 编码、回收站、自定义类型、概览卡片设置）
 
 ## 本次功能变更记录（2026-08-11）
@@ -49,6 +49,14 @@
 - [x] 内部成本录入、成本类型设置和成本利润统计纳入专业版权限；
 - [x] 成本类型设置从设置二级入口移除，改为内部成本页面下的三级页面；
 - [x] 内部成本列表将单号、设备名称、应收金额和成本记录数量分行显示，避免窄屏内容截断；
+
+## 本次功能变更记录（2026-08-14）
+
+- [x] 概览中的 4 张数据指标卡片改为单列显示，避免英文模式下指标名称在两列布局中被截断；
+- [x] 统计页“工单总数”等 7 张数据指标卡片改为单列显示；
+- [x] 默认项目模板保留为可直接使用的模板，英文模式下显示英文名称；新建/编辑工单底部操作区在窄屏下自动换行；
+- [x] 首次数据改为空白门店资料、客户、工单和付款记录，移除载入演示数据功能；
+- [x] 设置页将内部成本入口归入“工作台工具”分类；
 
 ## 本次联调修复记录（2026-08-14）
 
@@ -86,7 +94,7 @@
 - [x] 已记录产物大小和 SHA-256
 - [x] 已更新版本说明和相关文档
 
-## 本次 Release 验证记录（2026-08-13）
+## 本次 Release 验证记录（2026-08-14）
 
 使用 Flutter、Gradle、JDK 17 和 Android SDK 完成正式 AAB 构建。构建命令包含生产授权服务地址和对应的 Ed25519 公钥，未启用 `ENABLE_LOCAL_TEST_PURCHASE` 或 `ENABLE_RELEASE_PRO_PREVIEW`。内部 Release APK 另行使用 `ENABLE_RELEASE_PRO_PREVIEW=true` 构建，只用于专业版功能验收。当前固定 SDK 路径为：
 
@@ -104,9 +112,9 @@
 - 构建参数：`ENTITLEMENT_SERVER_URL=https://play.cosdk.com`，使用已登记的公钥，未启用本地测试购买。
 - 购买商品查询修复：移除 Android 商品列表的 `firstWhere(orElse:)` 泛型回退，改为精确商品 ID 匹配，避免 `GooglePlayProductDetails` 运行时类型错误；
 - 购买取消修复：处理 Google Play 取消支付时可能返回的空商品 ID，并加入购买窗口超时兜底，未付款返回后按钮会恢复可点击；
-- Flutter 验证：`flutter analyze` 无问题，38 项测试全部通过。
+- Flutter 验证：`flutter analyze` 无问题，43 项测试全部通过。
 - 内部 APK：使用 `--dart-define=ENABLE_RELEASE_PRO_PREVIEW=true` 重新构建成功；预览授权仅用于内部验收，不写入购买缓存。
-- APK 校验：文件大小 `59,594,332` bytes，SHA-256 为 `B4808B67391A5A8BB913E85105CDDA8060A5D633538C10B249B365535A0CC31C`。
-- 正式 AAB：不含专业版预览开关，构建成功；文件名为 `app-release-1.0.1+8.aab`，文件大小 `59,821,151` bytes，SHA-256 为 `F5CCC9A1E3EBEA0BC7CE101F99D7B7AA8DBF56E3CDBBE2A7A336C7F2B2D1F1DF`，`jarsigner -verify` 通过。
+- APK 校验：文件大小 `59,036,072` bytes，SHA-256 为 `16CE7FF479292CE1D0C1387F3F0A2A75C1DDA2227F0080A5A5B11A8E74514924`，Android `apksigner` v2 校验通过；包名为 `com.cosdk.repairdesk`。
+- 正式 AAB：不含专业版预览开关，构建成功；文件名为 `app-release-1.0.1+8.aab`，文件大小 `59,188,192` bytes，SHA-256 为 `F3C394648D8AB08135F18706193AA93467E758A6375FC7E85FE5E77A508C5B88`，`jarsigner -verify` 通过。
 
 仍需在 Google Play 内部测试轨道完成 AAB 上传、测试账号安装、真实购买、恢复购买、离线使用和重新安装验证。

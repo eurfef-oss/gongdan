@@ -2,11 +2,11 @@ part of 'work_order.dart';
 
 class RepairAppSettings {
   const RepairAppSettings({
-    this.shopName = '林师傅维修',
-    this.ownerName = '林师傅',
+    this.shopName = '',
+    this.ownerName = '',
     this.phone = '',
     this.address = '',
-    this.defaultNote = '以上报价仅供本次服务参考，实际费用以现场确认内容为准。额外项目需经客户确认后执行。',
+    this.defaultNote = '',
     this.darkMode = false,
     this.languageCode = 'zh',
     this.hasSeenWelcome = false,
@@ -93,12 +93,11 @@ class RepairAppSettings {
 
   factory RepairAppSettings.fromJson(Map<String, Object?> json) =>
       RepairAppSettings(
-        shopName: json['shopName']?.toString() ?? '林师傅维修',
-        ownerName: json['ownerName']?.toString() ?? '林师傅',
+        shopName: json['shopName']?.toString() ?? '',
+        ownerName: json['ownerName']?.toString() ?? '',
         phone: json['phone']?.toString() ?? '',
         address: json['address']?.toString() ?? '',
-        defaultNote:
-            json['defaultNote']?.toString() ?? RepairAppSettings().defaultNote,
+        defaultNote: json['defaultNote']?.toString() ?? '',
         darkMode: json['darkMode'] == true,
         languageCode: json['languageCode']?.toString() == 'en' ? 'en' : 'zh',
         hasSeenWelcome: json['hasSeenWelcome'] == true,

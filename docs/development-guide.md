@@ -466,5 +466,5 @@ test        单元、组件和集成测试
 - PNG / PDF 单据支持保存到本地并调用系统分享；
 - 概览设置提供独立二级页面，支持拖动模块排序和控制显示；数据概览中的四项指标作为合并卡片使用一个开关；工单进度卡片展示待确认、维修中（含已确认）、待收款和已完成且每项单独一行，不展示草稿与已取消；工单、客户、项目模板页滚动时收起顶部说明区域；
 - 应用私有目录 JSON 主存储、SharedPreferences 旧数据迁移、v1 → v2 → v3 逐版本迁移、异常时的内存兜底，以及数据备份页提供的 JSON / CSV 导入导出；
-- 当前质量基线：`dart format lib test`、`flutter analyze` 和 `flutter test --no-pub` 均通过，自动化测试共 38 项；
+- 当前质量基线：`dart format lib test`、`flutter analyze` 和 `flutter test --no-pub` 均通过，自动化测试共 43 项；
 - 默认 Release 产物路径、版本号、版本代码、构建时间、大小和 SHA-256 统一维护在[发布检查清单](release-checklist.md)；本指南只维护发布流程和规则。

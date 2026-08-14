@@ -58,6 +58,49 @@ WorkOrder emptyWorkOrder({
   );
 }
 
+List<ServiceItem> _starterServiceItems() => [
+      ServiceItem(
+          id: idFor('svc'),
+          name: '空调深度清洗',
+          type: ServiceItemType.labor,
+          unit: '台',
+          defaultPrice: 168,
+          warrantyDays: 30,
+          enabled: true),
+      ServiceItem(
+          id: idFor('svc'),
+          name: '上门检测费',
+          type: ServiceItemType.inspection,
+          unit: '次',
+          defaultPrice: 80,
+          warrantyDays: 0,
+          enabled: true),
+      ServiceItem(
+          id: idFor('svc'),
+          name: '空调滤网',
+          type: ServiceItemType.part,
+          unit: '个',
+          defaultPrice: 35,
+          warrantyDays: 90,
+          enabled: true),
+      ServiceItem(
+          id: idFor('svc'),
+          name: '远程故障判断',
+          type: ServiceItemType.labor,
+          unit: '次',
+          defaultPrice: 50,
+          warrantyDays: 0,
+          enabled: true),
+    ];
+
+RepairAppData initialData() => RepairAppData(
+      customers: const [],
+      serviceItems: _starterServiceItems(),
+      workOrders: const [],
+      payments: const [],
+      settings: const RepairAppSettings(),
+    );
+
 RepairAppData seedData() {
   final now = DateTime.now();
   final customerA = Customer(
@@ -78,40 +121,7 @@ RepairAppData seedData() {
     createdAt: now.subtract(const Duration(days: 10)),
     updatedAt: now.subtract(const Duration(days: 4)),
   );
-  final serviceItems = [
-    ServiceItem(
-        id: idFor('svc'),
-        name: '空调深度清洗',
-        type: ServiceItemType.labor,
-        unit: '台',
-        defaultPrice: 168,
-        warrantyDays: 30,
-        enabled: true),
-    ServiceItem(
-        id: idFor('svc'),
-        name: '上门检测费',
-        type: ServiceItemType.inspection,
-        unit: '次',
-        defaultPrice: 80,
-        warrantyDays: 0,
-        enabled: true),
-    ServiceItem(
-        id: idFor('svc'),
-        name: '空调滤网',
-        type: ServiceItemType.part,
-        unit: '个',
-        defaultPrice: 35,
-        warrantyDays: 90,
-        enabled: true),
-    ServiceItem(
-        id: idFor('svc'),
-        name: '远程故障判断',
-        type: ServiceItemType.labor,
-        unit: '次',
-        defaultPrice: 50,
-        warrantyDays: 0,
-        enabled: true),
-  ];
+  final serviceItems = _starterServiceItems();
   final orderA = emptyWorkOrder(
           id: idFor('ord'),
           number: orderNumberFor(const [], now),
@@ -199,7 +209,6 @@ RepairAppData seedData() {
           note: '现场定金',
           paidAt: now.subtract(const Duration(days: 1, hours: 3)))
     ],
-    settings:
-        const RepairAppSettings(phone: '138 8888 6600', address: '成都市 · 武侯区'),
+    settings: const RepairAppSettings(),
   );
 }

@@ -155,7 +155,7 @@ AAB 是正式商店包，专业版功能默认必须通过 Google Play 购买并
 - 完成格式化、分析、测试和正式构建；
 - 内部 Release APK 命令必须带 `--dart-define=ENABLE_RELEASE_PRO_PREVIEW=true`；正式 AAB 禁止带该参数；调试构建需显式使用 `flutter build apk --debug`；
 - 验证命令：`flutter analyze`、`flutter test --no-pub`；
-- 当前自动化测试基线：Flutter 38 项、Node 7 项全部通过；
+- 当前自动化测试基线：Flutter 43 项、Node 7 项全部通过；
 - 真机验证安装、升级、深色模式、语言、大字体和系统安全区；
 - 保存正式产物的 SHA-256 和版本说明。
 

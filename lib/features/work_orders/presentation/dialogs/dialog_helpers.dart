@@ -20,6 +20,12 @@ String _dialogDateTime(DateTime? value, {String empty = '未安排'}) {
   return DateFormat('yyyy/MM/dd HH:mm').format(value);
 }
 
+String _dialogDateLocalized(BuildContext context, DateTime? value) =>
+    _dialogDate(value, empty: context.tr('未设置'));
+
+String _dialogDateTimeLocalized(BuildContext context, DateTime? value) =>
+    _dialogDateTime(value, empty: context.tr('未安排'));
+
 String _workOrderNote(WorkOrder order) {
   final request = order.customerRequest.trim();
   final note = order.customerNote.trim();
@@ -28,11 +34,11 @@ String _workOrderNote(WorkOrder order) {
   return '$request\n$note';
 }
 
-String _dialogDevice(WorkOrder order) {
+String _dialogDeviceLocalized(BuildContext context, WorkOrder order) {
   final value = [order.deviceType, order.brand, order.model]
       .where((item) => item.isNotEmpty)
       .join(' · ');
-  return value.isEmpty ? '未填写设备' : value;
+  return value.isEmpty ? context.tr('未填写设备') : value;
 }
 
 Uint8List? _decodeDataUrl(String? value) {

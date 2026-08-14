@@ -47,7 +47,7 @@ class _DialogHeader extends StatelessWidget {
             ),
           ),
           IconButton(
-            tooltip: '关闭',
+            tooltip: context.tr('关闭'),
             onPressed: () => Navigator.of(context).pop(),
             icon: const Icon(Icons.close),
           ),
@@ -92,8 +92,8 @@ class _DialogStatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = payment
-        ? (value as PaymentStatus).label
-        : (value as WorkOrderStatus).label;
+        ? paymentStatusText(context, value as PaymentStatus)
+        : workOrderStatusText(context, value as WorkOrderStatus);
     final color = _dialogStatusColor(context, value);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),

@@ -51,9 +51,14 @@ class _PaymentDialogState extends State<PaymentDialog> {
           children: [
             _DialogHeader(
               kicker: 'PAYMENT / RECORD',
-              title: '记录收款',
-              subtitle:
-                  '${order.number} · 当前未收 ${_dialogMoney(order.outstanding)}',
+              title: context.tr('记录收款'),
+              subtitle: context.trf(
+                '{number} · 当前未收 {amount}',
+                {
+                  'number': order.number,
+                  'amount': _dialogMoney(order.outstanding),
+                },
+              ),
             ),
             Flexible(
               child: SingleChildScrollView(
@@ -67,16 +72,23 @@ class _PaymentDialogState extends State<PaymentDialog> {
                       autofocus: true,
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(
-                          labelText: '本次收款金额 *', prefixText: '¥ '),
+                      decoration: InputDecoration(
+                        labelText: context.tr('本次收款金额 *'),
+                        prefixText: '¥ ',
+                      ),
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<PaymentMethod>(
                       initialValue: _method,
-                      decoration: const InputDecoration(labelText: '收款方式'),
+                      decoration:
+                          InputDecoration(labelText: context.tr('收款方式')),
                       items: PaymentMethod.values
-                          .map((item) => DropdownMenuItem(
-                              value: item, child: Text(item.label)))
+                          .map(
+                            (item) => DropdownMenuItem<PaymentMethod>(
+                              value: item,
+                              child: Text(paymentMethodText(context, item)),
+                            ),
+                          )
                           .toList(),
                       onChanged: (value) {
                         if (value != null) setState(() => _method = value);
@@ -86,7 +98,8 @@ class _PaymentDialogState extends State<PaymentDialog> {
                     TextField(
                       controller: _note,
                       maxLines: 2,
-                      decoration: const InputDecoration(labelText: '备注（可选）'),
+                      decoration:
+                          InputDecoration(labelText: context.tr('备注（可选）')),
                     ),
                   ],
                 ),
@@ -100,11 +113,11 @@ class _PaymentDialogState extends State<PaymentDialog> {
                   const Spacer(),
                   TextButton(
                       onPressed: _saving ? null : () => Navigator.pop(context),
-                      child: const Text('取消')),
+                      child: Text(context.tr('取消'))),
                   const SizedBox(width: 8),
                   FilledButton(
                       onPressed: _saving ? null : _save,
-                      child: const Text('保存收款')),
+                      child: Text(context.tr('保存收款'))),
                 ],
               ),
             ),
@@ -126,7 +139,11 @@ class _PaymentDialogState extends State<PaymentDialog> {
     if (!mounted) return;
     if (!ok) {
       setState(() => _saving = false);
-      showTopNotice(context, '金额无效，不能超过当前未收金额。', error: true);
+      showTopNotice(
+        context,
+        context.tr('金额无效，不能超过当前未收金额。'),
+        error: true,
+      );
       return;
     }
     Navigator.pop(context);

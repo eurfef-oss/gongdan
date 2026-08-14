@@ -37,8 +37,8 @@ class _CustomersPageState extends State<_CustomersPage> {
       ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
 
     return _Shell(
-      kicker: '工作台 / CUSTOMERS',
-      title: '客户档案',
+      kicker: context.tr('工作台 / CUSTOMERS'),
+      title: context.tr('客户档案'),
       headerActions: [
         _ProPurchaseButton(
           entitlementController: widget.entitlementController,
@@ -50,7 +50,7 @@ class _CustomersPageState extends State<_CustomersPage> {
         FilledButton.icon(
           onPressed: widget.onCreate,
           icon: const Icon(Icons.person_add_alt_outlined),
-          label: const Text('新建客户'),
+          label: Text(context.tr('新建客户')),
         ),
       ],
       child: Column(
@@ -60,17 +60,17 @@ class _CustomersPageState extends State<_CustomersPage> {
             padding: const EdgeInsets.fromLTRB(0, 4, 0, 12),
             child: TextField(
               onChanged: (value) => setState(() => _query = value),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 prefixIcon: Icon(Icons.search),
-                hintText: '搜索姓名、电话、微信或地址',
+                hintText: context.tr('搜索姓名、电话、微信或地址'),
                 isDense: true,
               ),
             ),
           ),
           if (customers.isEmpty)
-            const _Empty(
-              title: '还没有客户',
-              description: '创建客户后可以直接关联到工单。',
+            _Empty(
+              title: context.tr('还没有客户'),
+              description: context.tr('创建客户后可以直接关联到工单。'),
             )
           else
             ...customers.map(
@@ -115,10 +115,10 @@ class _CustomerCard extends StatelessWidget {
           backgroundColor:
               Theme.of(context).colorScheme.primary.withValues(alpha: .1),
           foregroundColor: Theme.of(context).colorScheme.primary,
-          child: Text(initials(customer.name)),
+          child: Text(initials(customer.name, fallback: context.tr('客'))),
         ),
         title: Text(
-          customer.name.isEmpty ? '未命名客户' : customer.name,
+          customer.name.isEmpty ? context.tr('未命名客户') : customer.name,
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
         subtitle: Padding(
@@ -130,7 +130,7 @@ class _CustomerCard extends StatelessWidget {
                 Text(contactText),
                 const SizedBox(height: 4),
               ],
-              Text('$orderCount 张工单'),
+              Text('$orderCount ${context.tr('张工单')}'),
             ],
           ),
         ),

@@ -11,6 +11,8 @@ import '../../../core/services/share_service.dart';
 import '../../../core/widgets/app_back_bar.dart';
 import '../../../core/widgets/app_top_notice.dart';
 import '../../../core/widgets/contact_actions.dart';
+import '../../../l10n/app_strings.dart';
+import '../../../l10n/model_localizations.dart';
 import '../application/work_order_controller.dart';
 import '../domain/entities/work_order.dart';
 import '../services/document_export.dart';

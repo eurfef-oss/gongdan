@@ -1,6 +1,40 @@
 import 'dart:convert';
 
+import '../../../../l10n/app_strings.dart';
 import '../../domain/entities/work_order.dart';
+
+const _csvHeaders = <String>[
+  '工单编号',
+  '客户',
+  '手机号',
+  '设备',
+  '故障描述',
+  '状态',
+  '应收金额',
+  '已收金额',
+  '未收金额',
+  '收款状态',
+  '创建时间',
+  '服务项目',
+  '收款记录',
+  '内部成本',
+  '毛利',
+  '成本明细',
+];
+
+const _csvRequiredHeaders = <String>['工单编号', '客户', '状态'];
+
+String _csvText(String locale, String key) => localizedText(locale, key);
+
+String _canonicalCsvHeader(String value) {
+  final trimmed = value.trim();
+  for (final header in _csvHeaders) {
+    if (trimmed == header || trimmed == _csvText('en', header)) {
+      return header;
+    }
+  }
+  return trimmed;
+}
 
 class CsvImportResult {
   const CsvImportResult({
@@ -31,25 +65,9 @@ class WorkOrderExportService {
   String exportJson(RepairAppData data) => jsonEncode(data.toJson());
 
   String exportCsv(RepairAppData data) {
+    final locale = data.settings.languageCode;
     final rows = <List<String>>[
-      [
-        '工单编号',
-        '客户',
-        '手机号',
-        '设备',
-        '故障描述',
-        '状态',
-        '应收金额',
-        '已收金额',
-        '未收金额',
-        '收款状态',
-        '创建时间',
-        '服务项目',
-        '收款记录',
-        '内部成本',
-        '毛利',
-        '成本明细',
-      ],
+      _csvHeaders.map((header) => _csvText(locale, header)).toList(),
       ...data.workOrders.map((order) {
         final customer = _customerById(data, order.customerId);
         return [
@@ -60,11 +78,11 @@ class WorkOrderExportService {
               .where((value) => value.isNotEmpty)
               .join(' '),
           order.faultDescription,
-          order.status.label,
+          _csvText(locale, order.status.label),
           order.total.toStringAsFixed(2),
           order.normalizedPaid.toStringAsFixed(2),
           order.outstanding.toStringAsFixed(2),
-          order.paymentStatus.label,
+          _csvText(locale, order.paymentStatus.label),
           order.createdAt.toIso8601String(),
           order.items
               .map((item) =>
@@ -72,14 +90,14 @@ class WorkOrderExportService {
               .join('；'),
           _paymentsFor(data, order.id)
               .map((payment) =>
-                  '${payment.method.label} ${payment.amount.toStringAsFixed(2)} ${payment.paidAt.toIso8601String()}${payment.note.isEmpty ? '' : ' ${payment.note}'}')
+                  '${_csvText(locale, payment.method.label)} ${payment.amount.toStringAsFixed(2)} ${payment.paidAt.toIso8601String()}${payment.note.isEmpty ? '' : ' ${payment.note}'}')
               .join('；'),
           order.internalCostTotal.toStringAsFixed(2),
           order.grossProfit.toStringAsFixed(2),
           order.internalCosts
               .map(
                 (cost) =>
-                    '${cost.typeName} ¥${cost.amount.toStringAsFixed(2)}${cost.note.isEmpty ? '' : ' ${cost.note}'}',
+                    '${_csvText(locale, cost.typeName)} ¥${cost.amount.toStringAsFixed(2)}${cost.note.isEmpty ? '' : ' ${cost.note}'}',
               )
               .join('；'),
         ];
@@ -92,9 +110,8 @@ class WorkOrderExportService {
     try {
       final rows = _parseCsvRows(raw);
       if (rows.length < 2) return null;
-      final headers = rows.first.map((item) => item.trim()).toList();
-      const requiredHeaders = ['工单编号', '客户', '状态'];
-      if (!requiredHeaders.every(headers.contains)) return null;
+      final headers = rows.first.map(_canonicalCsvHeader).toList();
+      if (!_csvRequiredHeaders.every(headers.contains)) return null;
       final indexes = <String, int>{
         for (var index = 0; index < headers.length; index++)
           headers[index]: index,
@@ -148,6 +165,7 @@ class WorkOrderExportService {
         final items = _itemsFromCsv(
           _csvValue(row, indexes, '服务项目'),
           total,
+          data.settings.languageCode,
         );
         var status = _statusFromCsv(_csvValue(row, indexes, '状态'));
         final paid = numberValue(_csvValue(row, indexes, '已收金额'));
@@ -157,6 +175,7 @@ class WorkOrderExportService {
           _csvValue(row, indexes, '成本明细'),
           numberValue(_csvValue(row, indexes, '内部成本')),
           data.settings.costTypes,
+          data.settings.languageCode,
         );
         final importedOrder = emptyWorkOrder(
           id: existing?.id ?? idFor('ord'),
@@ -323,7 +342,11 @@ class WorkOrderExportService {
     return null;
   }
 
-  static List<WorkOrderItem> _itemsFromCsv(String raw, double total) {
+  static List<WorkOrderItem> _itemsFromCsv(
+    String raw,
+    double total,
+    String locale,
+  ) {
     final items = <WorkOrderItem>[];
     for (final part in raw.split('；')) {
       final value = part.trim();
@@ -337,7 +360,7 @@ class WorkOrderExportService {
           name: value,
           type: ServiceItemType.other,
           quantity: 1,
-          unit: '项',
+          unit: _csvText(locale, '项'),
           unitPrice: 0,
         ));
         continue;
@@ -349,17 +372,19 @@ class WorkOrderExportService {
         name: match.group(1)!.trim(),
         type: ServiceItemType.other,
         quantity: quantity,
-        unit: match.group(3)!.trim().isEmpty ? '项' : match.group(3)!.trim(),
+        unit: match.group(3)!.trim().isEmpty
+            ? _csvText(locale, '项')
+            : match.group(3)!.trim(),
         unitPrice: quantity <= 0 ? amount : money(amount / quantity),
       ));
     }
     if (items.isEmpty && total > 0) {
       items.add(WorkOrderItem(
         id: idFor('item'),
-        name: 'CSV 导入金额',
+        name: _csvText(locale, 'CSV 导入金额'),
         type: ServiceItemType.other,
         quantity: 1,
-        unit: '项',
+        unit: _csvText(locale, '项'),
         unitPrice: money(total),
       ));
     }
@@ -370,6 +395,7 @@ class WorkOrderExportService {
     String details,
     double total,
     List<CostType> costTypes,
+    String locale,
   ) {
     final costs = <WorkOrderCost>[];
     for (final part in details.split('；')) {
@@ -381,7 +407,12 @@ class WorkOrderExportService {
       if (match == null) continue;
       final typeName = match.group(1)!.trim();
       final type = costTypes.cast<CostType?>().firstWhere(
-            (item) => item!.name.toLowerCase() == typeName.toLowerCase(),
+            (item) =>
+                item!.name.toLowerCase() == typeName.toLowerCase() ||
+                _csvText(locale, item.name).toLowerCase() ==
+                    typeName.toLowerCase() ||
+                _csvText('en', item.name).toLowerCase() ==
+                    typeName.toLowerCase(),
             orElse: () => null,
           );
       costs.add(
@@ -397,9 +428,9 @@ class WorkOrderExportService {
     if (costs.isEmpty && total > 0) {
       final fallback = costTypes.firstWhere(
         (item) => item.id == 'other',
-        orElse: () => const CostType(
+        orElse: () => CostType(
           id: 'other',
-          name: '其他',
+          name: _csvText(locale, '其他'),
           enabled: true,
         ),
       );
@@ -407,7 +438,7 @@ class WorkOrderExportService {
         WorkOrderCost(
           id: idFor('cost'),
           typeId: fallback.id,
-          typeName: 'CSV 导入成本',
+          typeName: _csvText(locale, 'CSV 导入成本'),
           amount: money(total),
         ),
       );
@@ -418,7 +449,11 @@ class WorkOrderExportService {
   static WorkOrderStatus _statusFromCsv(String raw) {
     final value = raw.trim();
     for (final status in WorkOrderStatus.values) {
-      if (status.name == value || status.label == value) return status;
+      if (status.name == value ||
+          status.label == value ||
+          _csvText('en', status.label) == value) {
+        return status;
+      }
     }
     return WorkOrderStatus.draft;
   }
@@ -447,7 +482,11 @@ class WorkOrderExportService {
 
   static PaymentMethod _paymentMethodFromCsv(String raw) {
     for (final method in PaymentMethod.values) {
-      if (method.name == raw || method.label == raw) return method;
+      if (method.name == raw ||
+          method.label == raw ||
+          _csvText('en', method.label) == raw) {
+        return method;
+      }
     }
     return PaymentMethod.other;
   }

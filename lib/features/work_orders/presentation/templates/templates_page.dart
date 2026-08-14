@@ -33,23 +33,23 @@ class _TemplatesPageState extends State<_TemplatesPage> {
 
     return Column(
       children: [
-        AppBackBar(title: '项目模板', onBack: widget.onBack),
+        AppBackBar(title: context.tr('项目模板'), onBack: widget.onBack),
         Expanded(
           child: _Shell(
-            kicker: '工作台 / CATALOG',
-            title: '项目模板',
+            kicker: context.tr('工作台 / CATALOG'),
+            title: context.tr('项目模板'),
             showPageHeader: false,
             actionsBelowTitle: true,
             actions: [
               OutlinedButton.icon(
                 onPressed: widget.onManageTypes,
                 icon: const Icon(Icons.tune_outlined),
-                label: const Text('管理类型'),
+                label: Text(context.tr('管理类型')),
               ),
               FilledButton.icon(
                 onPressed: widget.onCreate,
                 icon: const Icon(Icons.add),
-                label: const Text('新建模板'),
+                label: Text(context.tr('新建模板')),
               ),
             ],
             child: Column(
@@ -61,13 +61,13 @@ class _TemplatesPageState extends State<_TemplatesPage> {
                     children: [
                       FilterChip(
                         selected: _showDisabled,
-                        label: const Text('显示已停用项目'),
+                        label: Text(context.tr('显示已停用项目')),
                         onSelected: (value) =>
                             setState(() => _showDisabled = value),
                       ),
                       const Spacer(),
                       Text(
-                        '${visible.length} 个项目',
+                        context.trf('{count} 个项目', {'count': visible.length}),
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
@@ -76,7 +76,7 @@ class _TemplatesPageState extends State<_TemplatesPage> {
                   ),
                 ),
                 if (visible.isEmpty)
-                  const _Empty(title: '暂无项目模板')
+                  _Empty(title: context.tr('暂无项目模板'))
                 else
                   ...visible.map(
                     (item) => _TemplateRow(
@@ -130,7 +130,19 @@ class _TemplateRow extends StatelessWidget {
           ),
         ),
         subtitle: Text(
-          '${item.typeLabel} · ${item.unit} · ¥${item.defaultPrice.toStringAsFixed(2)} · 保修 ${item.warrantyDays} 天',
+          context.trf(
+            '{type} · {unit} · ¥{price} · 保修 {days} 天',
+            {
+              'type': serviceItemTypeText(
+                context,
+                item.type,
+                customType: item.customType,
+              ),
+              'unit': item.unit,
+              'price': item.defaultPrice.toStringAsFixed(2),
+              'days': item.warrantyDays,
+            },
+          ),
         ),
         trailing: PopupMenuButton<String>(
           onSelected: (value) {
@@ -139,12 +151,18 @@ class _TemplateRow extends StatelessWidget {
             if (value == 'delete') onDelete();
           },
           itemBuilder: (context) => [
-            const PopupMenuItem(value: 'edit', child: Text('编辑')),
+            PopupMenuItem(
+              value: 'edit',
+              child: Text(context.tr('编辑')),
+            ),
             PopupMenuItem(
               value: 'toggle',
-              child: Text(item.enabled ? '停用' : '启用'),
+              child: Text(context.tr(item.enabled ? '停用' : '启用')),
             ),
-            const PopupMenuItem(value: 'delete', child: Text('删除')),
+            PopupMenuItem(
+              value: 'delete',
+              child: Text(context.tr('删除')),
+            ),
           ],
         ),
       ),

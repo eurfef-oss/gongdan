@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
+import '../../../l10n/app_strings.dart';
 import '../application/entitlement_controller.dart';
 import '../domain/entities/entitlement.dart';
 
@@ -18,31 +20,32 @@ class ProPage extends StatelessWidget {
               entitlement.state == EntitlementState.pending;
           final isPro = entitlement.isPro;
           final isPreview = controller.isPreviewPro;
+          final productPrice = controller.product?.price;
           final features = [
             _ProFeatureRow(
               icon: Icons.all_inclusive,
-              title: '无限工单',
-              description: '普通版最多创建 10 张工单',
+              title: context.tr('无限工单'),
+              description: context.tr('普通版最多创建 10 张工单'),
             ),
             _ProFeatureRow(
               icon: Icons.people_outline,
-              title: '无限客户档案',
-              description: '普通版最多设置 10 个客户档案',
+              title: context.tr('无限客户档案'),
+              description: context.tr('普通版最多设置 10 个客户档案'),
             ),
             _ProFeatureRow(
               icon: Icons.category_outlined,
-              title: '自定义项目模板',
-              description: '维护自己的服务项目、价格和保修规则',
+              title: context.tr('自定义项目模板'),
+              description: context.tr('维护自己的服务项目、价格和保修规则'),
             ),
             _ProFeatureRow(
               icon: Icons.insights_outlined,
-              title: '统计复盘',
-              description: '查看工单、收入和待收款趋势',
+              title: context.tr('统计复盘'),
+              description: context.tr('查看工单、收入和待收款趋势'),
             ),
             _ProFeatureRow(
               icon: Icons.account_balance_wallet_outlined,
-              title: '内部成本',
-              description: '录入工单成本，并查看成本与利润统计',
+              title: context.tr('内部成本'),
+              description: context.tr('录入工单成本，并查看成本与利润统计'),
             ),
           ];
 
@@ -87,10 +90,10 @@ class ProPage extends StatelessWidget {
                               children: [
                                 Text(
                                   isPreview
-                                      ? '专业版预览'
+                                      ? context.tr('专业版预览')
                                       : isPro
-                                          ? '专业版已激活'
-                                          : '升级专业版',
+                                          ? context.tr('专业版已激活')
+                                          : context.tr('升级专业版'),
                                   style: Theme.of(context)
                                       .textTheme
                                       .titleLarge
@@ -102,10 +105,12 @@ class ProPage extends StatelessWidget {
                                 const SizedBox(height: 5),
                                 Text(
                                   isPreview
-                                      ? 'Release APK 已开放全部专业功能；该预览授权不会保存，正式 AAB 需购买。'
+                                      ? context.tr(
+                                          'Release APK 已开放全部专业功能；该预览授权不会保存，正式 AAB 需购买。',
+                                        )
                                       : isPro
-                                          ? '本设备可以在没有网络时继续使用专业功能。'
-                                          : '一次购买，解锁现场维修工作流中的完整工具。',
+                                          ? context.tr('本设备可以在没有网络时继续使用专业功能。')
+                                          : context.tr('一次购买，解锁现场维修工作流中的完整工具。'),
                                   style: const TextStyle(
                                     color: Color(0xE6FFFFFF),
                                     height: 1.45,
@@ -124,7 +129,10 @@ class ProPage extends StatelessWidget {
                 if (!isPro) ...[
                   const SizedBox(height: 16),
                   Text(
-                    controller.product?.price ?? '价格由应用商店显示',
+                    localizedText(
+                      AppLocalizations.of(context).localeName,
+                      productPrice ?? '价格由应用商店显示',
+                    ),
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.w800,
@@ -132,7 +140,7 @@ class ProPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '一次性买断 · 无自动续费',
+                    context.tr('一次性买断 · 无自动续费'),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -150,19 +158,31 @@ class ProPage extends StatelessWidget {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.lock_open_outlined),
-                    label: Text(busy ? '正在处理…' : '购买专业版'),
+                    label: Text(context.tr(busy ? '正在处理…' : '购买专业版')),
                   ),
                   const SizedBox(height: 8),
                   OutlinedButton.icon(
                     onPressed: busy ? null : controller.restorePurchases,
                     icon: const Icon(Icons.restore_outlined),
-                    label: const Text('恢复购买'),
+                    label: Text(context.tr('恢复购买')),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    context.tr(
+                      '如果购买失败但 Google Play 显示“已拥有”，请点击“恢复购买”尝试恢复授权。',
+                    ),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontSize: 12,
+                      height: 1.45,
+                    ),
                   ),
                   if (!controller.storeAvailable && controller.isInitialized)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
                       child: Text(
-                        '当前无法连接应用商店，请检查网络或稍后重试。',
+                        context.tr('当前无法连接应用商店，请检查网络或稍后重试。'),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -174,7 +194,10 @@ class ProPage extends StatelessWidget {
                 if (controller.errorMessage != null) ...[
                   const SizedBox(height: 12),
                   Text(
-                    controller.errorMessage!,
+                    localizedText(
+                      AppLocalizations.of(context).localeName,
+                      controller.errorMessage!,
+                    ),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.error,
@@ -184,7 +207,9 @@ class ProPage extends StatelessWidget {
                 ],
                 const SizedBox(height: 14),
                 Text(
-                  '购买通过系统应用商店完成。专业版授权只保存在设备安全存储中，不会上传工单、客户、照片或签名数据。',
+                  context.tr(
+                    '购买通过系统应用商店完成。专业版授权只保存在设备安全存储中，不会上传工单、客户、照片或签名数据。',
+                  ),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,

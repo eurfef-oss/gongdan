@@ -8,6 +8,7 @@ import {
   validatePurchaseRequest,
   verifyStorePurchase,
 } from '../src/store-verifier.js';
+import { hashPurchaseIdentity } from '../src/entitlement.js';
 
 test('validates a development purchase request', async () => {
   const request = validatePurchaseRequest(
@@ -127,6 +128,68 @@ test('verifies a Google Play product and acknowledges it', async () => {
     1_760_000_000,
   );
   assert.equal(assertion.split('.').length, 3);
+  clearGoogleAccessTokenCache();
+});
+
+test('uses a stable server identity when Google omits orderId', async () => {
+  clearGoogleAccessTokenCache();
+  const { privateKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
+  const account = {
+    client_email: 'play-verifier-test@example.iam.gserviceaccount.com',
+    private_key: privateKey.export({ type: 'pkcs8', format: 'pem' }),
+  };
+  const request = validatePurchaseRequest(
+    {
+      platform: 'android',
+      productId: 'repair_pro_lifetime',
+      appId: 'com.cosdk.repairdesk',
+      verificationData: { server: 'google-token-without-order-id' },
+    },
+    'repair_pro_lifetime',
+  );
+  const fetchImpl = async (url) => {
+    if (url === 'https://oauth.test/token') {
+      return new Response(
+        JSON.stringify({ access_token: 'access-token', expires_in: 3600 }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      );
+    }
+    return new Response(
+      JSON.stringify({
+        purchaseState: 0,
+        acknowledgementState: 1,
+        purchaseTimeMillis: '1760000000000',
+      }),
+      { status: 200, headers: { 'content-type': 'application/json' } },
+    );
+  };
+  const config = {
+    allowTestPurchases: false,
+    androidPackageName: 'com.cosdk.repairdesk',
+    googlePlay: {
+      packageName: 'com.cosdk.repairdesk',
+      serviceAccount: account,
+      tokenUrl: 'https://oauth.test/token',
+      apiBaseUrl: 'https://api.test/androidpublisher/v3',
+      acknowledgePurchases: true,
+      requestTimeoutMs: 1000,
+    },
+  };
+
+  const result = await verifyStorePurchase(request, config, {
+    fetchImpl,
+    now: () => 1_760_000_000_000,
+  });
+
+  assert.equal(result.verified, true);
+  assert.equal(
+    result.purchaseId,
+    `token-${hashPurchaseIdentity(
+      'android:com.cosdk.repairdesk:repair_pro_lifetime:' +
+        'google-token-without-order-id',
+    )}`,
+  );
+  assert.equal(result.purchaseToken, 'google-token-without-order-id');
   clearGoogleAccessTokenCache();
 });
 

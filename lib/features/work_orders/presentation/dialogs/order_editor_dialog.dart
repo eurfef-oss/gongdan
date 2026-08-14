@@ -100,8 +100,11 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
         if (!widget.asPage)
           _DialogHeader(
             kicker: isEditing ? 'EDIT / WORK ORDER' : 'NEW / WORK ORDER',
-            title: isEditing ? '编辑工单' : '新建工单',
-            subtitle: '${widget.initial.number} · 先记客户和故障，项目与金额可以现场再补。',
+            title: context.tr(isEditing ? '编辑工单' : '新建工单'),
+            subtitle: context.trf(
+              '{number} · 先记客户和故障，项目与金额可以现场再补。',
+              {'number': widget.initial.number},
+            ),
           ),
         Expanded(
           child: SingleChildScrollView(
@@ -118,7 +121,7 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
           child: Row(
             children: [
               Text(
-                '保存后仍可继续编辑',
+                context.tr('保存后仍可继续编辑'),
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 14,
@@ -127,7 +130,7 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
               const Spacer(),
               TextButton(
                 onPressed: _saving ? null : () => Navigator.of(context).pop(),
-                child: const Text('取消'),
+                child: Text(context.tr('取消')),
               ),
               const SizedBox(width: 8),
               FilledButton(
@@ -138,7 +141,7 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
                         height: 18,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : Text(isEditing ? '保存修改' : '保存工单'),
+                    : Text(context.tr(isEditing ? '保存修改' : '保存工单')),
               ),
             ],
           ),
@@ -148,7 +151,7 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
     if (widget.asPage) {
       return Scaffold(
         appBar: AppBackBar(
-          title: isEditing ? '编辑工单' : '新建工单',
+          title: context.tr(isEditing ? '编辑工单' : '新建工单'),
           onBack: () => Navigator.of(context).pop(),
         ),
         body: SafeArea(
@@ -184,7 +187,7 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
       final group = _workOrderFieldGroup(id);
       if (group != previousGroup) {
         if (children.isNotEmpty) children.add(const SizedBox(height: 8));
-        children.add(_DialogSectionLabel(title: group));
+        children.add(_DialogSectionLabel(title: context.tr(group)));
         children.add(const SizedBox(height: 12));
         previousGroup = group;
       }
@@ -237,9 +240,11 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
             ),
             child: Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: Text(
-                    '还没有客户档案，可以先新建客户，也可以保存未关联客户的草稿。',
+                    context.tr(
+                      '还没有客户档案，可以先新建客户，也可以保存未关联客户的草稿。',
+                    ),
                     style: TextStyle(fontSize: 14),
                   ),
                 ),
@@ -247,7 +252,7 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
                 OutlinedButton.icon(
                   onPressed: _createCustomer,
                   icon: const Icon(Icons.person_add_alt_1, size: 16),
-                  label: const Text('新建客户'),
+                  label: Text(context.tr('新建客户')),
                 ),
               ],
             ),
@@ -257,8 +262,8 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
           initialValue: customers.any((customer) => customer.id == _customerId)
               ? _customerId
               : null,
-          decoration: const InputDecoration(
-            labelText: '客户',
+          decoration: InputDecoration(
+            labelText: context.tr('客户'),
             prefixIcon: Icon(Icons.person_outline),
           ),
           items: [
@@ -266,17 +271,17 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
               (customer) => DropdownMenuItem(
                 value: customer.id,
                 child: Text(
-                  '${customer.name} · ${customer.phone.isEmpty ? '无手机号' : customer.phone}',
+                  '${customer.name} · ${customer.phone.isEmpty ? context.tr('无手机号') : customer.phone}',
                 ),
               ),
             ),
-            const DropdownMenuItem<String>(
+            DropdownMenuItem<String>(
               value: _newCustomerValue,
               child: Row(
                 children: [
                   Icon(Icons.person_add_alt_1, size: 18),
                   SizedBox(width: 8),
-                  Text('新建客户'),
+                  Text(context.tr('新建客户')),
                 ],
               ),
             ),
@@ -298,47 +303,47 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
       case 'serviceAddress':
         return TextField(
           controller: _address,
-          decoration: const InputDecoration(
-            labelText: '服务地址',
+          decoration: InputDecoration(
+            labelText: context.tr('服务地址'),
             prefixIcon: Icon(Icons.location_on_outlined),
           ),
         );
       case 'deviceType':
         return TextField(
           controller: _deviceType,
-          decoration: const InputDecoration(labelText: '设备类型'),
+          decoration: InputDecoration(labelText: context.tr('设备类型')),
         );
       case 'brand':
         return TextField(
           controller: _brand,
-          decoration: const InputDecoration(labelText: '品牌'),
+          decoration: InputDecoration(labelText: context.tr('品牌')),
         );
       case 'model':
         return TextField(
           controller: _model,
-          decoration: const InputDecoration(labelText: '型号'),
+          decoration: InputDecoration(labelText: context.tr('型号')),
         );
       case 'serialNumber':
         return TextField(
           controller: _serialNumber,
-          decoration: const InputDecoration(labelText: '序列号（可选）'),
+          decoration: InputDecoration(labelText: context.tr('序列号（可选）')),
         );
       case 'faultDescription':
         return TextField(
           controller: _fault,
           maxLines: 3,
-          decoration: const InputDecoration(
-            labelText: '故障描述',
-            hintText: '客户说了什么、现场看到什么',
+          decoration: InputDecoration(
+            labelText: context.tr('故障描述'),
+            hintText: context.tr('客户说了什么、现场看到什么'),
           ),
         );
       case 'customerRequest':
         return TextField(
           controller: _request,
           maxLines: 3,
-          decoration: const InputDecoration(
-            labelText: '备注',
-            hintText: '记录客户需求、说明或其他备注',
+          decoration: InputDecoration(
+            labelText: context.tr('备注'),
+            hintText: context.tr('记录客户需求、说明或其他备注'),
           ),
         );
       case 'serviceItems':
@@ -348,37 +353,40 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
           controller: _discount,
           onChanged: (_) => setState(() {}),
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: const InputDecoration(labelText: '优惠金额'),
+          decoration: InputDecoration(labelText: context.tr('优惠金额')),
         );
       case 'warrantyDays':
         return TextField(
           controller: _warrantyDays,
           keyboardType: TextInputType.number,
-          decoration: const InputDecoration(labelText: '保修天数'),
+          decoration: InputDecoration(labelText: context.tr('保修天数')),
         );
       case 'warrantyScope':
         return TextField(
           controller: _warrantyScope,
-          decoration: const InputDecoration(labelText: '保修范围'),
+          decoration: InputDecoration(labelText: context.tr('保修范围')),
         );
       case 'warrantyExclusions':
         return TextField(
           controller: _warrantyExclusions,
           maxLines: 2,
-          decoration: const InputDecoration(labelText: '不保修说明'),
+          decoration: InputDecoration(labelText: context.tr('不保修说明')),
         );
       case 'status':
         return InputDecorator(
-          decoration: const InputDecoration(labelText: '工单状态'),
+          decoration: InputDecoration(labelText: context.tr('工单状态')),
           child: Text(
-            '${_status.label} · 状态由工单流程自动推进',
+            context.trf(
+              '{status} · 状态由工单流程自动推进',
+              {'status': workOrderStatusText(context, _status)},
+            ),
             style: const TextStyle(fontSize: 14),
           ),
         );
       case 'appointmentAt':
         return _DateActionField(
-          label: '预约时间',
-          value: _dialogDateTime(_appointmentAt),
+          label: context.tr('预约时间'),
+          value: _dialogDateTimeLocalized(context, _appointmentAt),
           onTap: _pickAppointment,
           onClear: _appointmentAt == null
               ? null
@@ -386,8 +394,8 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
         );
       case 'warrantyStart':
         return _DateActionField(
-          label: '保修开始日期',
-          value: _dialogDate(_warrantyStart),
+          label: context.tr('保修开始日期'),
+          value: _dialogDateLocalized(context, _warrantyStart),
           onTap: _pickWarrantyStart,
           onClear: _warrantyStart == null
               ? null
@@ -397,18 +405,18 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
         return TextField(
           controller: _result,
           maxLines: 3,
-          decoration: const InputDecoration(
-            labelText: '维修结果',
-            hintText: '完成服务后补充处理结果',
+          decoration: InputDecoration(
+            labelText: context.tr('维修结果'),
+            hintText: context.tr('完成服务后补充处理结果'),
           ),
         );
       case 'internalNote':
         return TextField(
           controller: _internalNote,
           maxLines: 3,
-          decoration: const InputDecoration(
-            labelText: '内部备注',
-            hintText: '仅自己查看的记录',
+          decoration: InputDecoration(
+            labelText: context.tr('内部备注'),
+            hintText: context.tr('仅自己查看的记录'),
           ),
         );
       default:
@@ -421,8 +429,11 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _DialogSectionLabel(
-          title: '报价项目',
-          trailing: '${_items.length} 项 · 数量 × 单价 = 小计',
+          title: context.tr('报价项目'),
+          trailing: context.trf(
+            '{count} 项 · 数量 × 单价 = 小计',
+            {'count': _items.length},
+          ),
         ),
         const SizedBox(height: 10),
         if (_items.isEmpty)
@@ -437,7 +448,7 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
-              '还没有报价项目，请在下方添加。',
+              context.tr('还没有报价项目，请在下方添加。'),
               style: TextStyle(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontSize: 14,
@@ -468,13 +479,13 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
                     name: '',
                     type: ServiceItemType.labor,
                     quantity: 1,
-                    unit: '次',
+                    unit: context.tr('次'),
                     unitPrice: 0,
                   ),
                 ),
               ),
               icon: const Icon(Icons.add, size: 16),
-              label: const Text('添加空白项目'),
+              label: Text(context.tr('添加空白项目')),
             ),
             ...widget.controller.data.serviceItems
                 .where((item) => item.enabled)
@@ -565,7 +576,11 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
   Future<void> _save() async {
     final current = widget.controller.orderById(widget.initial.id);
     if (current?.status.isTerminal == true || current?.isTrashed == true) {
-      showTopNotice(context, '已完成、已取消或已移入回收站的工单不能编辑。', error: true);
+      showTopNotice(
+        context,
+        context.tr('已完成、已取消或已移入回收站的工单不能编辑。'),
+        error: true,
+      );
       return;
     }
     final items = _items
@@ -578,7 +593,11 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
     final total = money((subtotal - discount).clamp(0, double.infinity));
     if (_status == WorkOrderStatus.completed &&
         widget.initial.normalizedPaid < total) {
-      showTopNotice(context, '还有未收款金额，不能直接关闭工单。', error: true);
+      showTopNotice(
+        context,
+        context.tr('还有未收款金额，不能直接关闭工单。'),
+        error: true,
+      );
       return;
     }
     setState(() => _saving = true);
@@ -616,7 +635,11 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
     if (!mounted) return;
     if (!saved) {
       setState(() => _saving = false);
-      showTopNotice(context, '工单保存失败，请重试。', error: true);
+      showTopNotice(
+        context,
+        context.tr('工单保存失败，请重试。'),
+        error: true,
+      );
       return;
     }
     Navigator.of(context).pop();
@@ -750,7 +773,7 @@ class _ItemDraftEditorState extends State<_ItemDraftEditor> {
                 child: TextField(
                   controller: _name,
                   onChanged: (_) => _sync(),
-                  decoration: const InputDecoration(labelText: '项目名称'),
+                  decoration: InputDecoration(labelText: context.tr('项目名称')),
                 ),
               ),
               const SizedBox(width: 8),
@@ -760,7 +783,7 @@ class _ItemDraftEditorState extends State<_ItemDraftEditor> {
                   onChanged: (_) => _sync(),
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(labelText: '数量'),
+                  decoration: InputDecoration(labelText: context.tr('数量')),
                 ),
               ),
               const SizedBox(width: 8),
@@ -768,11 +791,11 @@ class _ItemDraftEditorState extends State<_ItemDraftEditor> {
                 child: TextField(
                   controller: _unit,
                   onChanged: (_) => _sync(),
-                  decoration: const InputDecoration(labelText: '单位'),
+                  decoration: InputDecoration(labelText: context.tr('单位')),
                 ),
               ),
               IconButton(
-                tooltip: '移除项目',
+                tooltip: context.tr('移除项目'),
                 onPressed: widget.onRemove,
                 icon: const Icon(Icons.delete_outline, size: 19),
               ),
@@ -784,10 +807,14 @@ class _ItemDraftEditorState extends State<_ItemDraftEditor> {
               Expanded(
                 child: DropdownButtonFormField<String>(
                   initialValue: _selectedTypeKey(),
-                  decoration: const InputDecoration(labelText: '类型'),
+                  decoration: InputDecoration(labelText: context.tr('类型')),
                   items: widget.typeOptions
-                      .map((option) => DropdownMenuItem(
-                          value: option.key, child: Text(option.label)))
+                      .map(
+                        (option) => DropdownMenuItem<String>(
+                          value: option.key,
+                          child: Text(context.tr(option.label)),
+                        ),
+                      )
                       .toList(),
                   onChanged: (value) {
                     ServiceTypeOption? option;
@@ -814,7 +841,7 @@ class _ItemDraftEditorState extends State<_ItemDraftEditor> {
                   onChanged: (_) => _sync(),
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(labelText: '单价'),
+                  decoration: InputDecoration(labelText: context.tr('单价')),
                 ),
               ),
             ],
@@ -823,13 +850,13 @@ class _ItemDraftEditorState extends State<_ItemDraftEditor> {
           TextField(
             controller: _note,
             onChanged: (_) => _sync(),
-            decoration: const InputDecoration(labelText: '项目备注（可选）'),
+            decoration: InputDecoration(labelText: context.tr('项目备注（可选）')),
           ),
           if (widget.templates.isNotEmpty)
             Align(
               alignment: Alignment.centerLeft,
               child: PopupMenuButton<ServiceItem>(
-                tooltip: '从模板替换',
+                tooltip: context.tr('从模板替换'),
                 onSelected: (template) {
                   _name.text = template.name;
                   _unit.text = template.unit;
@@ -852,9 +879,12 @@ class _ItemDraftEditorState extends State<_ItemDraftEditor> {
                       ),
                     )
                     .toList(),
-                child: const Padding(
+                child: Padding(
                   padding: EdgeInsets.only(top: 5),
-                  child: Text('从项目模板替换', style: TextStyle(fontSize: 14)),
+                  child: Text(
+                    context.tr('从项目模板替换'),
+                    style: TextStyle(fontSize: 14),
+                  ),
                 ),
               ),
             ),
@@ -890,9 +920,13 @@ class _DialogTotals extends StatelessWidget {
         padding: const EdgeInsets.all(13),
         child: Column(
           children: [
-            _DialogAmountLine(label: '项目小计', value: subtotal),
-            _DialogAmountLine(label: '优惠金额', value: -discount),
-            _DialogAmountLine(label: '应收合计', value: total, strong: true),
+            _DialogAmountLine(label: context.tr('项目小计'), value: subtotal),
+            _DialogAmountLine(label: context.tr('优惠金额'), value: -discount),
+            _DialogAmountLine(
+              label: context.tr('应收合计'),
+              value: total,
+              strong: true,
+            ),
           ],
         ),
       ),

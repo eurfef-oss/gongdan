@@ -29,10 +29,10 @@ class _SignatureDialogState extends State<SignatureDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const _DialogHeader(
+            _DialogHeader(
               kicker: 'SIGN / CONFIRMATION',
-              title: '客户电子签名',
-              subtitle: '签名仅用于记录双方确认，不替代正式合同。',
+              title: context.tr('客户电子签名'),
+              subtitle: context.tr('签名仅用于记录双方确认，不替代正式合同。'),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(11, 0, 11, 18),
@@ -65,7 +65,7 @@ class _SignatureDialogState extends State<SignatureDialog> {
                   Row(
                     children: [
                       Text(
-                        '请让客户在框内签名',
+                        context.tr('请让客户在框内签名'),
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                           fontSize: 14,
@@ -74,7 +74,7 @@ class _SignatureDialogState extends State<SignatureDialog> {
                       const Spacer(),
                       TextButton(
                         onPressed: () => setState(() => _strokes.clear()),
-                        child: const Text('清除重签'),
+                        child: Text(context.tr('清除重签')),
                       ),
                     ],
                   ),
@@ -89,7 +89,7 @@ class _SignatureDialogState extends State<SignatureDialog> {
                   const Spacer(),
                   TextButton(
                       onPressed: _saving ? null : () => Navigator.pop(context),
-                      child: const Text('取消')),
+                      child: Text(context.tr('取消'))),
                   const SizedBox(width: 8),
                   FilledButton(
                     onPressed: _saving ? null : _save,
@@ -99,7 +99,7 @@ class _SignatureDialogState extends State<SignatureDialog> {
                             height: 18,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('保存签名'),
+                        : Text(context.tr('保存签名')),
                   ),
                 ],
               ),
@@ -112,7 +112,7 @@ class _SignatureDialogState extends State<SignatureDialog> {
 
   Future<void> _save() async {
     if (_strokes.every((stroke) => stroke.length < 2)) {
-      showTopNotice(context, '请先让客户签名。', error: true);
+      showTopNotice(context, context.tr('请先让客户签名。'), error: true);
       return;
     }
     setState(() => _saving = true);

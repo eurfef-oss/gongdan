@@ -8,6 +8,7 @@ class RepairAppSettings {
     this.address = '',
     this.defaultNote = '以上报价仅供本次服务参考，实际费用以现场确认内容为准。额外项目需经客户确认后执行。',
     this.darkMode = false,
+    this.languageCode = 'zh',
     this.hasSeenWelcome = false,
     this.customServiceItemTypes = const [],
     this.deletedBuiltInServiceItemTypes = const [],
@@ -24,6 +25,7 @@ class RepairAppSettings {
   final String address;
   final String defaultNote;
   final bool darkMode;
+  final String languageCode;
   final bool hasSeenWelcome;
   final List<String> customServiceItemTypes;
   final List<String> deletedBuiltInServiceItemTypes;
@@ -40,6 +42,7 @@ class RepairAppSettings {
     String? address,
     String? defaultNote,
     bool? darkMode,
+    String? languageCode,
     bool? hasSeenWelcome,
     List<String>? customServiceItemTypes,
     List<String>? deletedBuiltInServiceItemTypes,
@@ -56,6 +59,7 @@ class RepairAppSettings {
         address: address ?? this.address,
         defaultNote: defaultNote ?? this.defaultNote,
         darkMode: darkMode ?? this.darkMode,
+        languageCode: languageCode ?? this.languageCode,
         hasSeenWelcome: hasSeenWelcome ?? this.hasSeenWelcome,
         customServiceItemTypes:
             customServiceItemTypes ?? this.customServiceItemTypes,
@@ -76,6 +80,7 @@ class RepairAppSettings {
         'address': address,
         'defaultNote': defaultNote,
         'darkMode': darkMode,
+        'languageCode': languageCode,
         'hasSeenWelcome': hasSeenWelcome,
         'customServiceItemTypes': customServiceItemTypes,
         'deletedBuiltInServiceItemTypes': deletedBuiltInServiceItemTypes,
@@ -95,6 +100,7 @@ class RepairAppSettings {
         defaultNote:
             json['defaultNote']?.toString() ?? RepairAppSettings().defaultNote,
         darkMode: json['darkMode'] == true,
+        languageCode: json['languageCode']?.toString() == 'en' ? 'en' : 'zh',
         hasSeenWelcome: json['hasSeenWelcome'] == true,
         customServiceItemTypes: _stringList(json['customServiceItemTypes']),
         deletedBuiltInServiceItemTypes:

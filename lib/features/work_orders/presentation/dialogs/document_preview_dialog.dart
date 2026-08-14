@@ -41,14 +41,17 @@ class _DocumentPreviewDialogState extends State<DocumentPreviewDialog> {
     if (order == null) return const SizedBox.shrink();
     final customer = controller.customerById(order.customerId);
     final isReceipt = kind == 'receipt';
-    final title = isReceipt ? '维修服务凭证' : '服务报价单';
+    final title = context.tr(isReceipt ? '维修服务凭证' : '服务报价单');
     final summary = [
       title,
-      '工单号：${order.number}',
-      '客户：${customer?.name ?? '未关联'}',
-      '设备：${_dialogDevice(order)}',
-      '应收：${_dialogMoney(order.total)}',
-      '已收：${_dialogMoney(order.normalizedPaid)}',
+      context.trf('工单号：{number}', {'number': order.number}),
+      context.trf(
+          '客户：{customer}', {'customer': customer?.name ?? context.tr('未关联')}),
+      context.trf(
+          '设备：{device}', {'device': _dialogDeviceLocalized(context, order)}),
+      context.trf('应收：{amount}', {'amount': _dialogMoney(order.total)}),
+      context
+          .trf('已收：{amount}', {'amount': _dialogMoney(order.normalizedPaid)}),
       controller.data.settings.shopName,
     ].join('\n');
     return Dialog.fullscreen(
@@ -57,8 +60,10 @@ class _DocumentPreviewDialogState extends State<DocumentPreviewDialog> {
           children: [
             _DialogHeader(
               kicker: 'DOCUMENT / PREVIEW',
-              title: '$title预览',
-              subtitle: '确认内容后，可以复制摘要、分享或保存单据文件。',
+              title: context.trf('{title}预览', {'title': title}),
+              subtitle: context.tr(
+                '确认内容后，可以复制摘要、分享或保存单据文件。',
+              ),
             ),
             Expanded(
               child: SingleChildScrollView(
@@ -85,30 +90,32 @@ class _DocumentPreviewDialogState extends State<DocumentPreviewDialog> {
                   OutlinedButton.icon(
                     onPressed: () async {
                       await Clipboard.setData(ClipboardData(text: summary));
-                      if (context.mounted) showTopNotice(context, '摘要已复制。');
+                      if (context.mounted) {
+                        showTopNotice(context, context.tr('摘要已复制。'));
+                      }
                     },
                     icon: const Icon(Icons.copy_outlined, size: 16),
-                    label: const Text('复制摘要'),
+                    label: Text(context.tr('复制摘要')),
                   ),
                   OutlinedButton.icon(
                     onPressed: () => _shareDocument(asPdf: false),
                     icon: const Icon(Icons.share_outlined, size: 14),
-                    label: const Text('分享 PNG'),
+                    label: Text(context.tr('分享 PNG')),
                   ),
                   OutlinedButton.icon(
                     onPressed: () => _saveDocument(asPdf: false),
                     icon: const Icon(Icons.save_alt_outlined, size: 16),
-                    label: const Text('保存 PNG'),
+                    label: Text(context.tr('保存 PNG')),
                   ),
                   OutlinedButton.icon(
                     onPressed: () => _shareDocument(asPdf: true),
                     icon: const Icon(Icons.share_outlined, size: 14),
-                    label: const Text('分享 PDF'),
+                    label: Text(context.tr('分享 PDF')),
                   ),
                   OutlinedButton.icon(
                     onPressed: () => _saveDocument(asPdf: true),
                     icon: const Icon(Icons.save_alt_outlined, size: 16),
-                    label: const Text('保存 PDF'),
+                    label: Text(context.tr('保存 PDF')),
                   ),
                 ],
               ),
@@ -122,7 +129,7 @@ class _DocumentPreviewDialogState extends State<DocumentPreviewDialog> {
   Future<void> _shareDocument({required bool asPdf}) async {
     final content = await _renderDocument(asPdf: asPdf);
     if (content == null || !mounted) return;
-    final title = kind == 'receipt' ? '维修服务凭证' : '服务报价单';
+    final title = context.tr(kind == 'receipt' ? '维修服务凭证' : '服务报价单');
     await _documentService.share(
       subject: title,
       text: '$title · ${controller.orderById(orderId)?.number ?? ''}',
@@ -139,16 +146,26 @@ class _DocumentPreviewDialogState extends State<DocumentPreviewDialog> {
     final fileName = _documentFileName(asPdf: asPdf);
     try {
       final path = await _documentService.save(
-        dialogTitle: '保存${asPdf ? 'PDF' : 'PNG'}到本地',
+        dialogTitle: context.trf(
+          '保存{format}到本地',
+          {'format': asPdf ? 'PDF' : 'PNG'},
+        ),
         fileName: fileName,
         bytes: content,
         extension: extension,
       );
       if (!mounted || path == null) return;
-      showTopNotice(context, '已保存到本地：$fileName');
+      showTopNotice(
+        context,
+        context.trf('已保存到本地：{fileName}', {'fileName': fileName}),
+      );
     } catch (_) {
       if (!mounted) return;
-      showTopNotice(context, '保存失败，请重新选择保存位置。', error: true);
+      showTopNotice(
+        context,
+        context.tr('保存失败，请重新选择保存位置。'),
+        error: true,
+      );
     }
   }
 
@@ -156,7 +173,11 @@ class _DocumentPreviewDialogState extends State<DocumentPreviewDialog> {
     final renderObject = _documentKey.currentContext?.findRenderObject();
     if (renderObject is! RenderRepaintBoundary) {
       if (mounted) {
-        showTopNotice(context, '单据还没有渲染完成，请稍后再试。', error: true);
+        showTopNotice(
+          context,
+          context.tr('单据还没有渲染完成，请稍后再试。'),
+          error: true,
+        );
       }
       return null;
     }
@@ -169,7 +190,11 @@ class _DocumentPreviewDialogState extends State<DocumentPreviewDialog> {
       final content =
           asPdf ? await _pdfFromImage(image) : Uint8List.fromList(pngBytes);
       if (content.isEmpty && mounted) {
-        showTopNotice(context, '单据导出失败，请稍后再试。', error: true);
+        showTopNotice(
+          context,
+          context.tr('单据导出失败，请稍后再试。'),
+          error: true,
+        );
         return null;
       }
       return content;
@@ -180,7 +205,7 @@ class _DocumentPreviewDialogState extends State<DocumentPreviewDialog> {
 
   String _documentFileName({required bool asPdf}) {
     final extension = asPdf ? 'pdf' : 'png';
-    final number = controller.orderById(orderId)?.number ?? '单据';
+    final number = controller.orderById(orderId)?.number ?? context.tr('单据');
     return 'RepairDesk-$number.$extension';
   }
 
@@ -258,7 +283,7 @@ class _DocumentPaper extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      isReceipt ? '维修服务凭证' : '服务报价单',
+                      context.tr(isReceipt ? '维修服务凭证' : '服务报价单'),
                       style: const TextStyle(
                           color: _dialogTeal, fontSize: 14, letterSpacing: 1.2),
                     ),
@@ -269,7 +294,7 @@ class _DocumentPaper extends StatelessWidget {
                             fontSize: 14,
                             fontFamily: 'monospace')),
                     const SizedBox(height: 5),
-                    Text(order.status.label,
+                    Text(workOrderStatusText(context, order.status),
                         style: const TextStyle(
                             color: Color(0xFF607080), fontSize: 14)),
                   ],
@@ -282,14 +307,17 @@ class _DocumentPaper extends StatelessWidget {
             LayoutBuilder(
               builder: (context, constraints) {
                 final customerMeta = _DocumentMeta(
-                  label: '客户信息',
-                  text:
-                      '${customer?.name ?? '未关联客户'}\n${customer?.phone ?? '未填写电话'}\n${order.serviceAddress.isNotEmpty ? order.serviceAddress : customer?.address ?? '未填写地址'}',
+                  label: context.tr('客户信息'),
+                  text: '${customer?.name ?? context.tr('未关联客户')}\n'
+                      '${customer?.phone ?? context.tr('未填写电话')}\n'
+                      '${order.serviceAddress.isNotEmpty ? order.serviceAddress : customer?.address ?? context.tr('未填写地址')}',
                 );
                 final serviceMeta = _DocumentMeta(
-                  label: '设备与服务',
-                  text:
-                      '${_dialogDevice(order)}\n${order.faultDescription}\n服务日期：${_dialogDate(order.appointmentAt ?? order.createdAt)}',
+                  label: context.tr('设备与服务'),
+                  text: '${_dialogDeviceLocalized(context, order)}\n'
+                      '${order.faultDescription}\n'
+                      '${context.tr('服务日期：')}'
+                      '${_dialogDateLocalized(context, order.appointmentAt ?? order.createdAt)}',
                 );
                 if (constraints.maxWidth < 600) {
                   return Column(
@@ -324,12 +352,16 @@ class _DocumentPaper extends StatelessWidget {
                 3: FlexColumnWidth(1.7),
               },
               children: [
-                const TableRow(
+                TableRow(
                   children: [
-                    _DocumentCell('服务项目', header: true),
-                    _DocumentCell('数量', header: true),
-                    _DocumentCell('单价', header: true),
-                    _DocumentCell('小计', header: true, alignEnd: true),
+                    _DocumentCell(context.tr('服务项目'), header: true),
+                    _DocumentCell(context.tr('数量'), header: true),
+                    _DocumentCell(context.tr('单价'), header: true),
+                    _DocumentCell(
+                      context.tr('小计'),
+                      header: true,
+                      alignEnd: true,
+                    ),
                   ],
                 ),
                 ...order.items.map(
@@ -351,15 +383,22 @@ class _DocumentPaper extends StatelessWidget {
                 width: 250,
                 child: Column(
                   children: [
-                    _DocumentAmount(label: '项目小计', value: order.subtotal),
-                    _DocumentAmount(label: '优惠金额', value: -order.discount),
                     _DocumentAmount(
-                        label: isReceipt ? '最终应收' : '报价合计',
-                        value: order.total,
-                        strong: true),
+                      label: context.tr('项目小计'),
+                      value: order.subtotal,
+                    ),
+                    _DocumentAmount(
+                      label: context.tr('优惠金额'),
+                      value: -order.discount,
+                    ),
+                    _DocumentAmount(
+                      label: context.tr(isReceipt ? '最终应收' : '报价合计'),
+                      value: order.total,
+                      strong: true,
+                    ),
                     if (isReceipt)
                       _DocumentAmount(
-                        label: '已收 / 未收',
+                        label: context.tr('已收 / 未收'),
                         value: order.normalizedPaid,
                         suffix:
                             '${_dialogMoney(order.normalizedPaid)} / ${_dialogMoney(order.outstanding)}',
@@ -372,7 +411,7 @@ class _DocumentPaper extends StatelessWidget {
               const SizedBox(height: 23),
               const Divider(color: Color(0xFFE0E5EB)),
               const SizedBox(height: 13),
-              const Text('维修结果',
+              Text(context.tr('维修结果'),
                   style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
               const SizedBox(height: 5),
               Text(order.result,
@@ -381,7 +420,7 @@ class _DocumentPaper extends StatelessWidget {
             ],
             if (_workOrderNote(order).isNotEmpty) ...[
               const SizedBox(height: 14),
-              const Text('备注',
+              Text(context.tr('备注'),
                   style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
               const SizedBox(height: 5),
               Text(_workOrderNote(order),
@@ -390,7 +429,7 @@ class _DocumentPaper extends StatelessWidget {
             ],
             if (isReceipt && order.attachments.isNotEmpty) ...[
               const SizedBox(height: 18),
-              const Text('维修照片',
+              Text(context.tr('维修照片'),
                   style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
               const SizedBox(height: 8),
               Wrap(
@@ -412,15 +451,25 @@ class _DocumentPaper extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               isReceipt
-                  ? '保修期限：${_dialogDate(order.warrantyStart)} 至 ${_dialogDate(order.warrantyEnd)}'
-                  : '报价有效期：以现场沟通为准',
+                  ? context.trf(
+                      '保修期限：{start} 至 {end}',
+                      {
+                        'start':
+                            _dialogDateLocalized(context, order.warrantyStart),
+                        'end': _dialogDateLocalized(context, order.warrantyEnd),
+                      },
+                    )
+                  : context.tr('报价有效期：以现场沟通为准'),
               style: const TextStyle(color: Color(0xFF748191), fontSize: 14),
             ),
             if (isReceipt && order.warrantyScope.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 6),
                 child: Text(
-                  '保修范围：${order.warrantyScope}',
+                  context.trf(
+                    '保修范围：{scope}',
+                    {'scope': order.warrantyScope},
+                  ),
                   style:
                       const TextStyle(color: Color(0xFF748191), fontSize: 14),
                 ),
@@ -429,7 +478,10 @@ class _DocumentPaper extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
-                  '不保修说明：${order.warrantyExclusions}',
+                  context.trf(
+                    '不保修说明：{exclusions}',
+                    {'exclusions': order.warrantyExclusions},
+                  ),
                   style:
                       const TextStyle(color: Color(0xFF748191), fontSize: 14),
                 ),
@@ -573,7 +625,7 @@ class _SignatureImage extends StatelessWidget {
         if (bytes != null)
           Image.memory(bytes, width: 150, height: 55, fit: BoxFit.contain),
         const SizedBox(width: 150, child: Divider(color: Color(0xFFCBD7D1))),
-        const Text('客户确认签名',
+        Text(context.tr('客户确认签名'),
             style: TextStyle(color: Color(0xFF748191), fontSize: 14)),
       ],
     );

@@ -58,8 +58,9 @@ class _OrderDetailDialogState extends State<OrderDetailDialog> {
                 kicker: 'WORK ORDER / DETAIL',
                 title: customer?.name.isNotEmpty == true
                     ? customer!.name
-                    : '未关联客户',
-                subtitle: '${_dialogDevice(order)} · ${order.number}',
+                    : context.tr('未关联客户'),
+                subtitle:
+                    '${_dialogDeviceLocalized(context, order)} · ${order.number}',
               ),
             Expanded(
               child: SingleChildScrollView(
@@ -101,12 +102,17 @@ class _OrderDetailDialogState extends State<OrderDetailDialog> {
                             ),
                             if (order.result.isNotEmpty) ...[
                               const SizedBox(height: 16),
-                              _NoteCard(title: '维修结果', text: order.result),
+                              _NoteCard(
+                                title: context.tr('维修结果'),
+                                text: order.result,
+                              ),
                             ],
                             if (order.internalNote.isNotEmpty) ...[
                               const SizedBox(height: 8),
                               _NoteCard(
-                                  title: '内部备注', text: order.internalNote),
+                                title: context.tr('内部备注'),
+                                text: order.internalNote,
+                              ),
                             ],
                           ],
                         );
@@ -167,22 +173,22 @@ class _OrderDetailDialogState extends State<OrderDetailDialog> {
                     TextButton.icon(
                       onPressed: order.isTrashed ? null : widget.onMoveToTrash,
                       icon: const Icon(Icons.delete_sweep_outlined, size: 17),
-                      label: const Text('移入回收站'),
+                      label: Text(context.tr('移入回收站')),
                       style: TextButton.styleFrom(
                         foregroundColor: Theme.of(context).colorScheme.error,
                       ),
                     ),
                   OutlinedButton(
                     onPressed: () => widget.onDocument('quote'),
-                    child: const Text('报价单'),
+                    child: Text(context.tr('报价单')),
                   ),
                   OutlinedButton(
                     onPressed: () => widget.onDocument('receipt'),
-                    child: const Text('维修凭证'),
+                    child: Text(context.tr('维修凭证')),
                   ),
                   FilledButton(
                     onPressed: canReceivePayment ? widget.onPayment : null,
-                    child: const Text('记录收款'),
+                    child: Text(context.tr('记录收款')),
                   ),
                 ],
               ),
@@ -192,12 +198,13 @@ class _OrderDetailDialogState extends State<OrderDetailDialog> {
         if (widget.asPage) {
           return Scaffold(
             appBar: AppBackBar(
-              title:
-                  customer?.name.isNotEmpty == true ? customer!.name : '工单详情',
+              title: customer?.name.isNotEmpty == true
+                  ? customer!.name
+                  : context.tr('工单详情'),
               onBack: () => Navigator.of(context).pop(),
               actions: [
                 PopupMenuButton<_OrderDetailAction>(
-                  tooltip: '工单操作',
+                  tooltip: context.tr('工单操作'),
                   icon: const Icon(Icons.more_vert),
                   onSelected: (action) async {
                     switch (action) {
@@ -211,12 +218,12 @@ class _OrderDetailDialogState extends State<OrderDetailDialog> {
                     PopupMenuItem(
                       value: _OrderDetailAction.cancel,
                       enabled: !locked,
-                      child: const Text('取消工单'),
+                      child: Text(context.tr('取消工单')),
                     ),
                     PopupMenuItem(
                       value: _OrderDetailAction.moveToTrash,
                       enabled: !order.isTrashed,
-                      child: const Text('移入回收站'),
+                      child: Text(context.tr('移入回收站')),
                     ),
                   ],
                 ),
@@ -251,9 +258,9 @@ class _OrderDetailDialogState extends State<OrderDetailDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const ListTile(
-              title: Text('选择照片分类'),
-              subtitle: Text('照片会归档到当前工单。'),
+            ListTile(
+              title: Text(context.tr('选择照片分类')),
+              subtitle: Text(context.tr('照片会归档到当前工单。')),
             ),
             for (final item in const [
               ('before', '维修前'),
@@ -262,7 +269,7 @@ class _OrderDetailDialogState extends State<OrderDetailDialog> {
             ])
               ListTile(
                 leading: const Icon(Icons.photo_camera_outlined),
-                title: Text(item.$2),
+                title: Text(context.tr(item.$2)),
                 onTap: () => Navigator.pop(context, item.$1),
               ),
           ],
@@ -305,15 +312,18 @@ class _FieldOperationsCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('现场操作',
+                      Text(context.tr('现场操作'),
                           style: TextStyle(
                               fontSize: 14, fontWeight: FontWeight.w800)),
                       SizedBox(height: 4),
-                      Text('签名、照片、收款和凭证集中处理', style: TextStyle(fontSize: 14)),
+                      Text(
+                        context.tr('签名、照片、收款和凭证集中处理'),
+                        style: TextStyle(fontSize: 14),
+                      ),
                     ],
                   ),
                 ),
@@ -328,22 +338,22 @@ class _FieldOperationsCard extends StatelessWidget {
               children: [
                 _FieldOperationButton(
                   icon: Icons.draw_outlined,
-                  label: '签名',
+                  label: context.tr('签名'),
                   onPressed: onSignature,
                 ),
                 _FieldOperationButton(
                   icon: Icons.photo_camera_outlined,
-                  label: '拍照',
+                  label: context.tr('拍照'),
                   onPressed: onPhoto,
                 ),
                 _FieldOperationButton(
                   icon: Icons.payments_outlined,
-                  label: '收款',
+                  label: context.tr('收款'),
                   onPressed: onPayment,
                 ),
                 _FieldOperationButton(
                   icon: Icons.receipt_long_outlined,
-                  label: '生成凭证',
+                  label: context.tr('生成凭证'),
                   onPressed: onReceipt,
                 ),
               ],
@@ -424,7 +434,14 @@ class _OrderHero extends StatelessWidget {
               ),
               const SizedBox(height: 5),
               Text(
-                '创建于 ${_dialogDate(order.createdAt)} · 更新于 ${_dialogDateTime(order.updatedAt)}',
+                context.trf(
+                  '创建于 {created} · 更新于 {updated}',
+                  {
+                    'created': _dialogDateLocalized(context, order.createdAt),
+                    'updated':
+                        _dialogDateTimeLocalized(context, order.updatedAt),
+                  },
+                ),
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 14,
@@ -437,14 +454,22 @@ class _OrderHero extends StatelessWidget {
             spacing: 7,
             runSpacing: 7,
             children: [
-              OutlinedButton(onPressed: onEdit, child: const Text('编辑')),
+              OutlinedButton(
+                onPressed: onEdit,
+                child: Text(context.tr('编辑')),
+              ),
               if (next != null)
                 FilledButton(
                   onPressed: onAdvance,
                   child: Text(
                     order.status == WorkOrderStatus.pendingConfirmation
-                        ? '确认报价并开始维修'
-                        : '推进至 ${next!.label}',
+                        ? context.tr('确认报价并开始维修')
+                        : context.trf(
+                            '推进至 {status}',
+                            {
+                              'status': workOrderStatusText(context, next!),
+                            },
+                          ),
                   ),
                 ),
               if (onCancel != null)
@@ -453,7 +478,7 @@ class _OrderHero extends StatelessWidget {
                   style: TextButton.styleFrom(
                     foregroundColor: Theme.of(context).colorScheme.error,
                   ),
-                  child: const Text('取消工单'),
+                  child: Text(context.tr('取消工单')),
                 ),
             ],
           );
@@ -485,11 +510,11 @@ class _DetailInfo extends StatelessWidget {
         ? order.serviceAddress
         : customer?.address.isNotEmpty == true
             ? customer!.address
-            : '未填写';
+            : context.tr('未填写');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text('服务信息',
+        Text(context.tr('服务信息'),
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
         const SizedBox(height: 10),
         Wrap(
@@ -497,22 +522,27 @@ class _DetailInfo extends StatelessWidget {
           runSpacing: 9,
           children: [
             _MiniInfo(
-                label: '客户',
-                value:
-                    '${customer?.name ?? '未关联'} · ${customer?.phone.isEmpty == false ? customer!.phone : '未填写电话'}'),
-            _MiniInfo(label: '服务地址', value: address),
-            _MiniInfo(label: '设备', value: _dialogDevice(order)),
+                label: context.tr('客户'),
+                value: '${customer?.name ?? context.tr('未关联')} · '
+                    '${customer?.phone.isEmpty == false ? customer!.phone : context.tr('未填写电话')}'),
+            _MiniInfo(label: context.tr('服务地址'), value: address),
             _MiniInfo(
-                label: '预约时间', value: _dialogDateTime(order.appointmentAt)),
+              label: context.tr('设备'),
+              value: _dialogDeviceLocalized(context, order),
+            ),
             _MiniInfo(
-                label: '故障描述',
+              label: context.tr('预约时间'),
+              value: _dialogDateTimeLocalized(context, order.appointmentAt),
+            ),
+            _MiniInfo(
+                label: context.tr('故障描述'),
                 value: order.faultDescription.isEmpty
-                    ? '未填写'
+                    ? context.tr('未填写')
                     : order.faultDescription),
             if (_workOrderNote(order).isNotEmpty)
-              _MiniInfo(label: '备注', value: _workOrderNote(order)),
+              _MiniInfo(label: context.tr('备注'), value: _workOrderNote(order)),
             if (order.serialNumber.isNotEmpty)
-              _MiniInfo(label: '序列号', value: order.serialNumber),
+              _MiniInfo(label: context.tr('序列号'), value: order.serialNumber),
           ],
         ),
       ],
@@ -571,18 +601,21 @@ class _LineItemsCard extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(15, 13, 15, 9),
             child: Row(
               children: [
-                const Text('报价明细',
+                Text(context.tr('报价明细'),
                     style:
                         TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
                 const Spacer(),
-                TextButton(onPressed: onQuote, child: const Text('预览报价单 →')),
+                TextButton(
+                  onPressed: onQuote,
+                  child: Text(context.tr('预览报价单 →')),
+                ),
               ],
             ),
           ),
           if (order.items.isEmpty)
-            const Padding(
+            Padding(
               padding: EdgeInsets.all(22),
-              child: Text('尚未添加项目',
+              child: Text(context.tr('尚未添加项目'),
                   style: TextStyle(fontSize: 14, color: Colors.grey)),
             )
           else ...[
@@ -593,11 +626,15 @@ class _LineItemsCard extends StatelessWidget {
                 2: FlexColumnWidth(1.4),
               },
               children: [
-                const TableRow(
+                TableRow(
                   children: [
-                    _TableCell('项目', header: true),
-                    _TableCell('数量', header: true),
-                    _TableCell('小计', header: true, alignEnd: true),
+                    _TableCell(context.tr('项目'), header: true),
+                    _TableCell(context.tr('数量'), header: true),
+                    _TableCell(
+                      context.tr('小计'),
+                      header: true,
+                      alignEnd: true,
+                    ),
                   ],
                 ),
                 ...order.items.map(
@@ -615,10 +652,19 @@ class _LineItemsCard extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(15, 10, 15, 15),
               child: Column(
                 children: [
-                  _DialogAmountLine(label: '项目小计', value: order.subtotal),
-                  _DialogAmountLine(label: '优惠', value: -order.discount),
                   _DialogAmountLine(
-                      label: '应收合计', value: order.total, strong: true),
+                    label: context.tr('项目小计'),
+                    value: order.subtotal,
+                  ),
+                  _DialogAmountLine(
+                    label: context.tr('优惠'),
+                    value: -order.discount,
+                  ),
+                  _DialogAmountLine(
+                    label: context.tr('应收合计'),
+                    value: order.total,
+                    strong: true,
+                  ),
                 ],
               ),
             ),
@@ -733,14 +779,14 @@ class _PaymentCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Text('收款',
+                Text(context.tr('收款'),
                     style:
                         TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
                 const Spacer(),
                 TextButton.icon(
                   onPressed: onAdd,
                   icon: const Icon(Icons.add, size: 15),
-                  label: const Text('记一笔'),
+                  label: Text(context.tr('记一笔')),
                 ),
               ],
             ),
@@ -760,7 +806,7 @@ class _PaymentCard extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(
-                  '应收 ${_dialogMoney(order.total)}',
+                  '${context.tr('应收')} ${_dialogMoney(order.total)}',
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 14,
@@ -783,7 +829,7 @@ class _PaymentCard extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  '未收 ${_dialogMoney(order.outstanding)}',
+                  '${context.tr('未收')} ${_dialogMoney(order.outstanding)}',
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 14,
@@ -806,7 +852,8 @@ class _PaymentCard extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              '${payment.method.label} · ${_dialogDate(payment.paidAt)}',
+                              '${paymentMethodText(context, payment.method)} · '
+                              '${_dialogDateLocalized(context, payment.paidAt)}',
                               style: TextStyle(
                                 color: Theme.of(context)
                                     .colorScheme
@@ -845,24 +892,31 @@ class _WarrantyCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('保修信息',
+            Text(context.tr('保修信息'),
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
             const SizedBox(height: 13),
             _KeyValue(
-                label: '保修期限',
-                value:
-                    order.warrantyDays > 0 ? '${order.warrantyDays} 天' : '未设置'),
+                label: context.tr('保修期限'),
+                value: order.warrantyDays > 0
+                    ? context.trf('{days} 天', {'days': order.warrantyDays})
+                    : context.tr('未设置')),
             const SizedBox(height: 11),
             Divider(
                 height: 1, color: Theme.of(context).colorScheme.outlineVariant),
             const SizedBox(height: 9),
-            _KeyValue(label: '开始', value: _dialogDate(order.warrantyStart)),
+            _KeyValue(
+              label: context.tr('开始'),
+              value: _dialogDateLocalized(context, order.warrantyStart),
+            ),
             const SizedBox(height: 7),
-            _KeyValue(label: '结束', value: _dialogDate(order.warrantyEnd)),
+            _KeyValue(
+              label: context.tr('结束'),
+              value: _dialogDateLocalized(context, order.warrantyEnd),
+            ),
             if (order.warrantyScope.isNotEmpty) ...[
               const SizedBox(height: 11),
               Text(
-                '范围：${order.warrantyScope}',
+                context.trf('范围：{scope}', {'scope': order.warrantyScope}),
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 14,
@@ -873,7 +927,10 @@ class _WarrantyCard extends StatelessWidget {
             if (order.warrantyExclusions.isNotEmpty) ...[
               const SizedBox(height: 5),
               Text(
-                '除外：${order.warrantyExclusions}',
+                context.trf(
+                  '除外：{exclusions}',
+                  {'exclusions': order.warrantyExclusions},
+                ),
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 14,
@@ -932,13 +989,15 @@ class _SignatureCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Text('客户确认',
+                Text(context.tr('客户确认'),
                     style:
                         TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
                 const Spacer(),
                 TextButton(
                     onPressed: onSign,
-                    child: Text(bytes == null ? '去签名 →' : '重新签名')),
+                    child: Text(
+                      context.tr(bytes == null ? '去签名 →' : '重新签名'),
+                    )),
               ],
             ),
             const SizedBox(height: 6),
@@ -954,7 +1013,7 @@ class _SignatureCard extends StatelessWidget {
               ),
               child: bytes == null
                   ? Text(
-                      '尚未记录签名',
+                      context.tr('尚未记录签名'),
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 14,
@@ -966,8 +1025,25 @@ class _SignatureCard extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
-                  '已于 ${_dialogDateTime(order.quoteConfirmedAt)} 记录确认'
-                  '${order.quoteConfirmedTotal == null ? '' : '，确认金额 ${_dialogMoney(order.quoteConfirmedTotal!)}'}',
+                  context.trf(
+                    '已于 {date} 记录确认{amount}',
+                    {
+                      'date': _dialogDateTimeLocalized(
+                        context,
+                        order.quoteConfirmedAt,
+                      ),
+                      'amount': order.quoteConfirmedTotal == null
+                          ? ''
+                          : context.trf(
+                              '，确认金额 {amount}',
+                              {
+                                'amount': _dialogMoney(
+                                  order.quoteConfirmedTotal!,
+                                ),
+                              },
+                            ),
+                    },
+                  ),
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 14,
@@ -996,17 +1072,22 @@ Future<void> _pickOrderPhotos({
         mainAxisSize: MainAxisSize.min,
         children: [
           ListTile(
-            title: Text('添加${_categoryLabel(category)}照片'),
-            subtitle: const Text('可以直接拍照，也可以从本地选择图片文件。'),
+            title: Text(
+              context.trf(
+                '添加{category}照片',
+                {'category': context.tr(_categoryLabel(category))},
+              ),
+            ),
+            subtitle: Text(context.tr('可以直接拍照，也可以从本地选择图片文件。')),
           ),
           ListTile(
             leading: const Icon(Icons.photo_camera_outlined),
-            title: const Text('拍照'),
+            title: Text(context.tr('拍照')),
             onTap: () => Navigator.pop(context, _PhotoSource.camera),
           ),
           ListTile(
             leading: const Icon(Icons.folder_open_outlined),
-            title: const Text('从文件选择'),
+            title: Text(context.tr('从文件选择')),
             onTap: () => Navigator.pop(context, _PhotoSource.file),
           ),
           const SizedBox(height: 6),
@@ -1031,7 +1112,11 @@ Future<void> _pickOrderPhotos({
     }
   } catch (_) {
     if (context.mounted) {
-      showTopNotice(context, '无法打开图片来源，请检查设备权限后重试。', error: true);
+      showTopNotice(
+        context,
+        context.tr('无法打开图片来源，请检查设备权限后重试。'),
+        error: true,
+      );
     }
     return;
   }
@@ -1057,13 +1142,15 @@ Future<void> _pickOrderPhotos({
         .toList();
 
     if (loadedPhotos.isEmpty) {
-      notice = '照片读取失败，未保存照片。';
+      if (!context.mounted) return;
+      notice = context.tr('照片读取失败，未保存照片。');
       noticeIsError = true;
       return;
     }
 
     final now = DateTime.now();
-    final watermark = _photoWatermarkText(now, category);
+    if (!context.mounted) return;
+    final watermark = _photoWatermarkText(context, now, category);
     final attachments = (await Future.wait(
       loadedPhotos.map((photo) async {
         try {
@@ -1085,15 +1172,25 @@ Future<void> _pickOrderPhotos({
         .toList();
 
     if (attachments.isEmpty) {
-      notice = '照片水印生成失败，未保存照片。';
+      if (!context.mounted) return;
+      notice = context.tr('照片水印生成失败，未保存照片。');
       noticeIsError = true;
       return;
     }
 
     await controller.addAttachments(order.id, attachments);
+    if (!context.mounted) return;
     final failedCount = selectedFiles.length - attachments.length;
-    notice = '已添加 ${attachments.length} 张${_categoryLabel(category)}照片。'
-        '${failedCount == 0 ? '' : '另有 $failedCount 张未保存。'}';
+    notice = context.trf(
+      '已添加 {count} 张{category}照片。{failed}',
+      {
+        'count': attachments.length,
+        'category': context.tr(_categoryLabel(category)),
+        'failed': failedCount == 0
+            ? ''
+            : context.trf('另有 {count} 张未保存。', {'count': failedCount}),
+      },
+    );
   });
 
   if (context.mounted && notice != null) {
@@ -1139,7 +1236,7 @@ class _PhotoProcessingDialog extends StatelessWidget {
         child: Dialog(
           child: ConstrainedBox(
             constraints: const BoxConstraints(minWidth: 220),
-            child: const Padding(
+            child: Padding(
               padding: EdgeInsets.fromLTRB(24, 22, 24, 22),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -1150,7 +1247,7 @@ class _PhotoProcessingDialog extends StatelessWidget {
                     child: CircularProgressIndicator(strokeWidth: 2.5),
                   ),
                   SizedBox(width: 16),
-                  Flexible(child: Text('正在处理照片，请稍候…')),
+                  Flexible(child: Text(context.tr('正在处理照片，请稍候…'))),
                 ],
               ),
             ),
@@ -1159,8 +1256,13 @@ class _PhotoProcessingDialog extends StatelessWidget {
       );
 }
 
-String _photoWatermarkText(DateTime value, String category) =>
-    '${DateFormat('yyyy/MM/dd HH:mm:ss').format(value)} ${_categoryLabel(category)}';
+String _photoWatermarkText(
+  BuildContext context,
+  DateTime value,
+  String category,
+) =>
+    '${DateFormat('yyyy/MM/dd HH:mm:ss').format(value)} '
+    '${context.tr(_categoryLabel(category))}';
 
 const _maxProcessedPhotoEdge = 2048;
 // Increasing both tile dimensions again cuts the current watermark density
@@ -1283,11 +1385,11 @@ class _PhotoCard extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                const Text('维修照片',
+                Text(context.tr('维修照片'),
                     style:
                         TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
                 Text(
-                  '${order.attachments.length} 张',
+                  '${order.attachments.length} ${context.tr('张')}',
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 14,
@@ -1296,10 +1398,19 @@ class _PhotoCard extends StatelessWidget {
                 DropdownButton<String>(
                   value: category,
                   underline: const SizedBox.shrink(),
-                  items: const [
-                    DropdownMenuItem(value: 'before', child: Text('维修前')),
-                    DropdownMenuItem(value: 'during', child: Text('维修中')),
-                    DropdownMenuItem(value: 'after', child: Text('维修后')),
+                  items: [
+                    DropdownMenuItem(
+                      value: 'before',
+                      child: Text(context.tr('维修前')),
+                    ),
+                    DropdownMenuItem(
+                      value: 'during',
+                      child: Text(context.tr('维修中')),
+                    ),
+                    DropdownMenuItem(
+                      value: 'after',
+                      child: Text(context.tr('维修后')),
+                    ),
                   ],
                   onChanged: (value) {
                     if (value != null) onCategoryChanged(value);
@@ -1309,7 +1420,7 @@ class _PhotoCard extends StatelessWidget {
                   onPressed: editable ? () => _pick(context) : null,
                   icon:
                       const Icon(Icons.add_photo_alternate_outlined, size: 15),
-                  label: const Text('添加照片'),
+                  label: Text(context.tr('添加照片')),
                 ),
               ],
             ),
@@ -1326,7 +1437,10 @@ class _PhotoCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  '${_categoryLabel(category)}暂无照片',
+                  context.trf(
+                    '{category}暂无照片',
+                    {'category': context.tr(_categoryLabel(category))},
+                  ),
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 14,
@@ -1376,16 +1490,16 @@ class _PhotoCard extends StatelessWidget {
     final confirmed = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('删除维修照片？'),
-            content: const Text('照片删除后无法恢复，确定要删除吗？'),
+            title: Text(context.tr('删除维修照片？')),
+            content: Text(context.tr('照片删除后无法恢复，确定要删除吗？')),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('取消'),
+                child: Text(context.tr('取消')),
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('确认删除'),
+                child: Text(context.tr('确认删除')),
               ),
             ],
           ),
@@ -1483,7 +1597,7 @@ Future<void> _showPhotoPreview(
               right: 4,
               child: IconButton(
                 onPressed: () => Navigator.pop(context),
-                tooltip: '关闭大图',
+                tooltip: context.tr('关闭大图'),
                 icon: const Icon(Icons.close, color: Colors.white),
               ),
             ),

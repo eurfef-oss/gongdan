@@ -45,8 +45,8 @@ class _DashboardPage extends StatelessWidget {
     final cards = _dashboardSettingsOrder(controller.dashboardCardOrder);
 
     return _Shell(
-      kicker: '工作台 / OVERVIEW',
-      title: '今天，先把现场安排好。',
+      kicker: context.tr('工作台 / OVERVIEW'),
+      title: context.tr('今天，先把现场安排好。'),
       showPageTitle: false,
       headerActions: [
         _ProPurchaseButton(
@@ -59,7 +59,7 @@ class _DashboardPage extends StatelessWidget {
         FilledButton.icon(
           onPressed: () => onCreate(),
           icon: const Icon(Icons.add),
-          label: const Text('新建工单'),
+          label: Text(context.tr('新建工单')),
         ),
       ],
       child: _DashboardCardList(
@@ -93,32 +93,32 @@ class _DashboardPage extends StatelessWidget {
         return _MetricSummaryCard(
           metrics: [
             _Metric(
-              label: '今日工单',
-              value: '$todayOrders 张',
+              label: context.tr('今日工单'),
+              value: '$todayOrders ${context.tr('张')}',
               icon: Icons.today_outlined,
             ),
             _Metric(
-              label: '待收款',
+              label: context.tr('待收款'),
               value: moneyText(outstanding),
               icon: Icons.account_balance_wallet_outlined,
             ),
             _Metric(
-              label: '已完成金额',
+              label: context.tr('已完成金额'),
               value: moneyText(completedAmount),
               icon: Icons.task_alt_outlined,
             ),
             _Metric(
-              label: '客户档案',
-              value: '${controller.data.customers.length} 位',
+              label: context.tr('客户档案'),
+              value: '${controller.data.customers.length} ${context.tr('位')}',
               icon: Icons.people_outline,
             ),
           ],
         );
       case 'statusProgress':
         return _Section(
-          title: '工单进度',
+          title: context.tr('工单进度'),
           trailing: Text(
-            '${orders.length} 张记录',
+            context.trf('{count} 张记录', {'count': orders.length}),
             style: TextStyle(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontSize: 13,
@@ -128,15 +128,15 @@ class _DashboardPage extends StatelessWidget {
         );
       case 'recentOrders':
         return _Section(
-          title: '最近工单',
+          title: context.tr('最近工单'),
           trailing: TextButton(
             onPressed: onAllOrders,
-            child: const Text('查看全部'),
+            child: Text(context.tr('查看全部')),
           ),
           child: recent.isEmpty
-              ? const _Empty(
-                  title: '还没有工单',
-                  description: '创建第一张工单开始记录服务。',
+              ? _Empty(
+                  title: context.tr('还没有工单'),
+                  description: context.tr('创建第一张工单开始记录服务。'),
                 )
               : Column(
                   children: recent.take(5).map((order) {
@@ -151,24 +151,24 @@ class _DashboardPage extends StatelessWidget {
         );
       case 'quickActions':
         return _Section(
-          title: '快捷入口',
+          title: context.tr('快捷入口'),
           child: Wrap(
             spacing: 10,
             runSpacing: 10,
             children: [
               _DashboardAction(
                 icon: Icons.add_circle_outline,
-                title: '新建工单',
+                title: context.tr('新建工单'),
                 onTap: () => onCreate(),
               ),
               _DashboardAction(
                 icon: Icons.person_add_alt_outlined,
-                title: '新建客户',
+                title: context.tr('新建客户'),
                 onTap: onCustomer,
               ),
               _DashboardAction(
                 icon: Icons.category_outlined,
-                title: '项目模板',
+                title: context.tr('项目模板'),
                 onTap: onTemplate,
               ),
             ],
@@ -291,18 +291,18 @@ class _WarrantyReminderSection extends StatelessWidget {
       ..sort((a, b) => a.warrantyEnd!.compareTo(b.warrantyEnd!));
 
     return _Section(
-      title: '保修提醒',
+      title: context.tr('保修提醒'),
       trailing: Text(
-        '${warrantyOrders.length} 张有效',
+        context.trf('{count} 张有效', {'count': warrantyOrders.length}),
         style: TextStyle(
           color: Theme.of(context).colorScheme.onSurfaceVariant,
           fontSize: 13,
         ),
       ),
       child: warrantyOrders.isEmpty
-          ? const _Empty(
-              title: '暂无有效保修',
-              description: '为已完成的工单填写保修期限后，会在这里集中提醒。',
+          ? _Empty(
+              title: context.tr('暂无有效保修'),
+              description: context.tr('为已完成的工单填写保修期限后，会在这里集中提醒。'),
             )
           : Column(
               children: warrantyOrders.take(5).map((order) {
@@ -311,10 +311,10 @@ class _WarrantyReminderSection extends StatelessWidget {
                 final remaining = endDay.difference(today).inDays;
                 final customer = controller.customerById(order.customerId);
                 final remainingText = remaining == 0
-                    ? '今日到期'
+                    ? context.tr('今日到期')
                     : remaining == 1
-                        ? '剩余 1 天'
-                        : '剩余 $remaining 天';
+                        ? context.tr('剩余 1 天')
+                        : context.trf('剩余 {days} 天', {'days': remaining});
                 return ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: CircleAvatar(
@@ -326,10 +326,18 @@ class _WarrantyReminderSection extends StatelessWidget {
                     child: const Icon(Icons.verified_user_outlined, size: 19),
                   ),
                   title: Text(
-                    '${order.number} · ${customer?.name ?? '未关联客户'}',
+                    '${order.number} · ${customer?.name ?? context.tr('未关联客户')}',
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
-                  subtitle: Text('保修至 ${dateText(end)} · $remainingText'),
+                  subtitle: Text(
+                    context.trf(
+                      '保修至 {date} · {remaining}',
+                      {
+                        'date': localizedDateText(context, end),
+                        'remaining': remainingText,
+                      },
+                    ),
+                  ),
                   onTap: () => onOpen(order),
                 );
               }).toList(),
@@ -358,16 +366,19 @@ class _DashboardOrderRow extends StatelessWidget {
         backgroundColor:
             Theme.of(context).colorScheme.primary.withValues(alpha: .1),
         foregroundColor: Theme.of(context).colorScheme.primary,
-        child: Text(initials(customer?.name ?? '')),
+        child: Text(initials(customer?.name ?? '', fallback: context.tr('客'))),
       ),
       title: Text(
-        '${order.number} · ${customer?.name ?? '未关联客户'}',
+        '${order.number} · ${customer?.name ?? context.tr('未关联客户')}',
         style: const TextStyle(fontWeight: FontWeight.w700),
       ),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('${deviceText(order)} · ${dateTimeText(order.appointmentAt)}'),
+          Text(
+            '${localizedDeviceText(context, order)} · '
+            '${localizedDateTimeText(context, order.appointmentAt)}',
+          ),
           const SizedBox(height: 5),
           Align(
             alignment: Alignment.centerRight,
@@ -496,14 +507,14 @@ class _ProgressItem extends StatelessWidget {
           const SizedBox(width: 9),
           Expanded(
             child: Text(
-              status.label,
+              workOrderStatusText(context, status),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontWeight: FontWeight.w700),
             ),
           ),
           Text(
-            '$count 张',
+            '$count ${context.tr('张')}',
             style: TextStyle(
               color: color,
               fontSize: 16,

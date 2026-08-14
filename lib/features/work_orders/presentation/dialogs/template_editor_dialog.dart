@@ -57,16 +57,18 @@ class _ServiceItemTypeManagerDialogState
             final custom = options.where((option) => !option.isBuiltIn);
             return Column(
               children: [
-                const _DialogHeader(
+                _DialogHeader(
                   kicker: 'CATALOG / TYPES',
-                  title: '类型维护',
-                  subtitle: '内置类型和自定义类型都可以删除，使用中的类型需先移除引用。',
+                  title: context.tr('类型维护'),
+                  subtitle: context.tr(
+                    '内置类型和自定义类型都可以删除，使用中的类型需先移除引用。',
+                  ),
                 ),
                 Expanded(
                   child: ListView(
                     padding: const EdgeInsets.fromLTRB(11, 0, 11, 12),
                     children: [
-                      const _DialogSectionLabel(title: '内置类型'),
+                      _DialogSectionLabel(title: context.tr('内置类型')),
                       const SizedBox(height: 6),
                       ...builtIns.map(
                         (option) => ListTile(
@@ -74,10 +76,10 @@ class _ServiceItemTypeManagerDialogState
                           contentPadding: EdgeInsets.zero,
                           leading:
                               const Icon(Icons.category_outlined, size: 18),
-                          title: Text(option.label),
-                          subtitle: const Text('系统内置'),
+                          title: Text(context.tr(option.label)),
+                          subtitle: Text(context.tr('系统内置')),
                           trailing: IconButton(
-                            tooltip: '删除',
+                            tooltip: context.tr('删除'),
                             onPressed: () => _delete(option),
                             icon: const Icon(Icons.delete_outline, size: 18),
                           ),
@@ -85,14 +87,15 @@ class _ServiceItemTypeManagerDialogState
                       ),
                       const SizedBox(height: 12),
                       _DialogSectionLabel(
-                        title: '自定义类型',
-                        trailing: '${custom.length} 个',
+                        title: context.tr('自定义类型'),
+                        trailing:
+                            context.trf('{count} 个', {'count': custom.length}),
                       ),
                       const SizedBox(height: 6),
                       if (custom.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 12),
-                          child: Text('还没有自定义类型。'),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Text(context.tr('还没有自定义类型。')),
                         )
                       else
                         ...custom.map(
@@ -100,18 +103,18 @@ class _ServiceItemTypeManagerDialogState
                             dense: true,
                             contentPadding: EdgeInsets.zero,
                             leading: const Icon(Icons.sell_outlined, size: 18),
-                            title: Text(option.label),
+                            title: Text(context.tr(option.label)),
                             trailing: Wrap(
                               spacing: 2,
                               children: [
                                 IconButton(
-                                  tooltip: '重命名',
+                                  tooltip: context.tr('重命名'),
                                   onPressed: () => _rename(option),
                                   icon:
                                       const Icon(Icons.edit_outlined, size: 18),
                                 ),
                                 IconButton(
-                                  tooltip: '删除',
+                                  tooltip: context.tr('删除'),
                                   onPressed: () => _delete(option),
                                   icon: const Icon(Icons.delete_outline,
                                       size: 18),
@@ -133,9 +136,9 @@ class _ServiceItemTypeManagerDialogState
                           controller: _newType,
                           enabled: !_saving,
                           maxLength: 30,
-                          decoration: const InputDecoration(
-                            labelText: '新增自定义类型',
-                            hintText: '例如：高空作业费',
+                          decoration: InputDecoration(
+                            labelText: context.tr('新增自定义类型'),
+                            hintText: context.tr('例如：高空作业费'),
                             counterText: '',
                           ),
                           onSubmitted: (_) => _add(),
@@ -144,7 +147,7 @@ class _ServiceItemTypeManagerDialogState
                       const SizedBox(width: 10),
                       FilledButton(
                         onPressed: _saving ? null : _add,
-                        child: const Text('新增'),
+                        child: Text(context.tr('新增')),
                       ),
                     ],
                   ),
@@ -160,7 +163,7 @@ class _ServiceItemTypeManagerDialogState
   Future<void> _add() async {
     final name = _newType.text.trim();
     if (name.isEmpty) {
-      showTopNotice(context, '请填写类型名称。', error: true);
+      showTopNotice(context, context.tr('请填写类型名称。'), error: true);
       return;
     }
     setState(() => _saving = true);
@@ -170,7 +173,11 @@ class _ServiceItemTypeManagerDialogState
     if (ok) {
       _newType.clear();
     } else {
-      showTopNotice(context, '类型名称重复、无效或保存失败。', error: true);
+      showTopNotice(
+        context,
+        context.tr('类型名称重复、无效或保存失败。'),
+        error: true,
+      );
     }
   }
 
@@ -179,21 +186,21 @@ class _ServiceItemTypeManagerDialogState
     final value = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('重命名类型'),
+        title: Text(context.tr('重命名类型')),
         content: TextField(
           controller: text,
           autofocus: true,
           maxLength: 30,
-          decoration: const InputDecoration(labelText: '类型名称'),
+          decoration: InputDecoration(labelText: context.tr('类型名称')),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
+            child: Text(context.tr('取消')),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, text.text.trim()),
-            child: const Text('保存'),
+            child: Text(context.tr('保存')),
           ),
         ],
       ),
@@ -205,23 +212,34 @@ class _ServiceItemTypeManagerDialogState
       value,
     );
     if (!mounted || ok) return;
-    showTopNotice(context, '新名称重复、无效或保存失败。', error: true);
+    showTopNotice(
+      context,
+      context.tr('新名称重复、无效或保存失败。'),
+      error: true,
+    );
   }
 
   Future<void> _delete(ServiceTypeOption option) async {
     final confirmed = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: Text(option.isBuiltIn ? '删除内置类型？' : '删除自定义类型？'),
-            content: Text('“${option.label}”如果正在被项目模板或工单使用，将无法删除。'),
+            title: Text(
+              context.tr(option.isBuiltIn ? '删除内置类型？' : '删除自定义类型？'),
+            ),
+            content: Text(
+              context.trf(
+                '“{name}”如果正在被项目模板或工单使用，将无法删除。',
+                {'name': context.tr(option.label)},
+              ),
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('取消'),
+                child: Text(context.tr('取消')),
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('确认删除'),
+                child: Text(context.tr('确认删除')),
               ),
             ],
           ),
@@ -230,7 +248,7 @@ class _ServiceItemTypeManagerDialogState
     if (!confirmed || !mounted) return;
     final ok = await widget.controller.deleteServiceItemType(option.label);
     if (!mounted || ok) return;
-    showTopNotice(context, '该类型正在使用，不能删除。', error: true);
+    showTopNotice(context, context.tr('该类型正在使用，不能删除。'), error: true);
   }
 }
 
@@ -293,8 +311,10 @@ class _TemplateEditorDialogState extends State<TemplateEditorDialog> {
               kicker: widget.initial == null
                   ? 'NEW / SERVICE ITEM'
                   : 'EDIT / SERVICE ITEM',
-              title: widget.initial == null ? '新增项目模板' : '编辑项目模板',
-              subtitle: '模板会出现在新建工单的快捷报价项目中。',
+              title: context.tr(
+                widget.initial == null ? '新增项目模板' : '编辑项目模板',
+              ),
+              subtitle: context.tr('模板会出现在新建工单的快捷报价项目中。'),
             ),
             Flexible(
               child: SingleChildScrollView(
@@ -306,16 +326,23 @@ class _TemplateEditorDialogState extends State<TemplateEditorDialog> {
                     TextField(
                       controller: _name,
                       autofocus: true,
-                      decoration: const InputDecoration(labelText: '项目名称 *'),
+                      decoration: InputDecoration(
+                        labelText: context.tr('项目名称 *'),
+                      ),
                     ),
                     const SizedBox(height: 12),
                     _TwoFields(
                       first: DropdownButtonFormField<String>(
                         initialValue: typeKey,
-                        decoration: const InputDecoration(labelText: '类型'),
+                        decoration:
+                            InputDecoration(labelText: context.tr('类型')),
                         items: typeOptions
-                            .map((option) => DropdownMenuItem(
-                                value: option.key, child: Text(option.label)))
+                            .map(
+                              (option) => DropdownMenuItem<String>(
+                                value: option.key,
+                                child: Text(context.tr(option.label)),
+                              ),
+                            )
                             .toList(),
                         onChanged: (value) {
                           if (value != null) setState(() => _typeKey = value);
@@ -323,7 +350,8 @@ class _TemplateEditorDialogState extends State<TemplateEditorDialog> {
                       ),
                       second: TextField(
                         controller: _unit,
-                        decoration: const InputDecoration(labelText: '单位'),
+                        decoration:
+                            InputDecoration(labelText: context.tr('单位')),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -332,19 +360,23 @@ class _TemplateEditorDialogState extends State<TemplateEditorDialog> {
                         controller: _price,
                         keyboardType: const TextInputType.numberWithOptions(
                             decimal: true),
-                        decoration: const InputDecoration(labelText: '默认单价'),
+                        decoration:
+                            InputDecoration(labelText: context.tr('默认单价')),
                       ),
                       second: TextField(
                         controller: _warranty,
                         keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(labelText: '保修天数'),
+                        decoration:
+                            InputDecoration(labelText: context.tr('保修天数')),
                       ),
                     ),
                     const SizedBox(height: 8),
                     SwitchListTile.adaptive(
                       contentPadding: EdgeInsets.zero,
-                      title:
-                          const Text('启用此项目', style: TextStyle(fontSize: 14)),
+                      title: Text(
+                        context.tr('启用此项目'),
+                        style: const TextStyle(fontSize: 14),
+                      ),
                       value: _enabled,
                       onChanged: (value) => setState(() => _enabled = value),
                     ),
@@ -360,11 +392,11 @@ class _TemplateEditorDialogState extends State<TemplateEditorDialog> {
                   const Spacer(),
                   TextButton(
                       onPressed: _saving ? null : () => Navigator.pop(context),
-                      child: const Text('取消')),
+                      child: Text(context.tr('取消'))),
                   const SizedBox(width: 8),
                   FilledButton(
                       onPressed: _saving ? null : _save,
-                      child: const Text('保存项目')),
+                      child: Text(context.tr('保存项目'))),
                 ],
               ),
             ),
@@ -377,7 +409,7 @@ class _TemplateEditorDialogState extends State<TemplateEditorDialog> {
   Future<void> _save() async {
     final name = _name.text.trim();
     if (name.isEmpty) {
-      showTopNotice(context, '请填写项目名称。', error: true);
+      showTopNotice(context, context.tr('请填写项目名称。'), error: true);
       return;
     }
     setState(() => _saving = true);

@@ -97,7 +97,7 @@ class _ProPurchaseButton extends StatelessWidget {
           return FilledButton.icon(
             onPressed: onPressed,
             icon: const Icon(Icons.workspace_premium_outlined, size: 16),
-            label: const Text('购买专业版'),
+            label: Text(context.tr('购买专业版')),
             style: FilledButton.styleFrom(
               minimumSize: Size.zero,
               padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
@@ -203,7 +203,7 @@ class _StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = (value as WorkOrderStatus).label;
+    final label = workOrderStatusText(context, value as WorkOrderStatus);
     final color = statusColor(context, value);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),

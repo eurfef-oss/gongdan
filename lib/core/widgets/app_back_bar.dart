@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_strings.dart';
+
 /// A reusable fixed app bar for pages that are entered from another page.
 class AppBackBar extends StatelessWidget implements PreferredSizeWidget {
   const AppBackBar({
@@ -22,7 +24,7 @@ class AppBackBar extends StatelessWidget implements PreferredSizeWidget {
       automaticallyImplyLeading: false,
       leading: IconButton(
         onPressed: onBack,
-        tooltip: '返回',
+        tooltip: context.tr('返回'),
         icon: const Icon(Icons.arrow_back),
       ),
       title: Text(

@@ -23,11 +23,11 @@ class _StatsPageState extends State<_StatsPage> {
     if (!widget.entitlementController.canUse(ProFeature.statistics)) {
       return Column(
         children: [
-          AppBackBar(title: '统计复盘', onBack: widget.onBack),
+          AppBackBar(title: context.tr('统计复盘'), onBack: widget.onBack),
           Expanded(
             child: _Shell(
-              kicker: 'INSIGHTS / STATISTICS',
-              title: '统计复盘',
+              kicker: context.tr('INSIGHTS / STATISTICS'),
+              title: context.tr('统计复盘'),
               showPageHeader: false,
               child: ProPage(
                 controller: widget.entitlementController,
@@ -65,16 +65,17 @@ class _StatsPageState extends State<_StatsPage> {
         .where((order) => order.status == WorkOrderStatus.completed)
         .length;
     final rangeText = _dateRange == null
-        ? '全部日期'
-        : '${dateText(_dateRange!.start)} – ${dateText(_dateRange!.end)}';
+        ? context.tr('全部日期')
+        : '${localizedDateText(context, _dateRange!.start)} – '
+            '${localizedDateText(context, _dateRange!.end)}';
 
     return Column(
       children: [
-        AppBackBar(title: '统计复盘', onBack: widget.onBack),
+        AppBackBar(title: context.tr('统计复盘'), onBack: widget.onBack),
         Expanded(
           child: _Shell(
-            kicker: 'INSIGHTS / STATISTICS',
-            title: '统计复盘',
+            kicker: context.tr('INSIGHTS / STATISTICS'),
+            title: context.tr('统计复盘'),
             showPageHeader: false,
             actions: [
               OutlinedButton.icon(
@@ -85,7 +86,7 @@ class _StatsPageState extends State<_StatsPage> {
               if (_dateRange != null) ...[
                 const SizedBox(width: 8),
                 IconButton(
-                  tooltip: '清除日期',
+                  tooltip: context.tr('清除日期'),
                   onPressed: () => setState(() => _dateRange = null),
                   icon: const Icon(Icons.clear),
                 ),
@@ -97,44 +98,44 @@ class _StatsPageState extends State<_StatsPage> {
                 _MetricSummaryCard(
                   metrics: [
                     _Metric(
-                      label: '工单总数',
-                      value: '${orders.length} 张',
+                      label: context.tr('工单总数'),
+                      value: '${orders.length} ${context.tr('张')}',
                       icon: Icons.receipt_long_outlined,
                     ),
                     _Metric(
-                      label: '报价总额',
+                      label: context.tr('报价总额'),
                       value: moneyText(revenue),
                       icon: Icons.request_quote_outlined,
                     ),
                     _Metric(
-                      label: '已收金额',
+                      label: context.tr('已收金额'),
                       value: moneyText(received),
                       icon: Icons.payments_outlined,
                     ),
                     _Metric(
-                      label: '已完成',
-                      value: '$completed 张',
+                      label: context.tr('已完成'),
+                      value: '$completed ${context.tr('张')}',
                       icon: Icons.task_alt_outlined,
                     ),
                     _Metric(
-                      label: '总成本',
+                      label: context.tr('总成本'),
                       value: moneyText(cost),
                       icon: Icons.account_balance_wallet_outlined,
                     ),
                     _Metric(
-                      label: '毛利',
+                      label: context.tr('毛利'),
                       value: moneyText(grossProfit),
                       icon: Icons.trending_up_outlined,
                     ),
                     _Metric(
-                      label: '毛利率',
+                      label: context.tr('毛利率'),
                       value: '${(margin * 100).toStringAsFixed(1)}%',
                       icon: Icons.percent_outlined,
                     ),
                   ],
                 ),
                 _Section(
-                  title: '状态分布',
+                  title: context.tr('状态分布'),
                   child: Column(
                     children: WorkOrderStatus.values
                         .map(
@@ -142,9 +143,14 @@ class _StatsPageState extends State<_StatsPage> {
                             padding: const EdgeInsets.symmetric(vertical: 5),
                             child: Row(
                               children: [
-                                Expanded(child: Text(status.label)),
+                                Expanded(
+                                  child: Text(
+                                    workOrderStatusText(context, status),
+                                  ),
+                                ),
                                 Text(
-                                  '${orders.where((order) => order.status == status).length} 张',
+                                  '${orders.where((order) => order.status == status).length} '
+                                  '${context.tr('张')}',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w700,
                                     fontFamily: 'monospace',
@@ -158,13 +164,19 @@ class _StatsPageState extends State<_StatsPage> {
                   ),
                 ),
                 _Section(
-                  title: '收款概览',
+                  title: context.tr('收款概览'),
                   child: Column(
                     children: [
-                      _SettingLine(label: '应收总额', value: moneyText(revenue)),
-                      _SettingLine(label: '已收总额', value: moneyText(received)),
                       _SettingLine(
-                        label: '待收总额',
+                        label: context.tr('应收总额'),
+                        value: moneyText(revenue),
+                      ),
+                      _SettingLine(
+                        label: context.tr('已收总额'),
+                        value: moneyText(received),
+                      ),
+                      _SettingLine(
+                        label: context.tr('待收总额'),
                         value: moneyText(
                           (revenue - received).clamp(0, double.infinity),
                         ),
@@ -173,11 +185,14 @@ class _StatsPageState extends State<_StatsPage> {
                   ),
                 ),
                 _Section(
-                  title: '成本与利润',
+                  title: context.tr('成本与利润'),
                   trailing: missingCostCount == 0
                       ? null
                       : Text(
-                          '$missingCostCount 张未录入成本',
+                          context.trf(
+                            '{count} 张未录入成本',
+                            {'count': missingCostCount},
+                          ),
                           style: TextStyle(
                             color:
                                 Theme.of(context).colorScheme.onSurfaceVariant,
@@ -186,11 +201,16 @@ class _StatsPageState extends State<_StatsPage> {
                         ),
                   child: Column(
                     children: [
-                      _SettingLine(label: '总成本', value: moneyText(cost)),
                       _SettingLine(
-                          label: '预计毛利', value: moneyText(grossProfit)),
+                        label: context.tr('总成本'),
+                        value: moneyText(cost),
+                      ),
                       _SettingLine(
-                        label: '毛利率',
+                        label: context.tr('预计毛利'),
+                        value: moneyText(grossProfit),
+                      ),
+                      _SettingLine(
+                        label: context.tr('毛利率'),
                         value: '${(margin * 100).toStringAsFixed(1)}%',
                       ),
                       if (costsByType.isNotEmpty) ...[
@@ -220,9 +240,9 @@ class _StatsPageState extends State<_StatsPage> {
       firstDate: DateTime(2000),
       lastDate: DateTime(now.year + 10, 12, 31),
       initialDateRange: _dateRange,
-      helpText: '选择统计日期范围',
-      cancelText: '取消',
-      confirmText: '应用',
+      helpText: context.tr('选择统计日期范围'),
+      cancelText: context.tr('取消'),
+      confirmText: context.tr('应用'),
     );
     if (picked == null || !mounted) return;
     setState(

@@ -50,6 +50,15 @@
 - [x] 成本类型设置从设置二级入口移除，改为内部成本页面下的三级页面；
 - [x] 内部成本列表将单号、设备名称、应收金额和成本记录数量分行显示，避免窄屏内容截断；
 
+## 本次联调修复记录（2026-08-14）
+
+- [x] 统一正式 Android 包名为 `com.cosdk.repairdesk`，并同步服务端 `ANDROID_PACKAGE_NAME`；
+- [x] Google Play 服务账号已绑定 `RepairDesk / com.cosdk.repairdesk`，具备购买查询和订单管理权限；
+- [x] Google Play Android Developer API 鉴权联调通过；无效 token 测试返回 `422 invalid_purchase`；
+- [x] 服务端兼容 Google Play 有效购买响应缺少 `orderId` 的情况，使用已验证 token 生成稳定内部交易标识；
+- [x] 专业版页面补充“购买失败但显示已拥有时点击恢复购买”的操作提示；
+- [ ] 将新的服务端验证器部署到生产服务器，并使用原真实订单完成一次恢复购买和解锁验证；
+
 ## 体验
 
 - [ ] 中文、英文和长文本无溢出

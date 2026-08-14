@@ -57,8 +57,8 @@ class _CustomerEditorDialogState extends State<CustomerEditorDialog> {
             _DialogHeader(
               kicker:
                   widget.initial == null ? 'NEW / CUSTOMER' : 'EDIT / CUSTOMER',
-              title: widget.initial == null ? '新增客户' : '编辑客户',
-              subtitle: '姓名、联系方式和服务地址会用于后续工单和维修凭证。',
+              title: context.tr(widget.initial == null ? '新增客户' : '编辑客户'),
+              subtitle: context.tr('姓名、联系方式和服务地址会用于后续工单和维修凭证。'),
             ),
             Flexible(
               child: SingleChildScrollView(
@@ -68,8 +68,8 @@ class _CustomerEditorDialogState extends State<CustomerEditorDialog> {
                     TextField(
                       controller: _name,
                       autofocus: true,
-                      decoration: const InputDecoration(
-                        labelText: '姓名 *',
+                      decoration: InputDecoration(
+                        labelText: context.tr('姓名 *'),
                         prefixIcon: Icon(Icons.person_outline),
                       ),
                     ),
@@ -78,18 +78,20 @@ class _CustomerEditorDialogState extends State<CustomerEditorDialog> {
                       first: TextField(
                         controller: _phone,
                         keyboardType: TextInputType.phone,
-                        decoration: const InputDecoration(labelText: '手机号'),
+                        decoration:
+                            InputDecoration(labelText: context.tr('手机号')),
                       ),
                       second: TextField(
                         controller: _wechat,
-                        decoration: const InputDecoration(labelText: '微信号'),
+                        decoration:
+                            InputDecoration(labelText: context.tr('微信号')),
                       ),
                     ),
                     const SizedBox(height: 12),
                     TextField(
                       controller: _address,
-                      decoration: const InputDecoration(
-                        labelText: '常用服务地址',
+                      decoration: InputDecoration(
+                        labelText: context.tr('常用服务地址'),
                         prefixIcon: Icon(Icons.location_on_outlined),
                       ),
                     ),
@@ -97,7 +99,7 @@ class _CustomerEditorDialogState extends State<CustomerEditorDialog> {
                     TextField(
                       controller: _notes,
                       maxLines: 3,
-                      decoration: const InputDecoration(labelText: '备注'),
+                      decoration: InputDecoration(labelText: context.tr('备注')),
                     ),
                   ],
                 ),
@@ -111,7 +113,7 @@ class _CustomerEditorDialogState extends State<CustomerEditorDialog> {
                   const Spacer(),
                   TextButton(
                     onPressed: _saving ? null : () => Navigator.pop(context),
-                    child: const Text('取消'),
+                    child: Text(context.tr('取消')),
                   ),
                   const SizedBox(width: 8),
                   FilledButton(
@@ -122,7 +124,7 @@ class _CustomerEditorDialogState extends State<CustomerEditorDialog> {
                             height: 18,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('保存客户'),
+                        : Text(context.tr('保存客户')),
                   ),
                 ],
               ),
@@ -136,7 +138,7 @@ class _CustomerEditorDialogState extends State<CustomerEditorDialog> {
   Future<void> _save() async {
     final name = _name.text.trim();
     if (name.isEmpty) {
-      showTopNotice(context, '请填写客户姓名。', error: true);
+      showTopNotice(context, context.tr('请填写客户姓名。'), error: true);
       return;
     }
     setState(() => _saving = true);
@@ -231,7 +233,8 @@ class CustomerDetailDialog extends StatelessWidget {
               kicker: 'CUSTOMER / PROFILE',
               title: customer.name,
               subtitle:
-                  '${customer.phone.isEmpty ? '未填写手机号' : customer.phone} · ${customer.address.isEmpty ? '未填写地址' : customer.address}',
+                  '${customer.phone.isEmpty ? context.tr('未填写手机号') : customer.phone} · '
+                  '${customer.address.isEmpty ? context.tr('未填写地址') : customer.address}',
             ),
             Expanded(
               child: ListView(
@@ -261,7 +264,7 @@ class CustomerDetailDialog extends StatelessWidget {
                               Expanded(
                                 child: Text(
                                   customer.notes.isEmpty
-                                      ? '暂无客户备注'
+                                      ? context.tr('暂无客户备注')
                                       : customer.notes,
                                   style: TextStyle(
                                     color: Theme.of(context)
@@ -276,7 +279,7 @@ class CustomerDetailDialog extends StatelessWidget {
                           ),
                           const SizedBox(height: 14),
                           _CustomerInfoLine(
-                            label: '姓名',
+                            label: context.tr('姓名'),
                             value: customer.name,
                             onTap: () => copyTextWithNotice(
                               context,
@@ -285,7 +288,7 @@ class CustomerDetailDialog extends StatelessWidget {
                             ),
                           ),
                           _CustomerInfoLine(
-                            label: '电话',
+                            label: context.tr('电话'),
                             value: customer.phone,
                             icon: Icons.phone_outlined,
                             onTap: () => dialPhoneWithNotice(
@@ -294,7 +297,7 @@ class CustomerDetailDialog extends StatelessWidget {
                             ),
                           ),
                           _CustomerInfoLine(
-                            label: '微信',
+                            label: context.tr('微信'),
                             value: customer.wechat,
                             onTap: () => copyTextWithNotice(
                               context,
@@ -303,7 +306,7 @@ class CustomerDetailDialog extends StatelessWidget {
                             ),
                           ),
                           _CustomerInfoLine(
-                            label: '地址',
+                            label: context.tr('地址'),
                             value: customer.address,
                             onTap: () => copyTextWithNotice(
                               context,
@@ -312,7 +315,7 @@ class CustomerDetailDialog extends StatelessWidget {
                             ),
                           ),
                           _CustomerInfoLine(
-                            label: '备注',
+                            label: context.tr('备注'),
                             value: customer.notes,
                             onTap: () => copyTextWithNotice(
                               context,
@@ -325,12 +328,12 @@ class CustomerDetailDialog extends StatelessWidget {
                             child: TextButton.icon(
                               onPressed: () => copyTextWithNotice(
                                 context,
-                                customer.clipboardText,
+                                customer.clipboardTextFor(context.tr),
                                 label: '客户全部信息',
                               ),
                               icon:
                                   const Icon(Icons.copy_all_outlined, size: 16),
-                              label: const Text('复制全部信息'),
+                              label: Text(context.tr('复制全部信息')),
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -339,14 +342,15 @@ class CustomerDetailDialog extends StatelessWidget {
                             runSpacing: 8,
                             children: [
                               _InfoPill(
-                                  label: '微信',
+                                  label: context.tr('微信'),
                                   value: customer.wechat.isEmpty
-                                      ? '未填写'
+                                      ? context.tr('未填写')
                                       : customer.wechat),
                               _InfoPill(
-                                  label: '历史工单', value: '${orders.length} 张'),
+                                  label: context.tr('历史工单'),
+                                  value: '${orders.length} ${context.tr('张')}'),
                               _InfoPill(
-                                  label: '未结清',
+                                  label: context.tr('未结清'),
                                   value: _dialogMoney(outstanding)),
                             ],
                           ),
@@ -356,13 +360,14 @@ class CustomerDetailDialog extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   _DialogSectionLabel(
-                      title: '历史工单', trailing: '${orders.length} 张'),
+                      title: context.tr('历史工单'),
+                      trailing: '${orders.length} ${context.tr('张')}'),
                   const SizedBox(height: 8),
                   if (orders.isEmpty)
-                    const Card(
+                    Card(
                       child: Padding(
-                        padding: EdgeInsets.all(20),
-                        child: Text('还没有关联工单。'),
+                        padding: const EdgeInsets.all(20),
+                        child: Text(context.tr('还没有关联工单。')),
                       ),
                     )
                   else
@@ -375,7 +380,8 @@ class CustomerDetailDialog extends StatelessWidget {
                                 dense: true,
                                 title: Text(order.number),
                                 subtitle: Text(
-                                    '${_dialogDevice(order)} · ${_dialogDate(order.createdAt)}'),
+                                    '${_dialogDeviceLocalized(context, order)} · '
+                                    '${_dialogDateLocalized(context, order.createdAt)}'),
                                 trailing: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -406,18 +412,18 @@ class CustomerDetailDialog extends StatelessWidget {
                   final deleteButton = TextButton.icon(
                     onPressed: () => _delete(context),
                     icon: const Icon(Icons.delete_outline, size: 17),
-                    label: const Text('删除客户'),
+                    label: Text(context.tr('删除客户')),
                     style: TextButton.styleFrom(
                         foregroundColor: Theme.of(context).colorScheme.error),
                   );
                   final editButton = OutlinedButton(
                     onPressed: onEdit,
-                    child: const Text('编辑资料'),
+                    child: Text(context.tr('编辑资料')),
                   );
                   final createButton = FilledButton.icon(
                     onPressed: onCreateOrder,
                     icon: const Icon(Icons.add, size: 16),
-                    label: const Text('新建工单'),
+                    label: Text(context.tr('新建工单')),
                   );
                   if (constraints.maxWidth < 480) {
                     return Column(
@@ -457,15 +463,15 @@ class CustomerDetailDialog extends StatelessWidget {
     final confirmed = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('删除客户？'),
-            content: const Text('只有没有关联工单的客户才可以删除。'),
+            title: Text(context.tr('删除客户？')),
+            content: Text(context.tr('只有没有关联工单的客户才可以删除。')),
             actions: [
               TextButton(
                   onPressed: () => Navigator.pop(context, false),
-                  child: const Text('取消')),
+                  child: Text(context.tr('取消'))),
               FilledButton(
                   onPressed: () => Navigator.pop(context, true),
-                  child: const Text('确认删除')),
+                  child: Text(context.tr('确认删除'))),
             ],
           ),
         ) ??
@@ -476,7 +482,11 @@ class CustomerDetailDialog extends StatelessWidget {
     if (ok) {
       Navigator.of(context).pop();
     } else {
-      showTopNotice(context, '该客户仍有关联工单，暂时不能删除。', error: true);
+      showTopNotice(
+        context,
+        context.tr('该客户仍有关联工单，暂时不能删除。'),
+        error: true,
+      );
     }
   }
 }
@@ -498,7 +508,10 @@ class _InfoPill extends StatelessWidget {
             .withValues(alpha: .6),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text('$label：$value', style: const TextStyle(fontSize: 14)),
+      child: Text(
+        context.trf('{label}：{value}', {'label': label, 'value': value}),
+        style: const TextStyle(fontSize: 14),
+      ),
     );
   }
 }
@@ -536,7 +549,7 @@ class _CustomerInfoLine extends StatelessWidget {
             ),
             Expanded(
               child: Text(
-                enabled ? value : '未填写',
+                enabled ? value : context.tr('未填写'),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(

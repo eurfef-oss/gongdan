@@ -21,12 +21,14 @@ class Customer {
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  String get clipboardText => [
-        '姓名：$name',
-        if (phone.trim().isNotEmpty) '电话：$phone',
-        if (wechat.trim().isNotEmpty) '微信：$wechat',
-        if (address.trim().isNotEmpty) '服务地址：$address',
-        if (notes.trim().isNotEmpty) '备注：$notes',
+  String get clipboardText => clipboardTextFor((value) => value);
+
+  String clipboardTextFor(String Function(String) translate) => [
+        '${translate('姓名')}：$name',
+        if (phone.trim().isNotEmpty) '${translate('电话')}：$phone',
+        if (wechat.trim().isNotEmpty) '${translate('微信')}：$wechat',
+        if (address.trim().isNotEmpty) '${translate('服务地址')}：$address',
+        if (notes.trim().isNotEmpty) '${translate('备注')}：$notes',
       ].join('\n');
 
   Customer copyWith({

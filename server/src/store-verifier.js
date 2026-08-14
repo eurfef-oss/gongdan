@@ -356,7 +356,13 @@ async function verifyGooglePlayPurchase(request, config, dependencies) {
       422,
     );
   }
-  const orderId = requiredString(purchase.orderId, 'Google Play orderId', 256);
+  // Google documents orderId as an optional field on ProductPurchase. Some
+  // valid test/restored purchases omit it, so use the server-verified token
+  // as a stable fallback identity instead of rejecting the purchase.
+  const orderId = optionalString(purchase.orderId, 'Google Play orderId', 256) ||
+    `token-${hashPurchaseIdentity(
+      `android:${packageName}:${request.productId}:${purchaseToken}`,
+    )}`;
 
   if (googleConfig.acknowledgePurchases !== false &&
       Number(purchase.acknowledgementState) === 0) {

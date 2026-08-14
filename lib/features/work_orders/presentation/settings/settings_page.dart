@@ -3,6 +3,7 @@ part of '../work_order_page.dart';
 enum _SettingsSection {
   shop,
   appearance,
+  language,
   dashboard,
   workOrder,
   pro,
@@ -103,7 +104,8 @@ class _SettingsPageState extends State<_SettingsPage> {
   Widget build(BuildContext context) {
     final section = _section;
     if (section == null) return _buildMenu(context);
-    final title = _showCostTypes ? '成本类型设置' : _sectionTitle(section);
+    final title =
+        _showCostTypes ? context.tr('成本类型设置') : _sectionTitle(context, section);
 
     return Column(
       children: [
@@ -113,7 +115,7 @@ class _SettingsPageState extends State<_SettingsPage> {
         ),
         Expanded(
           child: _Shell(
-            kicker: 'SYSTEM / SETTINGS',
+            kicker: context.tr('SYSTEM / SETTINGS'),
             title: title,
             showPageHeader: false,
             child: _showCostTypes
@@ -127,97 +129,107 @@ class _SettingsPageState extends State<_SettingsPage> {
 
   Widget _buildMenu(BuildContext context) {
     final settings = widget.controller.data.settings;
-    final modeText = settings.darkMode ? '当前使用深色模式' : '当前使用浅色模式';
+    final modeText =
+        settings.darkMode ? context.tr('当前使用深色模式') : context.tr('当前使用浅色模式');
     final shopText = settings.shopName.trim().isEmpty
-        ? '尚未填写门店资料'
+        ? context.tr('尚未填写门店资料')
         : settings.shopName.trim();
 
     return _Shell(
-      kicker: 'SYSTEM / SETTINGS',
-      title: '设置与备份',
+      kicker: context.tr('SYSTEM / SETTINGS'),
+      title: context.tr('设置与备份'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _SettingsGroupLabel(
-            title: '系统设置',
-            description: '按需进入对应的二级设置页面。',
+          _SettingsGroupLabel(
+            title: context.tr('系统设置'),
+            description: context.tr('按需进入对应的二级设置页面。'),
           ),
           _SettingsMenuEntry(
             icon: Icons.workspace_premium_outlined,
-            title: '专业版',
-            subtitle: '一次性买断，解锁更多工具',
+            title: context.tr('专业版'),
+            subtitle: context.tr('一次性买断，解锁更多工具'),
             value: widget.entitlementController.isPreviewPro
-                ? '预览开放'
+                ? context.tr('预览开放')
                 : widget.entitlementController.isPro
-                    ? '已激活'
-                    : '未激活',
+                    ? context.tr('已激活')
+                    : context.tr('未激活'),
             highlighted: true,
             onTap: () => _openSection(_SettingsSection.pro),
           ),
           _SettingsMenuEntry(
             icon: Icons.storefront_outlined,
-            title: '门店资料',
-            subtitle: '门店名称、负责人、电话、地址和单据说明',
+            title: context.tr('门店资料'),
+            subtitle: context.tr('门店名称、负责人、电话、地址和单据说明'),
             value: shopText,
             onTap: () => _openSection(_SettingsSection.shop),
           ),
           _SettingsMenuEntry(
             icon: Icons.palette_outlined,
-            title: '显示设置',
-            subtitle: '主题模式',
+            title: context.tr('显示设置'),
+            subtitle: context.tr('主题模式'),
             value: modeText,
             onTap: () => _openSection(_SettingsSection.appearance),
           ),
           _SettingsMenuEntry(
+            icon: Icons.language_outlined,
+            title: context.tr('语言'),
+            subtitle: context.tr('选择应用显示语言'),
+            value: settings.languageCode == 'en'
+                ? context.tr('English')
+                : context.tr('中文'),
+            onTap: () => _openSection(_SettingsSection.language),
+          ),
+          _SettingsMenuEntry(
             icon: Icons.space_dashboard_outlined,
-            title: '概览设置',
-            subtitle: '调整概览卡片的显示和排序',
+            title: context.tr('概览设置'),
+            subtitle: context.tr('调整概览卡片的显示和排序'),
             onTap: () => _openSection(_SettingsSection.dashboard),
           ),
           _SettingsMenuEntry(
             icon: Icons.tune_outlined,
-            title: '工单设置',
-            subtitle: '设置工单表单字段的显示和顺序',
+            title: context.tr('工单设置'),
+            subtitle: context.tr('设置工单表单字段的显示和顺序'),
             onTap: () => _openSection(_SettingsSection.workOrder),
           ),
           _SettingsMenuEntry(
             icon: Icons.import_export_outlined,
-            title: '数据备份',
-            subtitle: 'JSON 完整备份、CSV 导入和导出',
+            title: context.tr('数据备份'),
+            subtitle: context.tr('JSON 完整备份、CSV 导入和导出'),
             onTap: () => _openSection(_SettingsSection.data),
           ),
           _SettingsMenuEntry(
             icon: Icons.account_balance_wallet_outlined,
-            title: '内部成本',
-            subtitle: '专业版功能：为每张工单录入成本，并管理成本类型',
+            title: context.tr('内部成本'),
+            subtitle: context.tr('专业版功能：为每张工单录入成本，并管理成本类型'),
             onTap: () => _openSection(_SettingsSection.internalCosts),
           ),
           _SettingsMenuEntry(
             icon: Icons.auto_awesome_outlined,
-            title: '演示数据',
-            subtitle: '载入一组完整示例，快速查看工作流程',
+            title: context.tr('演示数据'),
+            subtitle: context.tr('载入一组完整示例，快速查看工作流程'),
             onTap: () => _openSection(_SettingsSection.demo),
           ),
-          const _SettingsGroupLabel(
-            title: '工作台工具',
-            description: '这些页面也可以从这里进入。',
+          _SettingsGroupLabel(
+            title: context.tr('工作台工具'),
+            description: context.tr('这些页面也可以从这里进入。'),
           ),
           _SettingsMenuEntry(
             icon: Icons.category_outlined,
-            title: '项目模板',
-            subtitle: '管理常用服务项目和报价模板',
+            title: context.tr('项目模板'),
+            subtitle: context.tr('管理常用服务项目和报价模板'),
             onTap: () => widget.onNavigate(3),
           ),
           _SettingsMenuEntry(
             icon: Icons.bar_chart_outlined,
-            title: '项目统计',
-            subtitle: '查看工单数量、收入和状态分布',
+            title: context.tr('项目统计'),
+            subtitle: context.tr('查看工单数量、收入和状态分布'),
             onTap: () => widget.onNavigate(4),
           ),
           _SettingsMenuEntry(
             icon: Icons.delete_outline,
-            title: '回收站',
-            subtitle: '查看和还原已移入回收站的工单',
+            title: context.tr('回收站'),
+            subtitle: context.tr('查看和还原已移入回收站的工单'),
             onTap: () => widget.onNavigate(6),
           ),
         ],
@@ -225,24 +237,26 @@ class _SettingsPageState extends State<_SettingsPage> {
     );
   }
 
-  String _sectionTitle(_SettingsSection section) {
+  String _sectionTitle(BuildContext context, _SettingsSection section) {
     switch (section) {
       case _SettingsSection.shop:
-        return '门店资料';
+        return context.tr('门店资料');
       case _SettingsSection.appearance:
-        return '显示设置';
+        return context.tr('显示设置');
+      case _SettingsSection.language:
+        return context.tr('语言设置');
       case _SettingsSection.dashboard:
-        return '概览设置';
+        return context.tr('概览设置');
       case _SettingsSection.workOrder:
-        return '工单设置';
+        return context.tr('工单设置');
       case _SettingsSection.pro:
-        return '专业版';
+        return context.tr('专业版');
       case _SettingsSection.data:
-        return '数据备份';
+        return context.tr('数据备份');
       case _SettingsSection.internalCosts:
-        return '内部成本';
+        return context.tr('内部成本');
       case _SettingsSection.demo:
-        return '演示数据';
+        return context.tr('演示数据');
     }
   }
 
@@ -253,12 +267,12 @@ class _SettingsPageState extends State<_SettingsPage> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _SettingField(label: '门店名称', controller: _shopName),
-            _SettingField(label: '负责人', controller: _ownerName),
-            _SettingField(label: '联系电话', controller: _phone),
-            _SettingField(label: '门店地址', controller: _address),
+            _SettingField(label: context.tr('门店名称'), controller: _shopName),
+            _SettingField(label: context.tr('负责人'), controller: _ownerName),
+            _SettingField(label: context.tr('联系电话'), controller: _phone),
+            _SettingField(label: context.tr('门店地址'), controller: _address),
             _SettingField(
-              label: '单据默认说明',
+              label: context.tr('单据默认说明'),
               controller: _note,
               maxLines: 3,
             ),
@@ -274,7 +288,7 @@ class _SettingsPageState extends State<_SettingsPage> {
                     defaultNote: _note.text.trim(),
                   ),
                 ),
-                child: const Text('保存门店资料'),
+                child: Text(context.tr('保存门店资料')),
               ),
             ),
           ],
@@ -285,8 +299,8 @@ class _SettingsPageState extends State<_SettingsPage> {
           children: [
             SwitchListTile.adaptive(
               contentPadding: EdgeInsets.zero,
-              title: const Text('深色模式'),
-              subtitle: const Text('在低光环境下使用更舒适'),
+              title: Text(context.tr('深色模式')),
+              subtitle: Text(context.tr('在低光环境下使用更舒适')),
               value: settings.darkMode,
               onChanged: (value) => widget.controller.updateSettings(
                 settings.copyWith(darkMode: value),
@@ -294,6 +308,8 @@ class _SettingsPageState extends State<_SettingsPage> {
             ),
           ],
         );
+      case _SettingsSection.language:
+        return _LanguageSettingsContent(controller: widget.controller);
       case _SettingsSection.dashboard:
         return _DashboardSettingsContent(controller: widget.controller);
       case _SettingsSection.workOrder:
@@ -306,29 +322,29 @@ class _SettingsPageState extends State<_SettingsPage> {
           children: [
             _BackupAction(
               icon: Icons.ios_share_outlined,
-              title: '导出完整 JSON 备份',
-              description: '包含客户、工单、模板、付款与设置。',
+              title: context.tr('导出完整 JSON 备份'),
+              description: context.tr('包含客户、工单、模板、付款与设置。'),
               onTap: () => widget.onExport('json'),
             ),
             const SizedBox(height: 8),
             _BackupAction(
               icon: Icons.restore_outlined,
-              title: '恢复 JSON 备份',
-              description: '恢复后会覆盖当前设备上的本地数据。',
+              title: context.tr('恢复 JSON 备份'),
+              description: context.tr('恢复后会覆盖当前设备上的本地数据。'),
               onTap: widget.onImport,
             ),
             const SizedBox(height: 8),
             _BackupAction(
               icon: Icons.table_chart_outlined,
-              title: '导出工单 CSV',
-              description: '便于在表格软件中查看和整理工单。',
+              title: context.tr('导出工单 CSV'),
+              description: context.tr('便于在表格软件中查看和整理工单。'),
               onTap: () => widget.onExport('csv'),
             ),
             const SizedBox(height: 8),
             _BackupAction(
               icon: Icons.file_upload_outlined,
-              title: '导入工单 CSV',
-              description: '按工单编号更新或追加客户与工单。',
+              title: context.tr('导入工单 CSV'),
+              description: context.tr('按工单编号更新或追加客户与工单。'),
               onTap: widget.onImportCsv,
             ),
           ],
@@ -346,7 +362,7 @@ class _SettingsPageState extends State<_SettingsPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              '这会替换当前设备上的本地数据。建议先完成 JSON 备份。',
+              context.tr('这会替换当前设备上的本地数据。建议先完成 JSON 备份。'),
               style: TextStyle(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
@@ -357,12 +373,56 @@ class _SettingsPageState extends State<_SettingsPage> {
               child: OutlinedButton.icon(
                 onPressed: widget.onReset,
                 icon: const Icon(Icons.auto_awesome_outlined),
-                label: const Text('载入演示数据'),
+                label: Text(context.tr('载入演示数据')),
               ),
             ),
           ],
         );
     }
+  }
+}
+
+class _LanguageSettingsContent extends StatelessWidget {
+  const _LanguageSettingsContent({required this.controller});
+
+  final WorkOrderController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = controller.data.settings;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          context.tr('选择应用显示语言'),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 8),
+        RadioGroup<String>(
+          groupValue: settings.languageCode,
+          onChanged: (value) {
+            if (value == null || value == settings.languageCode) return;
+            controller.updateSettings(settings.copyWith(languageCode: value));
+          },
+          child: Column(
+            children: [
+              RadioListTile<String>(
+                contentPadding: EdgeInsets.zero,
+                title: Text(context.tr('中文')),
+                value: 'zh',
+              ),
+              RadioListTile<String>(
+                contentPadding: EdgeInsets.zero,
+                title: Text(context.tr('English')),
+                value: 'en',
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -430,16 +490,21 @@ class _WorkOrderSettingsContentState extends State<_WorkOrderSettingsContent> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _Section(
-          title: '工单表单字段',
+          title: context.tr('工单表单字段'),
           trailing: Text(
-            '$visibleCount/${_order.length} 项显示',
+            context.trf(
+              '{visible}/{total} 项显示',
+              {'visible': visibleCount, 'total': _order.length},
+            ),
             style: TextStyle(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontSize: 13,
             ),
           ),
           child: Text(
-            '拖动左侧手柄调整字段在工单表单中的顺序，使用右侧开关控制字段是否显示。隐藏字段不会删除已有数据。',
+            context.tr(
+              '拖动左侧手柄调整字段在工单表单中的顺序，使用右侧开关控制字段是否显示。隐藏字段不会删除已有数据。',
+            ),
             style: TextStyle(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
@@ -467,10 +532,12 @@ class _WorkOrderSettingsContentState extends State<_WorkOrderSettingsContent> {
                   ),
                 ),
                 title: Text(
-                  _workOrderFieldLabel(id),
+                  context.tr(_workOrderFieldLabel(id)),
                   style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
-                subtitle: Text(visible ? '在新建/编辑工单中显示' : '已隐藏'),
+                subtitle: Text(
+                  context.tr(visible ? '在新建/编辑工单中显示' : '已隐藏'),
+                ),
                 trailing: Switch.adaptive(
                   value: visible,
                   onChanged: (value) => _onVisibilityChanged(id, value),
@@ -551,16 +618,19 @@ class _DashboardSettingsContentState extends State<_DashboardSettingsContent> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _Section(
-          title: '概览模块',
+          title: context.tr('概览模块'),
           trailing: Text(
-            '$visibleCount/${_order.length} 张显示',
+            context.trf(
+              '{visible}/{total} 张显示',
+              {'visible': visibleCount, 'total': _order.length},
+            ),
             style: TextStyle(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontSize: 13,
             ),
           ),
           child: Text(
-            '拖动左侧手柄调整概览中的显示顺序，使用右侧开关控制模块是否显示。',
+            context.tr('拖动左侧手柄调整概览中的显示顺序，使用右侧开关控制模块是否显示。'),
             style: TextStyle(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
@@ -588,10 +658,10 @@ class _DashboardSettingsContentState extends State<_DashboardSettingsContent> {
                   ),
                 ),
                 title: Text(
-                  _dashboardCardLabel(id),
+                  _dashboardCardLabel(context, id),
                   style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
-                subtitle: Text(visible ? '在概览中显示' : '已隐藏'),
+                subtitle: Text(context.tr(visible ? '在概览中显示' : '已隐藏')),
                 trailing: Switch.adaptive(
                   value: visible,
                   onChanged: (value) => _onVisibilityChanged(id, value),

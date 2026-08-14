@@ -8,6 +8,14 @@
 
 服务端使用 Node.js 20+，授权数据使用 MariaDB 持久化。App 本地仍使用平台安全存储缓存已签发的授权，因此网络中断时可以继续使用已经激活的专业版功能。
 
+当前 `play.cosdk.com` 生产实例的实际路径为：
+
+- 服务代码：`/var/www/play.cosdk.com`；
+- 环境文件：`/etc/play-license.env`；
+- systemd 服务：`play-license.service`。
+
+第 4 节中的 `/opt/repair-license` 和 `repair-license.service` 是通用首次部署示例；维护当前生产实例时应使用上面的实际路径和服务名。
+
 ## 2. 系统架构
 
 ```text

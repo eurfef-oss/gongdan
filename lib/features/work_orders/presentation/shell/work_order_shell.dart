@@ -70,11 +70,11 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('本地数据加载失败'),
+                  Text(context.tr('本地数据加载失败')),
                   const SizedBox(height: 12),
                   FilledButton(
                     onPressed: controller.initialize,
-                    child: const Text('重试'),
+                    child: Text(context.tr('重试')),
                   ),
                 ],
               ),
@@ -133,26 +133,26 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
                         selectedIndex: _pageIndex < 3 ? _pageIndex : 3,
                         onDestinationSelected: (index) =>
                             _selectPage(index == 3 ? 5 : index),
-                        destinations: const [
+                        destinations: [
                           NavigationDestination(
                             icon: Icon(Icons.space_dashboard_outlined),
                             selectedIcon: Icon(Icons.space_dashboard),
-                            label: '概览',
+                            label: context.tr('概览'),
                           ),
                           NavigationDestination(
                             icon: Icon(Icons.receipt_long_outlined),
                             selectedIcon: Icon(Icons.receipt_long),
-                            label: '工单',
+                            label: context.tr('工单'),
                           ),
                           NavigationDestination(
                             icon: Icon(Icons.people_outline),
                             selectedIcon: Icon(Icons.people),
-                            label: '客户',
+                            label: context.tr('客户'),
                           ),
                           NavigationDestination(
                             icon: Icon(Icons.settings_outlined),
                             selectedIcon: Icon(Icons.settings),
-                            label: '设置',
+                            label: context.tr('设置'),
                           ),
                         ],
                       )
@@ -206,8 +206,8 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        const SnackBar(
-          content: Text('再按一次返回键退出应用'),
+        SnackBar(
+          content: Text(context.tr('再按一次返回键退出应用')),
           duration: Duration(seconds: 2),
         ),
       );
@@ -416,16 +416,21 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
     final ok = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('删除项目模板？'),
-            content: Text('“${item.name}”将从项目目录中移除，已有工单明细不会受影响。'),
+            title: Text(context.tr('删除项目模板？')),
+            content: Text(
+              context.trf(
+                '“{name}”将从项目目录中移除，已有工单明细不会受影响。',
+                {'name': item.name},
+              ),
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('取消'),
+                child: Text(context.tr('取消')),
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('确认删除'),
+                child: Text(context.tr('确认删除')),
               ),
             ],
           ),
@@ -472,14 +477,14 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
 
   Future<void> _showProPrompt(ProFeature feature) async {
     final description = switch (feature) {
-      ProFeature.unlimitedOrders => '普通版最多创建 10 张工单。',
-      ProFeature.unlimitedCustomers => '普通版最多设置 10 个客户档案。',
-      ProFeature.customTemplates => '自定义项目模板是专业版功能。',
-      ProFeature.statistics => '统计复盘是专业版功能。',
-      ProFeature.internalCosts => '内部成本录入和成本利润统计是专业版功能。',
-      ProFeature.documentExport => 'PDF / PNG 单据对所有版本开放。',
-      ProFeature.customerSignature => '客户电子签名对所有版本开放。',
-      ProFeature.photoAttachments => '维修照片附件对所有版本开放。',
+      ProFeature.unlimitedOrders => context.tr('普通版最多创建 10 张工单。'),
+      ProFeature.unlimitedCustomers => context.tr('普通版最多设置 10 个客户档案。'),
+      ProFeature.customTemplates => context.tr('自定义项目模板是专业版功能。'),
+      ProFeature.statistics => context.tr('统计复盘是专业版功能。'),
+      ProFeature.internalCosts => context.tr('内部成本录入和成本利润统计是专业版功能。'),
+      ProFeature.documentExport => context.tr('PDF / PNG 单据对所有版本开放。'),
+      ProFeature.customerSignature => context.tr('客户电子签名对所有版本开放。'),
+      ProFeature.photoAttachments => context.tr('维修照片附件对所有版本开放。'),
     };
     await showDialog<void>(
       context: context,
@@ -498,9 +503,9 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
               children: [
                 Row(
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        '解锁专业版',
+                        context.tr('解锁专业版'),
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w800,
@@ -533,16 +538,18 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
     final ok = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('移入回收站？'),
-            content: const Text('工单、照片、签名和收款记录会保留，可随时从回收站还原。'),
+            title: Text(context.tr('移入回收站？')),
+            content: Text(
+              context.tr('工单、照片、签名和收款记录会保留，可随时从回收站还原。'),
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('取消'),
+                child: Text(context.tr('取消')),
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('移入回收站'),
+                child: Text(context.tr('移入回收站')),
               ),
             ],
           ),
@@ -558,9 +565,11 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
     final bytes = Uint8List.fromList(
       utf8.encode(isJson ? controller.exportJson() : controller.exportCsv()),
     );
-    final fileName = isJson ? 'RepairDesk-备份.json' : '维修工单.csv';
+    final fileName = isJson ? 'RepairDesk-backup.json' : 'work-orders.csv';
     await _shareService.share(
-      text: isJson ? 'RepairDesk 完整备份（请妥善保管）' : 'RepairDesk 工单 CSV 导出',
+      text: isJson
+          ? context.tr('RepairDesk 完整备份（请妥善保管）')
+          : context.tr('RepairDesk 工单 CSV 导出'),
       file: ShareFile(
         bytes: bytes,
         fileName: fileName,
@@ -585,16 +594,16 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
     final ok = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('恢复本地备份？'),
-            content: const Text('恢复后会覆盖当前设备上的本地数据。'),
+            title: Text(context.tr('恢复本地备份？')),
+            content: Text(context.tr('恢复后会覆盖当前设备上的本地数据。')),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('取消'),
+                child: Text(context.tr('取消')),
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('确认恢复'),
+                child: Text(context.tr('确认恢复')),
               ),
             ],
           ),
@@ -610,7 +619,7 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
     if (mounted) {
       showTopNotice(
         context,
-        success ? '备份已恢复。' : '备份文件格式不正确。',
+        success ? context.tr('备份已恢复。') : context.tr('备份文件格式不正确。'),
         error: !success,
       );
     }
@@ -626,23 +635,29 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
     try {
       bytes = await files.first.readAsBytes();
     } catch (_) {
-      if (mounted) showTopNotice(context, 'CSV 文件读取失败。', error: true);
+      if (mounted) {
+        showTopNotice(context, context.tr('CSV 文件读取失败。'), error: true);
+      }
       return;
     }
     if (!mounted) return;
     final confirmed = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('导入工单 CSV？'),
-            content: const Text('将按工单编号更新已有记录，并追加 CSV 中的新工单和客户，不会覆盖其他本地数据。'),
+            title: Text(context.tr('导入工单 CSV？')),
+            content: Text(
+              context.tr(
+                '将按工单编号更新已有记录，并追加 CSV 中的新工单和客户，不会覆盖其他本地数据。',
+              ),
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('取消'),
+                child: Text(context.tr('取消')),
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('开始导入'),
+                child: Text(context.tr('开始导入')),
               ),
             ],
           ),
@@ -657,12 +672,22 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
     }
     if (!mounted) return;
     if (result == null) {
-      showTopNotice(context, 'CSV 格式不正确，未导入任何数据。', error: true);
+      showTopNotice(
+        context,
+        context.tr('CSV 格式不正确，未导入任何数据。'),
+        error: true,
+      );
       return;
     }
     showTopNotice(
       context,
-      'CSV 导入完成：${result.totalOrders} 张工单，新增 ${result.createdCustomers} 位客户。',
+      context.trf(
+        'CSV 导入完成：{orders} 张工单，新增 {customers} 位客户。',
+        {
+          'orders': result.totalOrders,
+          'customers': result.createdCustomers,
+        },
+      ),
     );
   }
 
@@ -670,16 +695,16 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
     final ok = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('载入演示数据？'),
-            content: const Text('这会替换当前设备上的本地数据。'),
+            title: Text(context.tr('载入演示数据？')),
+            content: Text(context.tr('这会替换当前设备上的本地数据。')),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('取消'),
+                child: Text(context.tr('取消')),
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('确认'),
+                child: Text(context.tr('确认')),
               ),
             ],
           ),
@@ -724,14 +749,14 @@ class _WelcomePageState extends State<_WelcomePage> {
                   ),
                   const SizedBox(height: 28),
                   Text(
-                    '欢迎开始记录每一次服务。',
+                    context.tr('欢迎开始记录每一次服务。'),
                     style: Theme.of(context).textTheme.displaySmall?.copyWith(
                           fontWeight: FontWeight.w800,
                         ),
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    '报价、维修、收款和客户资料，都在一张离线工单里完成。',
+                    context.tr('报价、维修、收款和客户资料，都在一张离线工单里完成。'),
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           color: scheme.onSurfaceVariant,
                           height: 1.5,
@@ -741,21 +766,21 @@ class _WelcomePageState extends State<_WelcomePage> {
                   Wrap(
                     spacing: 12,
                     runSpacing: 12,
-                    children: const [
+                    children: [
                       _WelcomeFeature(
                         icon: Icons.receipt_long_outlined,
-                        title: '工单清单',
-                        description: '把每一次上门变成可追溯的服务记录。',
+                        title: context.tr('工单清单'),
+                        description: context.tr('把每一次上门变成可追溯的服务记录。'),
                       ),
                       _WelcomeFeature(
                         icon: Icons.people_outline,
-                        title: '客户档案',
-                        description: '客户和设备信息，下次报修快速复用。',
+                        title: context.tr('客户档案'),
+                        description: context.tr('客户和设备信息，下次报修快速复用。'),
                       ),
                       _WelcomeFeature(
                         icon: Icons.cloud_off_outlined,
-                        title: '本地优先',
-                        description: '数据保存在本机，网络不可用也能工作。',
+                        title: context.tr('本地优先'),
+                        description: context.tr('数据保存在本机，网络不可用也能工作。'),
                       ),
                     ],
                   ),
@@ -775,7 +800,7 @@ class _WelcomePageState extends State<_WelcomePage> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.arrow_forward),
-                    label: const Text('开始使用'),
+                    label: Text(context.tr('开始使用')),
                   ),
                 ],
               ),
@@ -833,12 +858,12 @@ class _PersistenceWarning extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialBanner(
-      content: const Text('当前无法写入本地文件，数据会暂存在内存中。'),
+      content: Text(context.tr('当前无法写入本地文件，数据会暂存在内存中。')),
       leading: const Icon(Icons.warning_amber_outlined),
       actions: [
         TextButton(
           onPressed: () {},
-          child: const Text('知道了'),
+          child: Text(context.tr('知道了')),
         ),
       ],
     );
@@ -878,7 +903,7 @@ class _SideNavigation extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 10),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -892,7 +917,7 @@ class _SideNavigation extends StatelessWidget {
                       ),
                       SizedBox(height: 3),
                       Text(
-                        '离线工作台',
+                        context.tr('离线工作台'),
                         style: TextStyle(
                           color: _navMuted,
                           fontSize: 11,
@@ -905,48 +930,48 @@ class _SideNavigation extends StatelessWidget {
               ],
             ),
           ),
-          _NavLabel('工作台'),
+          _NavLabel(context.tr('工作台')),
           _NavItem(
             selected: selected == 0,
             icon: Icons.space_dashboard_outlined,
-            label: '概览',
+            label: context.tr('概览'),
             onTap: () => onSelected(0),
           ),
           _NavItem(
             selected: selected == 1,
             icon: Icons.receipt_long_outlined,
-            label: '工单',
+            label: context.tr('工单'),
             onTap: () => onSelected(1),
           ),
           _NavItem(
             selected: selected == 2,
             icon: Icons.people_outline,
-            label: '客户',
+            label: context.tr('客户'),
             onTap: () => onSelected(2),
           ),
-          _NavLabel('分析与系统'),
+          _NavLabel(context.tr('分析与系统')),
           _NavItem(
             selected: selected == 3,
             icon: Icons.category_outlined,
-            label: '项目模板',
+            label: context.tr('项目模板'),
             onTap: () => onSelected(3),
           ),
           _NavItem(
             selected: selected == 4,
             icon: Icons.bar_chart_outlined,
-            label: '统计复盘',
+            label: context.tr('统计复盘'),
             onTap: () => onSelected(4),
           ),
           _NavItem(
             selected: selected == 5,
             icon: Icons.settings_outlined,
-            label: '设置与备份',
+            label: context.tr('设置与备份'),
             onTap: () => onSelected(5),
           ),
           _NavItem(
             selected: selected == 6,
             icon: Icons.delete_outline,
-            label: '回收站',
+            label: context.tr('回收站'),
             onTap: () => onSelected(6),
           ),
           const Spacer(),
@@ -958,13 +983,13 @@ class _SideNavigation extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.white.withValues(alpha: .08)),
             ),
-            child: const Row(
+            child: Row(
               children: [
                 Icon(Icons.cloud_off_outlined, color: _navMuted, size: 17),
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '数据保存在本机',
+                    context.tr('数据保存在本机'),
                     style: TextStyle(
                       color: _navMuted,
                       fontSize: 12,

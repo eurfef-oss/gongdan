@@ -43,7 +43,8 @@ List<String> _dashboardSettingsOrder(Iterable<String> cardOrder) {
   return result;
 }
 
-String _dashboardCardLabel(String id) => _dashboardCardLabels[id] ?? id;
+String _dashboardCardLabel(BuildContext context, String id) =>
+    context.tr(_dashboardCardLabels[id] ?? id);
 
 String moneyText(double value) => '¥${value.toStringAsFixed(2)}';
 
@@ -57,9 +58,15 @@ String dateTimeText(DateTime? value, {String empty = '未安排'}) {
   return DateFormat('MM/dd HH:mm').format(value);
 }
 
-String initials(String name) {
+String localizedDateText(BuildContext context, DateTime? value) =>
+    dateText(value, empty: context.tr('未设置'));
+
+String localizedDateTimeText(BuildContext context, DateTime? value) =>
+    dateTimeText(value, empty: context.tr('未安排'));
+
+String initials(String name, {String fallback = '客'}) {
   final value = name.trim();
-  return value.isEmpty ? '客' : value.characters.first.toUpperCase();
+  return value.isEmpty ? fallback : value.characters.first.toUpperCase();
 }
 
 String deviceText(WorkOrder order) {
@@ -67,6 +74,13 @@ String deviceText(WorkOrder order) {
       .where((item) => item.isNotEmpty)
       .join(' · ');
   return value.isEmpty ? '未填写设备' : value;
+}
+
+String localizedDeviceText(BuildContext context, WorkOrder order) {
+  final value = [order.deviceType, order.brand, order.model]
+      .where((item) => item.isNotEmpty)
+      .join(' · ');
+  return value.isEmpty ? context.tr('未填写设备') : value;
 }
 
 int _dashboardProgressCount(

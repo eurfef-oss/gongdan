@@ -2,6 +2,8 @@
 
 这是维修工单助手的最小授权服务。它只处理应用专业版购买凭证和授权状态，不接收工单、客户、照片或签名数据。授权记录使用 MariaDB 持久化。
 
+当前 `play.cosdk.com` 生产实例使用：代码目录 `/var/www/play.cosdk.com`、环境文件 `/etc/play-license.env`、systemd 服务 `play-license.service`。文中其他 `/opt/repair-license` 或 `/etc/repair-license.env` 路径仅作为通用部署示例。
+
 ## 本地运行
 
 需要 Node.js 20 或更高版本和 MariaDB 10.6 或更高版本。开发模式允许使用测试购买，但测试开关不能用于正式环境：
@@ -105,6 +107,36 @@ POST .../tokens/{token}:acknowledge
 ```
 
 服务端只保存订单号和购买 token 的关联，不保存服务账号 JSON。服务账号 JSON、数据库密码和 Ed25519 私钥必须通过受限环境变量或密钥管理服务注入。
+
+## Google Play 联调排查
+
+生产环境必须使用当前 Android 包名：
+
+```env
+ANDROID_PACKAGE_NAME=com.cosdk.repairdesk
+```
+
+服务账号需要在 Google Play Console 的“用户和权限”中获得 `RepairDesk / com.cosdk.repairdesk` 的应用访问权限，并拥有查看财务数据/购买记录和管理订单的权限。Google Cloud 项目还必须启用 Google Play Android Developer API。修改环境变量或 Play Console 权限后，重启实际运行的 systemd 服务，例如：
+
+```bash
+sudo systemctl restart play-license.service
+```
+
+可以使用一个不会产生购买的无效 token 检查配置链路：
+
+```bash
+curl -i -sS -X POST https://play.cosdk.com/v1/purchases/verify \
+  -H 'content-type: application/json' \
+  --data '{"platform":"android","productId":"repair_pro_lifetime","purchaseId":"diagnostic-invalid-token","appId":"com.cosdk.repairdesk","verificationData":{"source":"Google Play","local":"","server":"diagnostic-invalid-token"}}'
+```
+
+预期结果为 `422 invalid_purchase`，表示包名、服务账号和 Google Play API 已打通。常见错误含义：
+
+- `invalid_app`：服务端仍加载旧的 `ANDROID_PACKAGE_NAME`，或修改后未重启服务；
+- `google_api_not_authorized`：服务账号、Play Console 应用权限、Google Cloud 项目关联或 Android Publisher API 仍有问题；
+- `Google Play orderId is required`：线上仍运行旧版验证器；有效购买响应缺少可选 `orderId` 时，当前验证器会使用已验证 token 生成稳定的内部交易标识。
+
+购买已显示“已拥有”但 App 未解锁时，不要再次付款。修复服务端后重新打开 App，点击“恢复购买”提交原购买 token。
 
 ## 正式环境注意事项
 

@@ -19,24 +19,26 @@ class _InternalCostsContent extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Expanded(
+            Expanded(
               child: Text(
-                '成本只供店内经营分析使用，不会出现在报价单、维修凭证或客户展示内容中。',
+                context.tr(
+                  '成本只供店内经营分析使用，不会出现在报价单、维修凭证或客户展示内容中。',
+                ),
               ),
             ),
             const SizedBox(width: 12),
             OutlinedButton.icon(
               onPressed: onOpenCostTypes,
               icon: const Icon(Icons.tune_outlined, size: 17),
-              label: const Text('成本类型设置'),
+              label: Text(context.tr('成本类型设置')),
             ),
           ],
         ),
         const SizedBox(height: 16),
         if (orders.isEmpty)
-          const _Empty(
-            title: '还没有工单',
-            description: '创建工单后，可以在这里补录内部成本。',
+          _Empty(
+            title: context.tr('还没有工单'),
+            description: context.tr('创建工单后，可以在这里补录内部成本。'),
           )
         else
           ...orders.map(
@@ -67,9 +69,14 @@ class _InternalCostsContent extends StatelessWidget {
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(deviceText(order)),
-                    Text('应收 ${moneyText(order.total)}'),
-                    Text('${order.internalCosts.length} 条成本记录'),
+                    Text(localizedDeviceText(context, order)),
+                    Text('${context.tr('应收')} ${moneyText(order.total)}'),
+                    Text(
+                      context.trf(
+                        '{count} 条成本记录',
+                        {'count': order.internalCosts.length},
+                      ),
+                    ),
                   ],
                 ),
                 trailing: Column(
@@ -84,7 +91,7 @@ class _InternalCostsContent extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '成本',
+                      context.tr('成本'),
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 12,
@@ -154,13 +161,15 @@ class _InternalCostEditorDialogState extends State<_InternalCostEditorDialog> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '工单内部成本',
+                    context.tr('工单内部成本'),
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w800,
                         ),
                   ),
                   const SizedBox(height: 3),
-                  Text('${order.number} · ${deviceText(order)}'),
+                  Text(
+                    '${order.number} · ${localizedDeviceText(context, order)}',
+                  ),
                 ],
               ),
             ),
@@ -171,16 +180,16 @@ class _InternalCostEditorDialogState extends State<_InternalCostEditorDialog> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      '仅用于店内成本和毛利统计，客户不可见。',
+                      context.tr('仅用于店内成本和毛利统计，客户不可见。'),
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                     const SizedBox(height: 12),
                     if (_drafts.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 18),
-                        child: Text('还没有成本记录，点击下方添加。'),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        child: Text(context.tr('还没有成本记录，点击下方添加。')),
                       )
                     else
                       ..._drafts.asMap().entries.map(
@@ -200,11 +209,11 @@ class _InternalCostEditorDialogState extends State<_InternalCostEditorDialog> {
                     OutlinedButton.icon(
                       onPressed: _addDraft,
                       icon: const Icon(Icons.add, size: 17),
-                      label: const Text('添加成本记录'),
+                      label: Text(context.tr('添加成本记录')),
                     ),
                     const SizedBox(height: 12),
                     _SettingLine(
-                      label: '工单总成本',
+                      label: context.tr('工单总成本'),
                       value: moneyText(
                         _drafts.fold<double>(
                           0,
@@ -224,12 +233,12 @@ class _InternalCostEditorDialogState extends State<_InternalCostEditorDialog> {
                   const Spacer(),
                   TextButton(
                     onPressed: _saving ? null : () => Navigator.pop(context),
-                    child: const Text('取消'),
+                    child: Text(context.tr('取消')),
                   ),
                   const SizedBox(width: 8),
                   FilledButton(
                     onPressed: _saving ? null : _save,
-                    child: const Text('保存成本'),
+                    child: Text(context.tr('保存成本')),
                   ),
                 ],
               ),
@@ -265,7 +274,7 @@ class _InternalCostEditorDialogState extends State<_InternalCostEditorDialog> {
     if (!mounted) return;
     if (!ok) {
       setState(() => _saving = false);
-      showTopNotice(context, '成本保存失败，请重试。', error: true);
+      showTopNotice(context, context.tr('成本保存失败，请重试。'), error: true);
       return;
     }
     Navigator.pop(context);
@@ -344,12 +353,12 @@ class _CostDraftRowState extends State<_CostDraftRow> {
                   )
                       ? widget.draft.typeId
                       : null,
-                  decoration: const InputDecoration(labelText: '成本类型'),
+                  decoration: InputDecoration(labelText: context.tr('成本类型')),
                   items: options
                       .map(
                         (item) => DropdownMenuItem(
                           value: item.id,
-                          child: Text(item.name),
+                          child: Text(context.tr(item.name)),
                         ),
                       )
                       .toList(),
@@ -375,14 +384,14 @@ class _CostDraftRowState extends State<_CostDraftRow> {
                   },
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(
-                    labelText: '金额',
+                  decoration: InputDecoration(
+                    labelText: context.tr('金额'),
                     prefixText: '¥ ',
                   ),
                 ),
               ),
               IconButton(
-                tooltip: '删除成本',
+                tooltip: context.tr('删除成本'),
                 onPressed: widget.onRemove,
                 icon: const Icon(Icons.delete_outline, size: 19),
               ),
@@ -395,7 +404,7 @@ class _CostDraftRowState extends State<_CostDraftRow> {
               widget.draft.note = value;
               widget.onChanged();
             },
-            decoration: const InputDecoration(labelText: '备注（可选）'),
+            decoration: InputDecoration(labelText: context.tr('备注（可选）')),
           ),
         ],
       ),
@@ -466,15 +475,17 @@ class _CostTypesContentState extends State<_CostTypesContent> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text('停用后不会出现在新成本记录中，已保存的历史成本不受影响。'),
+        Text(
+          context.tr('停用后不会出现在新成本记录中，已保存的历史成本不受影响。'),
+        ),
         const SizedBox(height: 16),
         ...types.map(
           (type) => Card(
             margin: const EdgeInsets.only(bottom: 10),
             child: ListTile(
               leading: const Icon(Icons.sell_outlined, size: 19),
-              title: Text(type.name),
-              subtitle: Text(type.enabled ? '启用中' : '已停用'),
+              title: Text(context.tr(type.name)),
+              subtitle: Text(context.tr(type.enabled ? '启用中' : '已停用')),
               trailing: Wrap(
                 spacing: 0,
                 children: [
@@ -484,12 +495,12 @@ class _CostTypesContentState extends State<_CostTypesContent> {
                         _saving ? null : (value) => _setEnabled(type, value),
                   ),
                   IconButton(
-                    tooltip: '重命名',
+                    tooltip: context.tr('重命名'),
                     onPressed: _saving ? null : () => _rename(type),
                     icon: const Icon(Icons.edit_outlined, size: 18),
                   ),
                   IconButton(
-                    tooltip: '删除',
+                    tooltip: context.tr('删除'),
                     onPressed: _saving ? null : () => _delete(type),
                     icon: const Icon(Icons.delete_outline, size: 18),
                   ),
@@ -506,8 +517,8 @@ class _CostTypesContentState extends State<_CostTypesContent> {
                 controller: _newType,
                 enabled: !_saving,
                 maxLength: 30,
-                decoration: const InputDecoration(
-                  labelText: '新增成本类型',
+                decoration: InputDecoration(
+                  labelText: context.tr('新增成本类型'),
                   counterText: '',
                 ),
                 onSubmitted: (_) => _add(),
@@ -516,7 +527,7 @@ class _CostTypesContentState extends State<_CostTypesContent> {
             const SizedBox(width: 8),
             FilledButton(
               onPressed: _saving ? null : _add,
-              child: const Text('新增'),
+              child: Text(context.tr('新增')),
             ),
           ],
         ),
@@ -540,16 +551,16 @@ class _CostTypesContentState extends State<_CostTypesContent> {
     final value = await showDialog<String>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('重命名成本类型'),
+        title: Text(context.tr('重命名成本类型')),
         content: TextField(controller: text, autofocus: true),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
+            child: Text(context.tr('取消')),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, text.text.trim()),
-            child: const Text('保存'),
+            child: Text(context.tr('保存')),
           ),
         ],
       ),
@@ -566,7 +577,11 @@ class _CostTypesContentState extends State<_CostTypesContent> {
       setState(() {});
       return;
     }
-    showTopNotice(context, '该类型已被工单使用，不能删除；可以先停用。', error: true);
+    showTopNotice(
+      context,
+      context.tr('该类型已被工单使用，不能删除；可以先停用。'),
+      error: true,
+    );
   }
 
   Future<bool> _run(Future<bool> Function() action) async {
@@ -574,7 +589,9 @@ class _CostTypesContentState extends State<_CostTypesContent> {
     final ok = await action();
     if (!mounted) return false;
     setState(() => _saving = false);
-    if (!ok) showTopNotice(context, '保存失败或名称已存在。', error: true);
+    if (!ok) {
+      showTopNotice(context, context.tr('保存失败或名称已存在。'), error: true);
+    }
     return ok;
   }
 }

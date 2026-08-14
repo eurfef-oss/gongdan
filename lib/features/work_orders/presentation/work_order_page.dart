@@ -15,6 +15,8 @@ import '../../monetization/presentation/pro_page.dart';
 import '../application/work_order_controller.dart';
 import '../domain/entities/work_order.dart';
 import '../services/document_service.dart';
+import '../../../l10n/app_strings.dart';
+import '../../../l10n/model_localizations.dart';
 import 'work_order_dialogs.dart';
 part 'shared/presentation_helpers.dart';
 part 'shell/work_order_shell.dart';

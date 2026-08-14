@@ -39,8 +39,8 @@ class _OrdersPageState extends State<_OrdersPage> {
     final controller = widget.controller;
     final orders = controller.filteredOrders;
     return _Shell(
-      kicker: '工作台 / ORDERS',
-      title: '工单清单',
+      kicker: context.tr('工作台 / ORDERS'),
+      title: context.tr('工单清单'),
       headerActions: [
         _ProPurchaseButton(
           entitlementController: widget.entitlementController,
@@ -52,7 +52,7 @@ class _OrdersPageState extends State<_OrdersPage> {
         FilledButton.icon(
           onPressed: () => widget.onCreate(),
           icon: const Icon(Icons.add),
-          label: const Text('新建工单'),
+          label: Text(context.tr('新建工单')),
         ),
       ],
       child: Column(
@@ -63,9 +63,9 @@ class _OrdersPageState extends State<_OrdersPage> {
             searchController: _search,
           ),
           if (orders.isEmpty)
-            const _Empty(
-              title: '没有匹配的工单',
-              description: '调整筛选条件或创建一张新工单。',
+            _Empty(
+              title: context.tr('没有匹配的工单'),
+              description: context.tr('调整筛选条件或创建一张新工单。'),
             )
           else
             ...orders.map(
@@ -120,9 +120,9 @@ class _OrderFiltersState extends State<_OrderFilters> {
                 child: TextField(
                   controller: widget.searchController,
                   onChanged: controller.setQuery,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     prefixIcon: Icon(Icons.search),
-                    hintText: '搜索编号、客户或设备',
+                    hintText: context.tr('搜索编号、客户或设备'),
                     isDense: true,
                   ),
                 ),
@@ -130,16 +130,16 @@ class _OrderFiltersState extends State<_OrderFilters> {
             ),
             _OrderFilterDropdown<WorkOrderStatus?>(
               value: controller.statusFilter,
-              hint: '全部状态',
+              hint: context.tr('全部状态'),
               items: [
-                const DropdownMenuItem<WorkOrderStatus?>(
+                DropdownMenuItem<WorkOrderStatus?>(
                   value: null,
-                  child: Text('全部状态'),
+                  child: Text(context.tr('全部状态')),
                 ),
                 ...WorkOrderStatus.values.map(
                   (status) => DropdownMenuItem(
                     value: status,
-                    child: Text(status.label),
+                    child: Text(workOrderStatusText(context, status)),
                   ),
                 ),
               ],
@@ -147,16 +147,16 @@ class _OrderFiltersState extends State<_OrderFilters> {
             ),
             _OrderFilterDropdown<PaymentStatus?>(
               value: controller.paymentFilter,
-              hint: '全部收款',
+              hint: context.tr('全部收款'),
               items: [
-                const DropdownMenuItem<PaymentStatus?>(
+                DropdownMenuItem<PaymentStatus?>(
                   value: null,
-                  child: Text('全部收款'),
+                  child: Text(context.tr('全部收款')),
                 ),
                 ...PaymentStatus.values.map(
                   (status) => DropdownMenuItem(
                     value: status,
-                    child: Text(status.label),
+                    child: Text(paymentStatusText(context, status)),
                   ),
                 ),
               ],
@@ -171,7 +171,7 @@ class _OrderFiltersState extends State<_OrderFilters> {
                   controller.clearOrderFilters();
                 },
                 icon: const Icon(Icons.clear, size: 16),
-                label: const Text('清除筛选'),
+                label: Text(context.tr('清除筛选')),
               ),
           ],
         ),
@@ -267,11 +267,11 @@ class _OrderCard extends StatelessWidget {
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   Text(
-                    '应收 ${moneyText(order.total)}',
+                    '${context.tr('应收')} ${moneyText(order.total)}',
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                   Text(
-                    '未收 ${moneyText(order.outstanding)}',
+                    '${context.tr('未收')} ${moneyText(order.outstanding)}',
                     style: TextStyle(
                       color: order.outstanding > 0
                           ? statusColor(context, order.paymentStatus)
@@ -285,7 +285,17 @@ class _OrderCard extends StatelessWidget {
                         Icons.arrow_forward_rounded,
                         size: 16,
                       ),
-                      label: Text('推进至 ${order.status.next!.label}'),
+                      label: Text(
+                        context.trf(
+                          '推进至 {status}',
+                          {
+                            'status': workOrderStatusText(
+                              context,
+                              order.status.next!,
+                            ),
+                          },
+                        ),
+                      ),
                     ),
                 ],
               ),
@@ -316,7 +326,8 @@ class _OrderTile extends StatelessWidget {
           backgroundColor:
               Theme.of(context).colorScheme.primary.withValues(alpha: .1),
           foregroundColor: Theme.of(context).colorScheme.primary,
-          child: Text(initials(customer?.name ?? '')),
+          child:
+              Text(initials(customer?.name ?? '', fallback: context.tr('客'))),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -334,7 +345,7 @@ class _OrderTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  customer?.name ?? '未关联客户',
+                  customer?.name ?? context.tr('未关联客户'),
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -362,15 +373,15 @@ class _OrderCardDetail extends StatelessWidget {
       children: [
         _OrderDetailLabel(
           icon: Icons.devices_other_outlined,
-          text: deviceText(order),
+          text: localizedDeviceText(context, order),
         ),
         _OrderDetailLabel(
           icon: Icons.schedule_outlined,
-          text: dateTimeText(order.appointmentAt),
+          text: localizedDateTimeText(context, order.appointmentAt),
         ),
         _OrderDetailLabel(
           icon: Icons.payments_outlined,
-          text: order.paymentStatus.label,
+          text: paymentStatusText(context, order.paymentStatus),
         ),
       ],
     );
@@ -407,14 +418,14 @@ class _RecycleBinPage extends StatelessWidget {
     final orders = controller.trashedOrders;
     return Column(
       children: [
-        AppBackBar(title: '回收站', onBack: onBack),
+        AppBackBar(title: context.tr('回收站'), onBack: onBack),
         Expanded(
           child: _Shell(
-            kicker: '工作台 / ARCHIVE',
-            title: '回收站',
+            kicker: context.tr('工作台 / ARCHIVE'),
+            title: context.tr('回收站'),
             showPageHeader: false,
             child: orders.isEmpty
-                ? const _Empty(title: '回收站为空')
+                ? _Empty(title: context.tr('回收站为空'))
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: orders
@@ -445,10 +456,15 @@ class _RecycleBinRow extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       child: ListTile(
         title: Text(order.number),
-        subtitle: Text('移入时间：${dateText(order.trashedAt)}'),
+        subtitle: Text(
+          context.trf(
+            '移入时间：{date}',
+            {'date': localizedDateText(context, order.trashedAt)},
+          ),
+        ),
         trailing: OutlinedButton(
           onPressed: onRestore,
-          child: const Text('还原'),
+          child: Text(context.tr('还原')),
         ),
       ),
     );

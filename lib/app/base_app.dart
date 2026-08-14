@@ -52,6 +52,7 @@ class _BaseAppState extends State<BaseApp> {
         listenable: widget.controller,
         builder: (context, _) => MaterialApp(
           debugShowCheckedModeBanner: false,
+          locale: Locale(widget.controller.data.settings.languageCode),
           onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
           localizationsDelegates: const [
             AppLocalizations.delegate,

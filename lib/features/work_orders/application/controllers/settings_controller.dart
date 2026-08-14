@@ -171,6 +171,7 @@ class SettingsController {
       demo.copyWith(
         settings: demo.settings.copyWith(
           hasSeenWelcome: _store.data.settings.hasSeenWelcome,
+          languageCode: _store.data.settings.languageCode,
         ),
       ),
     );

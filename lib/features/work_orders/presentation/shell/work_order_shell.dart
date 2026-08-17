@@ -809,73 +809,53 @@ class _WelcomePageState extends State<_WelcomePage> {
                       ),
                       SizedBox(height: short ? 8 : 14),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisAlignment: compact
+                            ? MainAxisAlignment.center
+                            : MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          for (var index = 0;
-                              index < _welcomeFeatures.length;
-                              index++)
-                            GestureDetector(
-                              onTap: () => _pageController.animateToPage(
-                                index,
-                                duration: const Duration(milliseconds: 280),
-                                curve: Curves.easeOutCubic,
-                              ),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 220),
-                                margin:
-                                    const EdgeInsets.symmetric(horizontal: 4),
-                                width: index == _currentPage ? 24 : 8,
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: index == _currentPage
-                                      ? scheme.primary
-                                      : scheme.outlineVariant,
-                                  borderRadius: BorderRadius.circular(99),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              for (var index = 0;
+                                  index < _welcomeFeatures.length;
+                                  index++)
+                                GestureDetector(
+                                  onTap: () => _pageController.animateToPage(
+                                    index,
+                                    duration: const Duration(milliseconds: 280),
+                                    curve: Curves.easeOutCubic,
+                                  ),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 220),
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                    ),
+                                    width: index == _currentPage ? 24 : 8,
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      color: index == _currentPage
+                                          ? scheme.primary
+                                          : scheme.outlineVariant,
+                                      borderRadius: BorderRadius.circular(99),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
+                            ],
+                          ),
+                          if (!compact) ...[
+                            const SizedBox(width: 24),
+                            _buildWelcomeStartButton(),
+                          ],
                         ],
                       ),
-                      SizedBox(height: short ? 3 : 8),
-                      Text(
-                        context.tr('左右滑动浏览功能'),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: scheme.onSurfaceVariant,
-                          fontSize: short ? 12 : 13,
+                      if (compact) ...[
+                        SizedBox(height: short ? 8 : 16),
+                        Align(
+                          alignment: Alignment.center,
+                          child: _buildWelcomeStartButton(),
                         ),
-                      ),
-                      SizedBox(
-                          height: short
-                              ? 8
-                              : compact
-                                  ? 18
-                                  : 22),
-                      Align(
-                        alignment:
-                            compact ? Alignment.center : Alignment.centerRight,
-                        child: FilledButton.icon(
-                          onPressed: _starting
-                              ? null
-                              : () async {
-                                  setState(() => _starting = true);
-                                  await widget.onStart();
-                                  if (mounted) {
-                                    setState(() => _starting = false);
-                                  }
-                                },
-                          icon: _starting
-                              ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : const Icon(Icons.arrow_forward),
-                          label: Text(context.tr('开始使用')),
-                        ),
-                      ),
+                      ],
                     ],
                   ),
                 ),
@@ -884,6 +864,28 @@ class _WelcomePageState extends State<_WelcomePage> {
           },
         ),
       ),
+    );
+  }
+
+  Widget _buildWelcomeStartButton() {
+    return FilledButton.icon(
+      onPressed: _starting
+          ? null
+          : () async {
+              setState(() => _starting = true);
+              await widget.onStart();
+              if (mounted) {
+                setState(() => _starting = false);
+              }
+            },
+      icon: _starting
+          ? const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : const Icon(Icons.arrow_forward),
+      label: Text(context.tr('开始使用')),
     );
   }
 }

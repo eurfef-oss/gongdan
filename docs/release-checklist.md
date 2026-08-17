@@ -2,16 +2,16 @@
 
 ## 版本与构建登记（唯一记录）
 
-- `pubspec.yaml`：`1.0.1+9`；
+- `pubspec.yaml`：`1.0.1+11`；
 - `versionName`：`1.0.1`；
-- `versionCode`：`9`；
+- `versionCode`：`11`；
 - 已确认 Google Play 不可复用的版本代码：`5`、`6`、`7`、`8`；
-- 下一次用于商店上传的版本代码必须高于 Google Play Console 已使用的最大值；本次使用 `9`，后续如已上传则继续递增。
+- 下一次用于商店上传的版本代码必须高于 Google Play Console 已使用的最大值；本次按要求使用 `11`，后续如已上传则继续递增。
 
 | 产物 | 构建日期 | 大小 | SHA-256 |
 | --- | --- | ---: | --- |
-| `build/app/outputs/flutter-apk/app-release.apk` | 2026-08-17 | 63,109,887 bytes（60.19 MB） | `43933AAA61FE56516ED242C78CA1520FB4539114004FA336F86F14364BD6FA8A` |
-| `build/app/outputs/bundle/release/app-release-1.0.1+9.aab` | 2026-08-17 | 63,169,324 bytes（60.25 MB） | `0908EE7BDC38839A7A52A759BAC4D50BB6DF82C377829BB84CEF24A574AE9115` |
+| `build/app/outputs/flutter-apk/app-release.apk` | 2026-08-17 | 62,840,347 bytes（59.93 MB） | `B1DCA566BA9C421660B9536A32158ABABCA1AC7CDA8F9C9074B00CD19C727537` |
+| `build/app/outputs/bundle/release/app-release-1.0.1+11.aab` | 2026-08-17 | 62,924,024 bytes（60.01 MB） | `FEAADA5B6359879624F194C15708CBE6444EE4D23D9393E273B5A7EE3048E462` |
 
 版本代码记录：
 
@@ -21,7 +21,8 @@
 | `1.0.1` | `6` | 已占用 | Google Play 提示版本代码已使用 |
 | `1.0.1` | `7` | 已占用 | Google Play 提示版本代码已使用 |
 | `1.0.1` | `8` | 已占用 | Google Play 提示版本代码已使用 |
-| `1.0.1` | `9` | 当前记录 | Release AAB 已构建，产物文件名包含版本名和版本代码 |
+| `1.0.1` | `9` | 历史构建 | 此前 Release AAB 已构建 |
+| `1.0.1` | `11` | 当前记录 | Release AAB 已构建，产物文件名包含版本名和版本代码 |
 
 ## APK/AAB 专业版授权规则
 
@@ -115,8 +116,8 @@
 - 购买取消修复：处理 Google Play 取消支付时可能返回的空商品 ID，并加入购买窗口超时兜底，未付款返回后按钮会恢复可点击；
 - Flutter 验证：`flutter analyze` 无问题，51 项测试全部通过。
 - 内部 APK：使用 `--dart-define=ENABLE_RELEASE_PRO_PREVIEW=true` 重新构建成功；预览授权仅用于内部验收，不写入购买缓存。
-- APK 校验：文件大小 `63,109,887` bytes，SHA-256 为 `43933AAA61FE56516ED242C78CA1520FB4539114004FA336F86F14364BD6FA8A`，Android `versionCode=9`，Android `apksigner` v2 校验通过；包名为 `com.cosdk.repairdesk`。
-- 正式 AAB：不含专业版预览开关，构建成功；文件名为 `app-release-1.0.1+9.aab`，文件大小 `63,169,324` bytes，SHA-256 为 `0908EE7BDC38839A7A52A759BAC4D50BB6DF82C377829BB84CEF24A574AE9115`，Release manifest `versionCode=9`，`jarsigner -verify` 通过。
+- APK 校验：文件大小 `62,840,347` bytes，SHA-256 为 `B1DCA566BA9C421660B9536A32158ABABCA1AC7CDA8F9C9074B00CD19C727537`，Android `versionCode=11`，Android `apksigner` v2 校验通过；包名为 `com.cosdk.repairdesk`。
+- 正式 AAB：不含专业版预览开关，构建成功；文件名为 `app-release-1.0.1+11.aab`，文件大小 `62,924,024` bytes，SHA-256 为 `FEAADA5B6359879624F194C15708CBE6444EE4D23D9393E273B5A7EE3048E462`，Release manifest `versionCode=11`，`jarsigner -verify` 通过。
 
 ## 本次功能变更记录（2026-08-17）
 
@@ -124,6 +125,7 @@
 - [x] 欢迎页改为可左右滑动的功能 Banner，每项功能配套插画；
 - [x] 欢迎页采用自适应高度布局，按钮在小屏可视区域内直接点击，无需向下滑动；
 - [x] 语言设置中增加“打开欢迎页”入口，便于调试首次安装流程；
-- [x] Google Play 版本代码由 `8` 提升为 `9`，完成新的 Release APK/AAB 构建；
+- [x] 三张欢迎页配图按 App 图标和宣传图风格重绘，并统一为绿色背景；
+- [x] Google Play 版本代码提升为 `11`，完成新的 Release APK/AAB 构建；
 
 仍需在 Google Play 内部测试轨道完成 AAB 上传、测试账号安装、真实购买、恢复购买、离线使用和重新安装验证。

@@ -845,7 +845,10 @@ class _WelcomePageState extends State<_WelcomePage> {
                           ),
                           if (!compact) ...[
                             const SizedBox(width: 24),
-                            _buildWelcomeStartButton(),
+                            SizedBox(
+                              width: 160,
+                              child: _buildWelcomeStartButton(),
+                            ),
                           ],
                         ],
                       ),
@@ -853,7 +856,10 @@ class _WelcomePageState extends State<_WelcomePage> {
                         SizedBox(height: short ? 8 : 16),
                         Align(
                           alignment: Alignment.center,
-                          child: _buildWelcomeStartButton(),
+                          child: SizedBox(
+                            width: 220,
+                            child: _buildWelcomeStartButton(),
+                          ),
                         ),
                       ],
                     ],

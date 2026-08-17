@@ -201,6 +201,8 @@ const _english = <String, String>{
   '语言': 'Language',
   '语言设置': 'Language settings',
   '选择应用显示语言': 'Choose the app display language',
+  '打开欢迎页': 'Open welcome page',
+  '重新打开首次安装欢迎页，便于调试。': 'Reopen the first-launch welcome page for debugging.',
   '货币单位': 'Currency unit',
   '所有金额显示都会使用此货币单位。':
       'All displayed amounts will use this currency unit.',

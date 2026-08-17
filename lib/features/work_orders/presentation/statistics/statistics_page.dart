@@ -111,7 +111,8 @@ class _StatsPageState extends State<_StatsPage> {
                     ),
                     _Metric(
                       label: context.tr('已收金额'),
-                      value: moneyText(received, currencySymbol: currencySymbol),
+                      value:
+                          moneyText(received, currencySymbol: currencySymbol),
                       icon: Icons.payments_outlined,
                     ),
                     _Metric(
@@ -174,11 +175,13 @@ class _StatsPageState extends State<_StatsPage> {
                     children: [
                       _SettingLine(
                         label: context.tr('应收总额'),
-                        value: moneyText(revenue, currencySymbol: currencySymbol),
+                        value:
+                            moneyText(revenue, currencySymbol: currencySymbol),
                       ),
                       _SettingLine(
                         label: context.tr('已收总额'),
-                        value: moneyText(received, currencySymbol: currencySymbol),
+                        value:
+                            moneyText(received, currencySymbol: currencySymbol),
                       ),
                       _SettingLine(
                         label: context.tr('待收总额'),

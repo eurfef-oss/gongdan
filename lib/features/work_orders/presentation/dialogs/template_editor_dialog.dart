@@ -450,7 +450,8 @@ class _TemplateEditorDialogState extends State<TemplateEditorDialog> {
     setState(() => _saving = true);
     final type = _selectedTypeOption();
     final enteredUnit = _unit.text.trim();
-    final initialUnit = initial != null && isDefaultServiceItem(initial) &&
+    final initialUnit = initial != null &&
+            isDefaultServiceItem(initial) &&
             enteredUnit == localizedServiceItemUnit(context, initial)
         ? initial.unit
         : enteredUnit;

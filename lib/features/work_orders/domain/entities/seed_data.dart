@@ -96,7 +96,8 @@ List<ServiceItem> _starterServiceItems() => [
 RepairAppData initialData({
   String languageCode = 'zh',
   String currencySymbol = defaultCurrencySymbol,
-}) => RepairAppData(
+}) =>
+    RepairAppData(
       customers: const [],
       serviceItems: _starterServiceItems(),
       workOrders: const [],

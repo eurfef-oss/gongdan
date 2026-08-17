@@ -660,7 +660,8 @@ class _LineItemsCard extends StatelessWidget {
                         '${item.quantity} ${localizedWorkOrderItemUnit(context, item)}',
                       ),
                       _TableCell(
-                        _dialogMoney(item.amount, currencySymbol: currencySymbol),
+                        _dialogMoney(item.amount,
+                            currencySymbol: currencySymbol),
                         alignEnd: true,
                       ),
                     ],

@@ -428,6 +428,15 @@ class _LanguageSettingsContent extends StatelessWidget {
             );
           },
         ),
+        const SizedBox(height: 18),
+        _BackupAction(
+          icon: Icons.waving_hand_outlined,
+          title: context.tr('打开欢迎页'),
+          description: context.tr('重新打开首次安装欢迎页，便于调试。'),
+          onTap: () => controller.updateSettings(
+            settings.copyWith(hasSeenWelcome: false),
+          ),
+        ),
       ],
     );
   }

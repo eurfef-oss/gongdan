@@ -205,8 +205,8 @@ class _InternalCostEditorDialogState extends State<_InternalCostEditorDialog> {
                                 key: ObjectKey(entry.value),
                                 draft: entry.value,
                                 types: types,
-                                currencySymbol:
-                                    widget.controller.data.settings.currencySymbol,
+                                currencySymbol: widget
+                                    .controller.data.settings.currencySymbol,
                                 onChanged: () => setState(() {}),
                                 onRemove: () => setState(
                                   () => _drafts.removeAt(entry.key),
@@ -227,7 +227,8 @@ class _InternalCostEditorDialogState extends State<_InternalCostEditorDialog> {
                           0,
                           (sum, item) => sum + item.amount,
                         ),
-                        currencySymbol: widget.controller.data.settings.currencySymbol,
+                        currencySymbol:
+                            widget.controller.data.settings.currencySymbol,
                       ),
                     ),
                   ],

@@ -223,6 +223,17 @@ void main() {
     expect(find.text('没有匹配的工单'), findsNothing);
     expect(find.text('周女士'), findsOneWidget);
     expect(find.text('林先生'), findsOneWidget);
+
+    await tester.tap(find.byType(DropdownButton<WorkOrderStatus?>));
+    await tester.pumpAndSettle();
+
+    expect(find.text('草稿'), findsWidgets);
+    expect(find.text('待确认'), findsWidgets);
+    expect(find.text('维修中'), findsWidgets);
+    expect(find.text('待收款'), findsWidgets);
+    expect(find.text('已完成'), findsWidgets);
+    expect(find.text('已确认'), findsNothing);
+    expect(find.text('已取消'), findsNothing);
   });
 
   testWidgets('primary page needs a second back press to leave the app',
@@ -288,5 +299,33 @@ void main() {
     expect(find.text('Deep AC cleaning'), findsOneWidget);
     expect(find.text('空调深度清洗'), findsNothing);
     expect(find.textContaining('unit'), findsAtLeastNWidgets(1));
+  });
+
+  testWidgets('language settings can reopen the welcome page', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final repository = _FakeWorkOrderRepository();
+    repository.value = repository.value.copyWith(
+      settings: repository.value.settings.copyWith(hasSeenWelcome: true),
+    );
+    final controller = WorkOrderController(repository);
+    await controller.initialize();
+
+    await tester.pumpWidget(
+      BaseApp(key: UniqueKey(), controller: controller),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('设置'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('语言'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('打开欢迎页'), findsOneWidget);
+    await tester.tap(find.text('打开欢迎页'));
+    await tester.pumpAndSettle();
+
+    expect(controller.data.settings.hasSeenWelcome, isFalse);
+    expect(find.text('欢迎开始记录每一次服务。'), findsOneWidget);
   });
 }

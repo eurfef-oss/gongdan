@@ -1,5 +1,13 @@
 part of '../work_order_page.dart';
 
+const _orderFilterStatuses = <WorkOrderStatus>[
+  WorkOrderStatus.draft,
+  WorkOrderStatus.pendingConfirmation,
+  WorkOrderStatus.repairing,
+  WorkOrderStatus.awaitingPayment,
+  WorkOrderStatus.completed,
+];
+
 class _OrdersPage extends StatefulWidget {
   const _OrdersPage({
     required this.controller,
@@ -137,7 +145,7 @@ class _OrderFiltersState extends State<_OrderFilters> {
                   value: null,
                   child: Text(context.tr('全部状态')),
                 ),
-                ...WorkOrderStatus.values.map(
+                ..._orderFilterStatuses.map(
                   (status) => DropdownMenuItem(
                     value: status,
                     child: Text(workOrderStatusText(context, status)),

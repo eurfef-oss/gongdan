@@ -18,7 +18,8 @@ class RepairAppData {
   factory RepairAppData.empty({
     String languageCode = 'zh',
     String currencySymbol = defaultCurrencySymbol,
-  }) => RepairAppData(
+  }) =>
+      RepairAppData(
         customers: const [],
         serviceItems: const [],
         workOrders: const [],

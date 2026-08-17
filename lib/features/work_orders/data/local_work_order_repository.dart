@@ -112,8 +112,7 @@ class LocalWorkOrderRepository
     return RepairAppData.fromJson(Map<String, Object?>.from(json));
   }
 
-  RepairAppData _initialData() =>
-      initialData(
+  RepairAppData _initialData() => initialData(
         languageCode: _defaultLanguageCode,
         currencySymbol: _defaultCurrencySymbol,
       );

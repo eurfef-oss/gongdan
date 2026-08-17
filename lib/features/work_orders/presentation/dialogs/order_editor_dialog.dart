@@ -492,7 +492,8 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
                   item: entry.value,
                   templates: widget.controller.data.serviceItems,
                   typeOptions: widget.controller.serviceItemTypeOptions,
-                  currencySymbol: widget.controller.data.settings.currencySymbol,
+                  currencySymbol:
+                      widget.controller.data.settings.currencySymbol,
                   onChanged: () => setState(() {}),
                   onRemove: () => setState(() => _items.removeAt(entry.key)),
                 ),

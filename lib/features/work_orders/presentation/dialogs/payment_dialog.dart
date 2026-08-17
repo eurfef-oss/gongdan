@@ -58,7 +58,8 @@ class _PaymentDialogState extends State<PaymentDialog> {
                   'number': order.number,
                   'amount': _dialogMoney(
                     order.outstanding,
-                    currencySymbol: widget.controller.data.settings.currencySymbol,
+                    currencySymbol:
+                        widget.controller.data.settings.currencySymbol,
                   ),
                 },
               ),

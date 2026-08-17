@@ -59,8 +59,7 @@ class _DocumentPreviewDialogState extends State<DocumentPreviewDialog> {
           ),
         },
       ),
-      context
-          .trf('已收：{amount}', {
+      context.trf('已收：{amount}', {
         'amount': _dialogMoney(
           order.normalizedPaid,
           currencySymbol: currencySymbol,
@@ -434,14 +433,13 @@ class _DocumentPaper extends StatelessWidget {
                         label: context.tr('已收 / 未收'),
                         value: order.normalizedPaid,
                         currencySymbol: currencySymbol,
-                        suffix:
-                            '${_dialogMoney(
-                              order.normalizedPaid,
-                              currencySymbol: currencySymbol,
-                            )} / ${_dialogMoney(
-                              order.outstanding,
-                              currencySymbol: currencySymbol,
-                            )}',
+                        suffix: '${_dialogMoney(
+                          order.normalizedPaid,
+                          currencySymbol: currencySymbol,
+                        )} / ${_dialogMoney(
+                          order.outstanding,
+                          currencySymbol: currencySymbol,
+                        )}',
                       ),
                   ],
                 ),

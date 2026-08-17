@@ -15,6 +15,52 @@ File _dataFile(Directory directory) => File(
     );
 
 void main() {
+  test('seeds a new store with the configured default language', () async {
+    final directory = await _temporaryDirectory();
+    addTearDown(() => directory.delete(recursive: true));
+    final repository = LocalWorkOrderRepository(
+      dataFile: _dataFile(directory),
+      preferencesProvider: () async => await _preferences({}),
+      defaultLanguageCode: 'en',
+    );
+
+    final loaded = await repository.load();
+
+    expect(loaded.settings.languageCode, 'en');
+  });
+
+  test('seeds a new store with the configured default currency', () async {
+    final directory = await _temporaryDirectory();
+    addTearDown(() => directory.delete(recursive: true));
+    final repository = LocalWorkOrderRepository(
+      dataFile: _dataFile(directory),
+      preferencesProvider: () async => await _preferences({}),
+      defaultLanguageCode: 'zh',
+      initialCurrencySymbol: '¥',
+    );
+
+    final loaded = await repository.load();
+
+    expect(loaded.settings.currencySymbol, '¥');
+  });
+
+  test('keeps the currency from an existing store', () async {
+    final directory = await _temporaryDirectory();
+    addTearDown(() => directory.delete(recursive: true));
+    final file = _dataFile(directory);
+    final stored = RepairAppData.empty(currencySymbol: r'$');
+    await file.writeAsString(jsonEncode(stored.toJson()));
+    final repository = LocalWorkOrderRepository(
+      dataFile: file,
+      preferencesProvider: () async => await _preferences({}),
+      initialCurrencySymbol: '¥',
+    );
+
+    final loaded = await repository.load();
+
+    expect(loaded.settings.currencySymbol, r'$');
+  });
+
   test('writes data to an app file and reloads it after repository recreation',
       () async {
     final directory = await _temporaryDirectory();

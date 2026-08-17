@@ -39,6 +39,7 @@ class _DocumentPreviewDialogState extends State<DocumentPreviewDialog> {
   Widget build(BuildContext context) {
     final order = controller.orderById(orderId);
     if (order == null) return const SizedBox.shrink();
+    final currencySymbol = controller.data.settings.currencySymbol;
     final customer = controller.customerById(order.customerId);
     final isReceipt = kind == 'receipt';
     final title = context.tr(isReceipt ? '维修服务凭证' : '服务报价单');
@@ -49,9 +50,22 @@ class _DocumentPreviewDialogState extends State<DocumentPreviewDialog> {
           '客户：{customer}', {'customer': customer?.name ?? context.tr('未关联')}),
       context.trf(
           '设备：{device}', {'device': _dialogDeviceLocalized(context, order)}),
-      context.trf('应收：{amount}', {'amount': _dialogMoney(order.total)}),
+      context.trf(
+        '应收：{amount}',
+        {
+          'amount': _dialogMoney(
+            order.total,
+            currencySymbol: currencySymbol,
+          ),
+        },
+      ),
       context
-          .trf('已收：{amount}', {'amount': _dialogMoney(order.normalizedPaid)}),
+          .trf('已收：{amount}', {
+        'amount': _dialogMoney(
+          order.normalizedPaid,
+          currencySymbol: currencySymbol,
+        ),
+      }),
       controller.data.settings.shopName,
     ].join('\n');
     return Dialog.fullscreen(
@@ -74,6 +88,7 @@ class _DocumentPreviewDialogState extends State<DocumentPreviewDialog> {
                     controller: controller,
                     order: order,
                     customer: customer,
+                    currencySymbol: currencySymbol,
                     isReceipt: isReceipt,
                   ),
                 ),
@@ -232,11 +247,13 @@ class _DocumentPaper extends StatelessWidget {
       {required this.controller,
       required this.order,
       required this.customer,
+      required this.currencySymbol,
       required this.isReceipt});
 
   final WorkOrderController controller;
   final WorkOrder order;
   final Customer? customer;
+  final String currencySymbol;
   final bool isReceipt;
 
   @override
@@ -371,8 +388,19 @@ class _DocumentPaper extends StatelessWidget {
                       _DocumentCell(
                         '${item.quantity} ${localizedWorkOrderItemUnit(context, item)}',
                       ),
-                      _DocumentCell(_dialogMoney(item.unitPrice)),
-                      _DocumentCell(_dialogMoney(item.amount), alignEnd: true),
+                      _DocumentCell(
+                        _dialogMoney(
+                          item.unitPrice,
+                          currencySymbol: currencySymbol,
+                        ),
+                      ),
+                      _DocumentCell(
+                        _dialogMoney(
+                          item.amount,
+                          currencySymbol: currencySymbol,
+                        ),
+                        alignEnd: true,
+                      ),
                     ],
                   ),
                 ),
@@ -388,22 +416,32 @@ class _DocumentPaper extends StatelessWidget {
                     _DocumentAmount(
                       label: context.tr('项目小计'),
                       value: order.subtotal,
+                      currencySymbol: currencySymbol,
                     ),
                     _DocumentAmount(
                       label: context.tr('优惠金额'),
                       value: -order.discount,
+                      currencySymbol: currencySymbol,
                     ),
                     _DocumentAmount(
                       label: context.tr(isReceipt ? '最终应收' : '报价合计'),
                       value: order.total,
+                      currencySymbol: currencySymbol,
                       strong: true,
                     ),
                     if (isReceipt)
                       _DocumentAmount(
                         label: context.tr('已收 / 未收'),
                         value: order.normalizedPaid,
+                        currencySymbol: currencySymbol,
                         suffix:
-                            '${_dialogMoney(order.normalizedPaid)} / ${_dialogMoney(order.outstanding)}',
+                            '${_dialogMoney(
+                              order.normalizedPaid,
+                              currencySymbol: currencySymbol,
+                            )} / ${_dialogMoney(
+                              order.outstanding,
+                              currencySymbol: currencySymbol,
+                            )}',
                       ),
                   ],
                 ),
@@ -553,11 +591,13 @@ class _DocumentAmount extends StatelessWidget {
   const _DocumentAmount(
       {required this.label,
       required this.value,
+      required this.currencySymbol,
       this.strong = false,
       this.suffix});
 
   final String label;
   final double value;
+  final String currencySymbol;
   final bool strong;
   final String? suffix;
 
@@ -577,7 +617,7 @@ class _DocumentAmount extends StatelessWidget {
           ),
           const Spacer(),
           Text(
-            suffix ?? _dialogMoney(value),
+            suffix ?? _dialogMoney(value, currencySymbol: currencySymbol),
             textAlign: TextAlign.end,
             style: TextStyle(
               color: strong ? _dialogTeal : const Color(0xFF1C2736),

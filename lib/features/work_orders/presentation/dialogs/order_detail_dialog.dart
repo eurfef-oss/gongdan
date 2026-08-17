@@ -47,6 +47,7 @@ class _OrderDetailDialogState extends State<OrderDetailDialog> {
       builder: (context, _) {
         final order = widget.controller.orderById(widget.orderId);
         if (order == null) return const SizedBox.shrink();
+        final currencySymbol = widget.controller.data.settings.currencySymbol;
         final customer = widget.controller.customerById(order.customerId);
         final locked = order.status.isTerminal || order.isTrashed;
         final canReceivePayment = !locked && order.outstanding > 0;
@@ -70,6 +71,7 @@ class _OrderDetailDialogState extends State<OrderDetailDialog> {
                   children: [
                     _OrderHero(
                       order: order,
+                      currencySymbol: currencySymbol,
                       next: next,
                       onAdvance: next == null ||
                               (next == WorkOrderStatus.completed &&
@@ -98,6 +100,7 @@ class _OrderDetailDialogState extends State<OrderDetailDialog> {
                             const SizedBox(height: 16),
                             _LineItemsCard(
                               order: order,
+                              currencySymbol: currencySymbol,
                               onQuote: () => widget.onDocument('quote'),
                             ),
                             if (order.result.isNotEmpty) ...[
@@ -120,6 +123,7 @@ class _OrderDetailDialogState extends State<OrderDetailDialog> {
                           children: [
                             _PaymentCard(
                               order: order,
+                              currencySymbol: currencySymbol,
                               payments: widget.controller.paymentsFor(order.id),
                               onAdd:
                                   canReceivePayment ? widget.onPayment : null,
@@ -129,6 +133,7 @@ class _OrderDetailDialogState extends State<OrderDetailDialog> {
                             const SizedBox(height: 12),
                             _SignatureCard(
                                 order: order,
+                                currencySymbol: currencySymbol,
                                 onSign: locked ? null : widget.onSignature),
                           ],
                         );
@@ -387,12 +392,14 @@ class _FieldOperationButton extends StatelessWidget {
 class _OrderHero extends StatelessWidget {
   const _OrderHero(
       {required this.order,
+      required this.currencySymbol,
       required this.next,
       required this.onAdvance,
       required this.onEdit,
       required this.onCancel});
 
   final WorkOrder order;
+  final String currencySymbol;
   final WorkOrderStatus? next;
   final VoidCallback? onAdvance;
   final VoidCallback? onEdit;
@@ -424,7 +431,7 @@ class _OrderHero extends StatelessWidget {
               ),
               const SizedBox(height: 9),
               Text(
-                _dialogMoney(order.total),
+                _dialogMoney(order.total, currencySymbol: currencySymbol),
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.primary,
                   fontSize: 24,
@@ -587,9 +594,14 @@ class _MiniInfo extends StatelessWidget {
 }
 
 class _LineItemsCard extends StatelessWidget {
-  const _LineItemsCard({required this.order, required this.onQuote});
+  const _LineItemsCard({
+    required this.order,
+    required this.currencySymbol,
+    required this.onQuote,
+  });
 
   final WorkOrder order;
+  final String currencySymbol;
   final VoidCallback onQuote;
 
   @override
@@ -647,7 +659,10 @@ class _LineItemsCard extends StatelessWidget {
                       _TableCell(
                         '${item.quantity} ${localizedWorkOrderItemUnit(context, item)}',
                       ),
-                      _TableCell(_dialogMoney(item.amount), alignEnd: true),
+                      _TableCell(
+                        _dialogMoney(item.amount, currencySymbol: currencySymbol),
+                        alignEnd: true,
+                      ),
                     ],
                   ),
                 ),
@@ -660,14 +675,17 @@ class _LineItemsCard extends StatelessWidget {
                   _DialogAmountLine(
                     label: context.tr('项目小计'),
                     value: order.subtotal,
+                    currencySymbol: currencySymbol,
                   ),
                   _DialogAmountLine(
                     label: context.tr('优惠'),
                     value: -order.discount,
+                    currencySymbol: currencySymbol,
                   ),
                   _DialogAmountLine(
                     label: context.tr('应收合计'),
                     value: order.total,
+                    currencySymbol: currencySymbol,
                     strong: true,
                   ),
                 ],
@@ -765,9 +783,13 @@ class _NoteCard extends StatelessWidget {
 
 class _PaymentCard extends StatelessWidget {
   const _PaymentCard(
-      {required this.order, required this.payments, required this.onAdd});
+      {required this.order,
+      required this.currencySymbol,
+      required this.payments,
+      required this.onAdd});
 
   final WorkOrder order;
+  final String currencySymbol;
   final List<PaymentRecord> payments;
   final VoidCallback? onAdd;
 
@@ -801,7 +823,10 @@ class _PaymentCard extends StatelessWidget {
               textBaseline: TextBaseline.alphabetic,
               children: [
                 Text(
-                  _dialogMoney(order.normalizedPaid),
+                  _dialogMoney(
+                    order.normalizedPaid,
+                    currencySymbol: currencySymbol,
+                  ),
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.primary,
                     fontSize: 22,
@@ -811,7 +836,10 @@ class _PaymentCard extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(
-                  '${context.tr('应收')} ${_dialogMoney(order.total)}',
+                  '${context.tr('应收')} ${_dialogMoney(
+                    order.total,
+                    currencySymbol: currencySymbol,
+                  )}',
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 14,
@@ -834,7 +862,10 @@ class _PaymentCard extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  '${context.tr('未收')} ${_dialogMoney(order.outstanding)}',
+                  '${context.tr('未收')} ${_dialogMoney(
+                    order.outstanding,
+                    currencySymbol: currencySymbol,
+                  )}',
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 14,
@@ -868,7 +899,10 @@ class _PaymentCard extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            _dialogMoney(payment.amount),
+                            _dialogMoney(
+                              payment.amount,
+                              currencySymbol: currencySymbol,
+                            ),
                             style: const TextStyle(
                                 fontSize: 14, fontFamily: 'monospace'),
                           ),
@@ -978,9 +1012,14 @@ class _KeyValue extends StatelessWidget {
 }
 
 class _SignatureCard extends StatelessWidget {
-  const _SignatureCard({required this.order, required this.onSign});
+  const _SignatureCard({
+    required this.order,
+    required this.currencySymbol,
+    required this.onSign,
+  });
 
   final WorkOrder order;
+  final String currencySymbol;
   final VoidCallback? onSign;
 
   @override
@@ -1044,6 +1083,7 @@ class _SignatureCard extends StatelessWidget {
                               {
                                 'amount': _dialogMoney(
                                   order.quoteConfirmedTotal!,
+                                  currencySymbol: currencySymbol,
                                 ),
                               },
                             ),

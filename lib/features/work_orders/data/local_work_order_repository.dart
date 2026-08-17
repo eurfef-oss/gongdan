@@ -13,11 +13,15 @@ class LocalWorkOrderRepository
     Future<Directory> Function()? directoryProvider,
     Future<SharedPreferences> Function()? preferencesProvider,
     File? dataFile,
+    String defaultLanguageCode = 'zh',
+    String initialCurrencySymbol = defaultCurrencySymbol,
   })  : _directoryProvider =
             directoryProvider ?? getApplicationSupportDirectory,
         _preferencesProvider =
             preferencesProvider ?? SharedPreferences.getInstance,
-        _dataFile = dataFile;
+        _dataFile = dataFile,
+        _defaultLanguageCode = defaultLanguageCode == 'en' ? 'en' : 'zh',
+        _defaultCurrencySymbol = normalizeCurrencySymbol(initialCurrencySymbol);
 
   static const storageKey = 'repair_work_order_assistant:data:v1';
   static const dataFileName = 'repair_work_order_assistant_data_v1.json';
@@ -26,6 +30,8 @@ class LocalWorkOrderRepository
   final Future<SharedPreferences> Function() _preferencesProvider;
   SharedPreferences? _preferences;
   File? _dataFile;
+  final String _defaultLanguageCode;
+  final String _defaultCurrencySymbol;
   RepairAppData? _memoryData;
   bool _persistenceAvailable = true;
 
@@ -106,9 +112,15 @@ class LocalWorkOrderRepository
     return RepairAppData.fromJson(Map<String, Object?>.from(json));
   }
 
+  RepairAppData _initialData() =>
+      initialData(
+        languageCode: _defaultLanguageCode,
+        currencySymbol: _defaultCurrencySymbol,
+      );
+
   @override
   Future<RepairAppData> load() async {
-    if (!_persistenceAvailable) return _memoryData ??= initialData();
+    if (!_persistenceAvailable) return _memoryData ??= _initialData();
 
     try {
       final file = await _getDataFile();
@@ -137,7 +149,7 @@ class LocalWorkOrderRepository
         return migrated;
       }
 
-      final seeded = initialData();
+      final seeded = _initialData();
       _memoryData = seeded;
       try {
         await _writeFile(file, seeded);
@@ -147,7 +159,7 @@ class LocalWorkOrderRepository
       return seeded;
     } catch (_) {
       _persistenceAvailable = false;
-      return _memoryData ??= initialData();
+      return _memoryData ??= _initialData();
     }
   }
 

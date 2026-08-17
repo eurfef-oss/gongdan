@@ -217,8 +217,13 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
     }
     if (fields.contains('serviceItems') || fields.contains('discount')) {
       children.add(const SizedBox(height: 4));
-      children
-          .add(_DialogTotals(items: _items, discount: _parseMoney(_discount)));
+      children.add(
+        _DialogTotals(
+          items: _items,
+          discount: _parseMoney(_discount),
+          currencySymbol: widget.controller.data.settings.currencySymbol,
+        ),
+      );
     }
     return children;
   }
@@ -374,7 +379,10 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
           controller: _discount,
           onChanged: (_) => setState(() {}),
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: InputDecoration(labelText: context.tr('优惠金额')),
+          decoration: InputDecoration(
+            labelText: context.tr('优惠金额'),
+            prefixText: '${widget.controller.data.settings.currencySymbol} ',
+          ),
         );
       case 'warrantyDays':
         return TextField(
@@ -484,6 +492,7 @@ class _OrderEditorDialogState extends State<OrderEditorDialog> {
                   item: entry.value,
                   templates: widget.controller.data.serviceItems,
                   typeOptions: widget.controller.serviceItemTypeOptions,
+                  currencySymbol: widget.controller.data.settings.currencySymbol,
                   onChanged: () => setState(() {}),
                   onRemove: () => setState(() => _items.removeAt(entry.key)),
                 ),
@@ -710,6 +719,7 @@ class _ItemDraftEditor extends StatefulWidget {
       {required this.item,
       required this.templates,
       required this.typeOptions,
+      required this.currencySymbol,
       required this.onChanged,
       required this.onRemove,
       super.key});
@@ -717,6 +727,7 @@ class _ItemDraftEditor extends StatefulWidget {
   final _ItemDraft item;
   final List<ServiceItem> templates;
   final List<ServiceTypeOption> typeOptions;
+  final String currencySymbol;
   final VoidCallback onChanged;
   final VoidCallback onRemove;
 
@@ -864,7 +875,10 @@ class _ItemDraftEditorState extends State<_ItemDraftEditor> {
                   onChanged: (_) => _sync(),
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
-                  decoration: InputDecoration(labelText: context.tr('单价')),
+                  decoration: InputDecoration(
+                    labelText: context.tr('单价'),
+                    prefixText: '${widget.currencySymbol} ',
+                  ),
                 ),
               ),
             ],
@@ -927,10 +941,15 @@ class _ItemDraftEditorState extends State<_ItemDraftEditor> {
 }
 
 class _DialogTotals extends StatelessWidget {
-  const _DialogTotals({required this.items, required this.discount});
+  const _DialogTotals({
+    required this.items,
+    required this.discount,
+    required this.currencySymbol,
+  });
 
   final List<_ItemDraft> items;
   final double discount;
+  final String currencySymbol;
 
   @override
   Widget build(BuildContext context) {
@@ -943,11 +962,20 @@ class _DialogTotals extends StatelessWidget {
         padding: const EdgeInsets.all(13),
         child: Column(
           children: [
-            _DialogAmountLine(label: context.tr('项目小计'), value: subtotal),
-            _DialogAmountLine(label: context.tr('优惠金额'), value: -discount),
+            _DialogAmountLine(
+              label: context.tr('项目小计'),
+              value: subtotal,
+              currencySymbol: currencySymbol,
+            ),
+            _DialogAmountLine(
+              label: context.tr('优惠金额'),
+              value: -discount,
+              currencySymbol: currencySymbol,
+            ),
             _DialogAmountLine(
               label: context.tr('应收合计'),
               value: total,
+              currencySymbol: currencySymbol,
               strong: true,
             ),
           ],

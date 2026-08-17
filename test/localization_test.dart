@@ -56,6 +56,7 @@ void main() {
     final csv = service.exportCsv(englishData);
 
     expect(csv, contains('Work order number'));
+    expect(csv, contains(r'$'));
     expect(csv, contains('Status'));
     expect(csv, contains('During repair'));
     expect(csv, contains('On-site inspection fee 1.0time'));
@@ -68,10 +69,18 @@ void main() {
   });
 
   test('language preference survives settings JSON round-trip', () {
-    const settings = RepairAppSettings(languageCode: 'en');
+    const settings = RepairAppSettings(
+      languageCode: 'en',
+      currencySymbol: '€',
+    );
 
     final restored = RepairAppSettings.fromJson(settings.toJson());
 
     expect(restored.languageCode, 'en');
+    expect(restored.currencySymbol, '€');
+    expect(
+      RepairAppSettings.fromJson(const {'languageCode': 'en'}).currencySymbol,
+      defaultCurrencySymbol,
+    );
   });
 }

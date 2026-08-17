@@ -1,5 +1,40 @@
 part of 'work_order.dart';
 
+const defaultCurrencySymbol = r'$';
+
+class CurrencyUnit {
+  const CurrencyUnit({required this.symbol, required this.label});
+
+  final String symbol;
+  final String label;
+}
+
+const commonCurrencyUnits = <CurrencyUnit>[
+  CurrencyUnit(symbol: r'$', label: '美元'),
+  CurrencyUnit(symbol: '¥', label: '人民币 / 日元'),
+  CurrencyUnit(symbol: '€', label: '欧元'),
+  CurrencyUnit(symbol: '£', label: '英镑'),
+  CurrencyUnit(symbol: '₹', label: '印度卢比'),
+  CurrencyUnit(symbol: '₽', label: '俄罗斯卢布'),
+  CurrencyUnit(symbol: '₩', label: '韩元'),
+  CurrencyUnit(symbol: '฿', label: '泰铢'),
+  CurrencyUnit(symbol: '₫', label: '越南盾'),
+  CurrencyUnit(symbol: '₺', label: '土耳其里拉'),
+  CurrencyUnit(symbol: r'A$', label: '澳元'),
+  CurrencyUnit(symbol: r'C$', label: '加元'),
+  CurrencyUnit(symbol: r'HK$', label: '港币'),
+  CurrencyUnit(symbol: r'S$', label: '新加坡元'),
+  CurrencyUnit(symbol: r'R$', label: '巴西雷亚尔'),
+];
+
+String normalizeCurrencySymbol(String? value) {
+  final symbol = value?.trim() ?? '';
+  for (final unit in commonCurrencyUnits) {
+    if (unit.symbol == symbol) return unit.symbol;
+  }
+  return defaultCurrencySymbol;
+}
+
 class RepairAppSettings {
   const RepairAppSettings({
     this.shopName = '',
@@ -9,6 +44,7 @@ class RepairAppSettings {
     this.defaultNote = '',
     this.darkMode = false,
     this.languageCode = 'zh',
+    this.currencySymbol = defaultCurrencySymbol,
     this.hasSeenWelcome = false,
     this.customServiceItemTypes = const [],
     this.deletedBuiltInServiceItemTypes = const [],
@@ -26,6 +62,7 @@ class RepairAppSettings {
   final String defaultNote;
   final bool darkMode;
   final String languageCode;
+  final String currencySymbol;
   final bool hasSeenWelcome;
   final List<String> customServiceItemTypes;
   final List<String> deletedBuiltInServiceItemTypes;
@@ -43,6 +80,7 @@ class RepairAppSettings {
     String? defaultNote,
     bool? darkMode,
     String? languageCode,
+    String? currencySymbol,
     bool? hasSeenWelcome,
     List<String>? customServiceItemTypes,
     List<String>? deletedBuiltInServiceItemTypes,
@@ -60,6 +98,9 @@ class RepairAppSettings {
         defaultNote: defaultNote ?? this.defaultNote,
         darkMode: darkMode ?? this.darkMode,
         languageCode: languageCode ?? this.languageCode,
+        currencySymbol: normalizeCurrencySymbol(
+          currencySymbol ?? this.currencySymbol,
+        ),
         hasSeenWelcome: hasSeenWelcome ?? this.hasSeenWelcome,
         customServiceItemTypes:
             customServiceItemTypes ?? this.customServiceItemTypes,
@@ -81,6 +122,7 @@ class RepairAppSettings {
         'defaultNote': defaultNote,
         'darkMode': darkMode,
         'languageCode': languageCode,
+        'currencySymbol': currencySymbol,
         'hasSeenWelcome': hasSeenWelcome,
         'customServiceItemTypes': customServiceItemTypes,
         'deletedBuiltInServiceItemTypes': deletedBuiltInServiceItemTypes,
@@ -100,6 +142,8 @@ class RepairAppSettings {
         defaultNote: json['defaultNote']?.toString() ?? '',
         darkMode: json['darkMode'] == true,
         languageCode: json['languageCode']?.toString() == 'en' ? 'en' : 'zh',
+        currencySymbol:
+            normalizeCurrencySymbol(json['currencySymbol']?.toString()),
         hasSeenWelcome: json['hasSeenWelcome'] == true,
         customServiceItemTypes: _stringList(json['customServiceItemTypes']),
         deletedBuiltInServiceItemTypes:

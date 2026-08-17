@@ -112,10 +112,14 @@ class _DialogStatusChip extends StatelessWidget {
 
 class _DialogAmountLine extends StatelessWidget {
   const _DialogAmountLine(
-      {required this.label, required this.value, this.strong = false});
+      {required this.label,
+      required this.value,
+      required this.currencySymbol,
+      this.strong = false});
 
   final String label;
   final double value;
+  final String currencySymbol;
   final bool strong;
 
   @override
@@ -133,7 +137,7 @@ class _DialogAmountLine extends StatelessWidget {
           ),
           const Spacer(),
           Text(
-            _dialogMoney(value),
+            _dialogMoney(value, currencySymbol: currencySymbol),
             style: TextStyle(
               color: strong ? Theme.of(context).colorScheme.primary : null,
               fontSize: strong ? 16 : 14,

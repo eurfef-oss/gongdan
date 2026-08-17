@@ -4,13 +4,21 @@ import '../domain/repositories/work_order_repository.dart';
 enum WorkOrderLoadStatus { initial, loading, ready, failure }
 
 class WorkOrderStore {
-  WorkOrderStore(this.repository, this.onChanged);
+  WorkOrderStore(
+    this.repository,
+    this.onChanged, {
+    String initialLanguageCode = 'zh',
+    String initialCurrencySymbol = defaultCurrencySymbol,
+  }) : data = RepairAppData.empty(
+          languageCode: initialLanguageCode,
+          currencySymbol: initialCurrencySymbol,
+        );
 
   final WorkOrderRepository repository;
   final void Function() onChanged;
 
   WorkOrderLoadStatus status = WorkOrderLoadStatus.initial;
-  RepairAppData data = RepairAppData.empty();
+  RepairAppData data;
   Object? error;
 
   bool get persistenceAvailable => repository is! WorkOrderPersistenceStatus

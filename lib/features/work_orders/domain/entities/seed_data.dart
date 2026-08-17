@@ -93,12 +93,18 @@ List<ServiceItem> _starterServiceItems() => [
           enabled: true),
     ];
 
-RepairAppData initialData() => RepairAppData(
+RepairAppData initialData({
+  String languageCode = 'zh',
+  String currencySymbol = defaultCurrencySymbol,
+}) => RepairAppData(
       customers: const [],
       serviceItems: _starterServiceItems(),
       workOrders: const [],
       payments: const [],
-      settings: const RepairAppSettings(),
+      settings: RepairAppSettings(
+        languageCode: languageCode == 'en' ? 'en' : 'zh',
+        currencySymbol: normalizeCurrencySymbol(currencySymbol),
+      ),
     );
 
 RepairAppData seedData() {

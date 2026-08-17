@@ -67,6 +67,7 @@ class WorkOrderExportService {
 
   String exportCsv(RepairAppData data) {
     final locale = data.settings.languageCode;
+    final currencySymbol = data.settings.currencySymbol;
     final rows = <List<String>>[
       _csvHeaders.map((header) => _csvText(locale, header)).toList(),
       ...data.workOrders.map((order) {
@@ -87,18 +88,18 @@ class WorkOrderExportService {
           order.createdAt.toIso8601String(),
           order.items
               .map((item) =>
-                  '${localizedWorkOrderItemNameForLocale(locale, item)} ${item.quantity}${localizedUnitForLocale(locale, item.unit)} ¥${item.amount.toStringAsFixed(2)}')
+                  '${localizedWorkOrderItemNameForLocale(locale, item)} ${item.quantity}${localizedUnitForLocale(locale, item.unit)} $currencySymbol${item.amount.toStringAsFixed(2)}')
               .join('；'),
           _paymentsFor(data, order.id)
               .map((payment) =>
-                  '${_csvText(locale, payment.method.label)} ${payment.amount.toStringAsFixed(2)} ${payment.paidAt.toIso8601String()}${payment.note.isEmpty ? '' : ' ${payment.note}'}')
+                  '${_csvText(locale, payment.method.label)} $currencySymbol${payment.amount.toStringAsFixed(2)} ${payment.paidAt.toIso8601String()}${payment.note.isEmpty ? '' : ' ${payment.note}'}')
               .join('；'),
           order.internalCostTotal.toStringAsFixed(2),
           order.grossProfit.toStringAsFixed(2),
           order.internalCosts
               .map(
                 (cost) =>
-                    '${_csvText(locale, cost.typeName)} ¥${cost.amount.toStringAsFixed(2)}${cost.note.isEmpty ? '' : ' ${cost.note}'}',
+                    '${_csvText(locale, cost.typeName)} $currencySymbol${cost.amount.toStringAsFixed(2)}${cost.note.isEmpty ? '' : ' ${cost.note}'}',
               )
               .join('；'),
         ];
@@ -353,7 +354,7 @@ class WorkOrderExportService {
       final value = part.trim();
       if (value.isEmpty) continue;
       final match = RegExp(
-        r'^(.+?)\s+(\d+(?:\.\d+)?)(\S*)\s+¥?([0-9]+(?:\.[0-9]+)?)$',
+        r'^(.+?)\s+(\d+(?:\.\d+)?)(\S*)\s+[^0-9\s]*([0-9]+(?:\.[0-9]+)?)$',
       ).firstMatch(value);
       if (match == null) {
         items.add(WorkOrderItem(
@@ -403,7 +404,7 @@ class WorkOrderExportService {
       final value = part.trim();
       if (value.isEmpty) continue;
       final match = RegExp(
-        r'^(.+?)\s+¥?([0-9]+(?:\.[0-9]+)?)(?:\s+(.*))?$',
+        r'^(.+?)\s+[^0-9\s]*([0-9]+(?:\.[0-9]+)?)(?:\s+(.*))?$',
       ).firstMatch(value);
       if (match == null) continue;
       final typeName = match.group(1)!.trim();
@@ -465,7 +466,7 @@ class WorkOrderExportService {
       final value = part.trim();
       if (value.isEmpty) continue;
       final match = RegExp(
-        r'^(\S+)\s+([0-9]+(?:\.[0-9]+)?)\s+(\S+)(?:\s+(.*))?$',
+        r'^(\S+)\s+[^0-9\s]*([0-9]+(?:\.[0-9]+)?)\s+(\S+)(?:\s+(.*))?$',
       ).firstMatch(value);
       if (match == null) continue;
       final paidAt = dateValue(match.group(3)) ?? DateTime.now();

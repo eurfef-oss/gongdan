@@ -84,6 +84,8 @@ class _TemplatesPageState extends State<_TemplatesPage> {
                   ...visible.map(
                     (item) => _TemplateRow(
                       item: item,
+                      currencySymbol:
+                          widget.controller.data.settings.currencySymbol,
                       onEdit: () => widget.onEdit(item),
                       onDelete: () => widget.onDelete(item),
                       onToggle: () =>
@@ -102,12 +104,14 @@ class _TemplatesPageState extends State<_TemplatesPage> {
 class _TemplateRow extends StatelessWidget {
   const _TemplateRow({
     required this.item,
+    required this.currencySymbol,
     required this.onEdit,
     required this.onDelete,
     required this.onToggle,
   });
 
   final ServiceItem item;
+  final String currencySymbol;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final VoidCallback onToggle;
@@ -134,7 +138,7 @@ class _TemplateRow extends StatelessWidget {
         ),
         subtitle: Text(
           context.trf(
-            '{type} · {unit} · ¥{price} · 保修 {days} 天',
+            '{type} · {unit} · {currency}{price} · 保修 {days} 天',
             {
               'type': serviceItemTypeText(
                 context,
@@ -142,6 +146,7 @@ class _TemplateRow extends StatelessWidget {
                 customType: item.customType,
               ),
               'unit': localizedServiceItemUnit(context, item),
+              'currency': currencySymbol,
               'price': item.defaultPrice.toStringAsFixed(2),
               'days': item.warrantyDays,
             },

@@ -46,7 +46,11 @@ List<String> _dashboardSettingsOrder(Iterable<String> cardOrder) {
 String _dashboardCardLabel(BuildContext context, String id) =>
     context.tr(_dashboardCardLabels[id] ?? id);
 
-String moneyText(double value) => '¥${value.toStringAsFixed(2)}';
+String moneyText(
+  double value, {
+  String currencySymbol = defaultCurrencySymbol,
+}) =>
+    '$currencySymbol${value.toStringAsFixed(2)}';
 
 String dateText(DateTime? value, {String empty = '未设置'}) {
   if (value == null) return empty;

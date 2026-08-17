@@ -16,17 +16,15 @@ class _InternalCostsContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Text(
-                context.tr(
-                  '成本只供店内经营分析使用，不会出现在报价单、维修凭证或客户展示内容中。',
-                ),
+            Text(
+              context.tr(
+                '成本只供店内经营分析使用，不会出现在报价单、维修凭证或客户展示内容中。',
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(height: 12),
             OutlinedButton.icon(
               onPressed: onOpenCostTypes,
               icon: const Icon(Icons.tune_outlined, size: 17),
@@ -70,7 +68,12 @@ class _InternalCostsContent extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(localizedDeviceText(context, order)),
-                    Text('${context.tr('应收')} ${moneyText(order.total)}'),
+                    Text(
+                      '${context.tr('应收')} ${moneyText(
+                        order.total,
+                        currencySymbol: controller.data.settings.currencySymbol,
+                      )}',
+                    ),
                     Text(
                       context.trf(
                         '{count} 条成本记录',
@@ -84,7 +87,10 @@ class _InternalCostsContent extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      moneyText(order.internalCostTotal),
+                      moneyText(
+                        order.internalCostTotal,
+                        currencySymbol: controller.data.settings.currencySymbol,
+                      ),
                       style: const TextStyle(
                         fontWeight: FontWeight.w800,
                         fontFamily: 'monospace',
@@ -199,6 +205,8 @@ class _InternalCostEditorDialogState extends State<_InternalCostEditorDialog> {
                                 key: ObjectKey(entry.value),
                                 draft: entry.value,
                                 types: types,
+                                currencySymbol:
+                                    widget.controller.data.settings.currencySymbol,
                                 onChanged: () => setState(() {}),
                                 onRemove: () => setState(
                                   () => _drafts.removeAt(entry.key),
@@ -219,6 +227,7 @@ class _InternalCostEditorDialogState extends State<_InternalCostEditorDialog> {
                           0,
                           (sum, item) => sum + item.amount,
                         ),
+                        currencySymbol: widget.controller.data.settings.currencySymbol,
                       ),
                     ),
                   ],
@@ -285,6 +294,7 @@ class _CostDraftRow extends StatefulWidget {
   const _CostDraftRow({
     required this.draft,
     required this.types,
+    required this.currencySymbol,
     required this.onChanged,
     required this.onRemove,
     super.key,
@@ -292,6 +302,7 @@ class _CostDraftRow extends StatefulWidget {
 
   final _CostDraft draft;
   final List<CostType> types;
+  final String currencySymbol;
   final VoidCallback onChanged;
   final VoidCallback onRemove;
 
@@ -386,7 +397,7 @@ class _CostDraftRowState extends State<_CostDraftRow> {
                       const TextInputType.numberWithOptions(decimal: true),
                   decoration: InputDecoration(
                     labelText: context.tr('金额'),
-                    prefixText: '¥ ',
+                    prefixText: '${widget.currencySymbol} ',
                   ),
                 ),
               ),

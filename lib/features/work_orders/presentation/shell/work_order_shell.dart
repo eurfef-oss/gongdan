@@ -23,6 +23,7 @@ class WorkOrderPage extends StatefulWidget {
 class _WorkOrderPageState extends State<WorkOrderPage> {
   int _pageIndex = 0;
   final _settingsKey = GlobalKey<_SettingsPageState>();
+  double _settingsMenuScrollOffset = 0;
   Timer? _exitTimer;
   bool _exitArmed = false;
   bool _settingsSectionOpen = false;
@@ -263,6 +264,10 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
           key: _settingsKey,
           controller: controller,
           entitlementController: entitlementController,
+          initialMenuScrollOffset: _settingsMenuScrollOffset,
+          onMenuScrollOffsetChanged: (offset) {
+            _settingsMenuScrollOffset = offset;
+          },
           onExport: _exportData,
           onImport: _importData,
           onImportCsv: _importCsv,

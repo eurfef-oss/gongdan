@@ -10,6 +10,7 @@ class _Shell extends StatelessWidget {
     this.actionsBelowTitle = false,
     this.showPageTitle = true,
     this.showPageHeader = true,
+    this.scrollController,
   });
 
   final String kicker;
@@ -20,6 +21,7 @@ class _Shell extends StatelessWidget {
   final bool actionsBelowTitle;
   final bool showPageTitle;
   final bool showPageHeader;
+  final ScrollController? scrollController;
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +31,7 @@ class _Shell extends StatelessWidget {
             constraints.maxWidth > 1180 ? 1180.0 : constraints.maxWidth;
         final pagePadding = constraints.maxWidth < 700 ? 16.0 : 24.0;
         return SingleChildScrollView(
+          controller: scrollController,
           child: ConstrainedBox(
             constraints: BoxConstraints(
               minHeight: constraints.maxHeight,

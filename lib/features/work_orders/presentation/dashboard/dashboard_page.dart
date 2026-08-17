@@ -88,6 +88,7 @@ class _DashboardPage extends StatelessWidget {
     required double outstanding,
     required double completedAmount,
   }) {
+    final currencySymbol = controller.data.settings.currencySymbol;
     switch (id) {
       case 'summaryMetrics':
         return _MetricSummaryCard(
@@ -100,12 +101,15 @@ class _DashboardPage extends StatelessWidget {
             ),
             _Metric(
               label: context.tr('待收款'),
-              value: moneyText(outstanding),
+              value: moneyText(outstanding, currencySymbol: currencySymbol),
               icon: Icons.account_balance_wallet_outlined,
             ),
             _Metric(
               label: context.tr('已完成金额'),
-              value: moneyText(completedAmount),
+              value: moneyText(
+                completedAmount,
+                currencySymbol: currencySymbol,
+              ),
               icon: Icons.task_alt_outlined,
             ),
             _Metric(

@@ -23,8 +23,17 @@ export 'services/work_order_export_service.dart'
 export 'work_order_store.dart' show WorkOrderLoadStatus;
 
 class WorkOrderController extends ChangeNotifier {
-  WorkOrderController(WorkOrderRepository repository) {
-    _store = WorkOrderStore(repository, notifyListeners);
+  WorkOrderController(
+    WorkOrderRepository repository, {
+    String initialLanguageCode = 'zh',
+    String initialCurrencySymbol = defaultCurrencySymbol,
+  }) {
+    _store = WorkOrderStore(
+      repository,
+      notifyListeners,
+      initialLanguageCode: initialLanguageCode,
+      initialCurrencySymbol: initialCurrencySymbol,
+    );
     orders = OrderController(_store);
     costs = CostController(_store);
     customers = CustomerController(_store);

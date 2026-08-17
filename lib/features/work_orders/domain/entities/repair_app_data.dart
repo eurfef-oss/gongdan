@@ -15,12 +15,18 @@ class RepairAppData {
   final List<PaymentRecord> payments;
   final RepairAppSettings settings;
 
-  factory RepairAppData.empty() => RepairAppData(
+  factory RepairAppData.empty({
+    String languageCode = 'zh',
+    String currencySymbol = defaultCurrencySymbol,
+  }) => RepairAppData(
         customers: const [],
         serviceItems: const [],
         workOrders: const [],
         payments: const [],
-        settings: const RepairAppSettings(),
+        settings: RepairAppSettings(
+          languageCode: languageCode == 'en' ? 'en' : 'zh',
+          currencySymbol: normalizeCurrencySymbol(currencySymbol),
+        ),
       );
 
   RepairAppData copyWith({

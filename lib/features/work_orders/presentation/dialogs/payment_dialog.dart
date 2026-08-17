@@ -56,7 +56,10 @@ class _PaymentDialogState extends State<PaymentDialog> {
                 '{number} · 当前未收 {amount}',
                 {
                   'number': order.number,
-                  'amount': _dialogMoney(order.outstanding),
+                  'amount': _dialogMoney(
+                    order.outstanding,
+                    currencySymbol: widget.controller.data.settings.currencySymbol,
+                  ),
                 },
               ),
             ),
@@ -74,7 +77,8 @@ class _PaymentDialogState extends State<PaymentDialog> {
                           const TextInputType.numberWithOptions(decimal: true),
                       decoration: InputDecoration(
                         labelText: context.tr('本次收款金额 *'),
-                        prefixText: '¥ ',
+                        prefixText:
+                            '${widget.controller.data.settings.currencySymbol} ',
                       ),
                     ),
                     const SizedBox(height: 12),

@@ -72,6 +72,7 @@ class _OrdersPageState extends State<_OrdersPage> {
               (order) => _OrderCard(
                 order: order,
                 customer: controller.customerById(order.customerId),
+                currencySymbol: controller.data.settings.currencySymbol,
                 onTap: () => widget.onOpen(order),
                 onAdvance: () => controller.advanceStatus(order.id),
               ),
@@ -224,12 +225,14 @@ class _OrderCard extends StatelessWidget {
   const _OrderCard({
     required this.order,
     required this.customer,
+    required this.currencySymbol,
     required this.onTap,
     required this.onAdvance,
   });
 
   final WorkOrder order;
   final Customer? customer;
+  final String currencySymbol;
   final VoidCallback onTap;
   final VoidCallback onAdvance;
 
@@ -267,11 +270,11 @@ class _OrderCard extends StatelessWidget {
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   Text(
-                    '${context.tr('应收')} ${moneyText(order.total)}',
+                    '${context.tr('应收')} ${moneyText(order.total, currencySymbol: currencySymbol)}',
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                   Text(
-                    '${context.tr('未收')} ${moneyText(order.outstanding)}',
+                    '${context.tr('未收')} ${moneyText(order.outstanding, currencySymbol: currencySymbol)}',
                     style: TextStyle(
                       color: order.outstanding > 0
                           ? statusColor(context, order.paymentStatus)

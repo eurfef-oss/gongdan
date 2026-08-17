@@ -52,6 +52,7 @@ class _StatsPageState extends State<_StatsPage> {
     final grossProfit =
         orders.fold<double>(0, (sum, order) => sum + order.grossProfit);
     final margin = revenue <= 0 ? 0 : grossProfit / revenue;
+    final currencySymbol = widget.controller.data.settings.currencySymbol;
     final missingCostCount =
         orders.where((order) => order.internalCosts.isEmpty).length;
     final costsByType = <String, double>{};
@@ -105,12 +106,12 @@ class _StatsPageState extends State<_StatsPage> {
                     ),
                     _Metric(
                       label: context.tr('报价总额'),
-                      value: moneyText(revenue),
+                      value: moneyText(revenue, currencySymbol: currencySymbol),
                       icon: Icons.request_quote_outlined,
                     ),
                     _Metric(
                       label: context.tr('已收金额'),
-                      value: moneyText(received),
+                      value: moneyText(received, currencySymbol: currencySymbol),
                       icon: Icons.payments_outlined,
                     ),
                     _Metric(
@@ -120,12 +121,15 @@ class _StatsPageState extends State<_StatsPage> {
                     ),
                     _Metric(
                       label: context.tr('总成本'),
-                      value: moneyText(cost),
+                      value: moneyText(cost, currencySymbol: currencySymbol),
                       icon: Icons.account_balance_wallet_outlined,
                     ),
                     _Metric(
                       label: context.tr('毛利'),
-                      value: moneyText(grossProfit),
+                      value: moneyText(
+                        grossProfit,
+                        currencySymbol: currencySymbol,
+                      ),
                       icon: Icons.trending_up_outlined,
                     ),
                     _Metric(
@@ -170,16 +174,17 @@ class _StatsPageState extends State<_StatsPage> {
                     children: [
                       _SettingLine(
                         label: context.tr('应收总额'),
-                        value: moneyText(revenue),
+                        value: moneyText(revenue, currencySymbol: currencySymbol),
                       ),
                       _SettingLine(
                         label: context.tr('已收总额'),
-                        value: moneyText(received),
+                        value: moneyText(received, currencySymbol: currencySymbol),
                       ),
                       _SettingLine(
                         label: context.tr('待收总额'),
                         value: moneyText(
                           (revenue - received).clamp(0, double.infinity),
+                          currencySymbol: currencySymbol,
                         ),
                       ),
                     ],
@@ -204,11 +209,14 @@ class _StatsPageState extends State<_StatsPage> {
                     children: [
                       _SettingLine(
                         label: context.tr('总成本'),
-                        value: moneyText(cost),
+                        value: moneyText(cost, currencySymbol: currencySymbol),
                       ),
                       _SettingLine(
                         label: context.tr('预计毛利'),
-                        value: moneyText(grossProfit),
+                        value: moneyText(
+                          grossProfit,
+                          currencySymbol: currencySymbol,
+                        ),
                       ),
                       _SettingLine(
                         label: context.tr('毛利率'),
@@ -219,7 +227,10 @@ class _StatsPageState extends State<_StatsPage> {
                         ...costsByType.entries.map(
                           (entry) => _SettingLine(
                             label: entry.key,
-                            value: moneyText(entry.value),
+                            value: moneyText(
+                              entry.value,
+                              currencySymbol: currencySymbol,
+                            ),
                           ),
                         ),
                       ],

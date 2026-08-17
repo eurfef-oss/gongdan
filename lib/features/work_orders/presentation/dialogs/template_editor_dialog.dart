@@ -260,6 +260,7 @@ class _TemplateEditorDialogState extends State<TemplateEditorDialog> {
   late String _typeKey;
   late bool _enabled;
   bool _nameLocalized = false;
+  bool _unitLocalized = false;
   bool _unitDefaulted = false;
   bool _saving = false;
 
@@ -289,6 +290,13 @@ class _TemplateEditorDialogState extends State<TemplateEditorDialog> {
         _name.text = localizedServiceItemName(context, item);
       }
       _nameLocalized = true;
+    }
+    if (!_unitLocalized) {
+      final item = widget.initial;
+      if (item != null) {
+        _unit.text = localizedServiceItemUnit(context, item);
+      }
+      _unitLocalized = true;
     }
     if (!_unitDefaulted && _unit.text.trim().isEmpty) {
       _unit.text = context.tr('次');
@@ -378,8 +386,11 @@ class _TemplateEditorDialogState extends State<TemplateEditorDialog> {
                         controller: _price,
                         keyboardType: const TextInputType.numberWithOptions(
                             decimal: true),
-                        decoration:
-                            InputDecoration(labelText: context.tr('默认单价')),
+                        decoration: InputDecoration(
+                          labelText: context.tr('默认单价'),
+                          prefixText:
+                              '${widget.controller.data.settings.currencySymbol} ',
+                        ),
                       ),
                       second: TextField(
                         controller: _warranty,
@@ -438,11 +449,17 @@ class _TemplateEditorDialogState extends State<TemplateEditorDialog> {
     }
     setState(() => _saving = true);
     final type = _selectedTypeOption();
+    final enteredUnit = _unit.text.trim();
+    final initialUnit = initial != null && isDefaultServiceItem(initial) &&
+            enteredUnit == localizedServiceItemUnit(context, initial)
+        ? initial.unit
+        : enteredUnit;
+    final unit = initialUnit.isEmpty ? context.tr('次') : initialUnit;
     final item = widget.initial?.copyWith(
           name: name,
           type: type.type,
           customType: type.customType,
-          unit: _unit.text.trim().isEmpty ? context.tr('次') : _unit.text.trim(),
+          unit: unit,
           defaultPrice: money(double.tryParse(_price.text) ?? 0),
           warrantyDays: int.tryParse(_warranty.text) ?? 0,
           enabled: _enabled,
@@ -452,7 +469,7 @@ class _TemplateEditorDialogState extends State<TemplateEditorDialog> {
           name: name,
           type: type.type,
           customType: type.customType,
-          unit: _unit.text.trim().isEmpty ? context.tr('次') : _unit.text.trim(),
+          unit: unit,
           defaultPrice: money(double.tryParse(_price.text) ?? 0),
           warrantyDays: int.tryParse(_warranty.text) ?? 0,
           enabled: _enabled,

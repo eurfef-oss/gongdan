@@ -8,7 +8,11 @@ const _dialogAmber = Color(0xFFBD7A21);
 const _dialogRed = Color(0xFFBE5B51);
 const _newCustomerValue = '__new_customer__';
 
-String _dialogMoney(double value) => '¥${value.toStringAsFixed(2)}';
+String _dialogMoney(
+  double value, {
+  String currencySymbol = defaultCurrencySymbol,
+}) =>
+    '$currencySymbol${value.toStringAsFixed(2)}';
 
 String _dialogDate(DateTime? value, {String empty = '未设置'}) {
   if (value == null) return empty;

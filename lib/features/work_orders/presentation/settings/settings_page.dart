@@ -20,6 +20,8 @@ class _SettingsPage extends StatefulWidget {
     required this.onImportCsv,
     required this.onNavigate,
     required this.onSectionChanged,
+    required this.initialMenuScrollOffset,
+    required this.onMenuScrollOffsetChanged,
     super.key,
   });
 
@@ -30,6 +32,8 @@ class _SettingsPage extends StatefulWidget {
   final VoidCallback onImportCsv;
   final ValueChanged<int> onNavigate;
   final ValueChanged<bool> onSectionChanged;
+  final double initialMenuScrollOffset;
+  final ValueChanged<double> onMenuScrollOffsetChanged;
 
   @override
   State<_SettingsPage> createState() => _SettingsPageState();
@@ -41,6 +45,7 @@ class _SettingsPageState extends State<_SettingsPage> {
   late final TextEditingController _phone;
   late final TextEditingController _address;
   late final TextEditingController _note;
+  late final ScrollController _menuScrollController;
   _SettingsSection? _section;
   bool _showCostTypes = false;
 
@@ -79,6 +84,9 @@ class _SettingsPageState extends State<_SettingsPage> {
   @override
   void initState() {
     super.initState();
+    _menuScrollController = ScrollController(
+      initialScrollOffset: widget.initialMenuScrollOffset,
+    )..addListener(_onMenuScroll);
     final settings = widget.controller.data.settings;
     _shopName = TextEditingController(text: settings.shopName);
     _ownerName = TextEditingController(text: settings.ownerName);
@@ -89,12 +97,19 @@ class _SettingsPageState extends State<_SettingsPage> {
 
   @override
   void dispose() {
+    _menuScrollController
+      ..removeListener(_onMenuScroll)
+      ..dispose();
     _shopName.dispose();
     _ownerName.dispose();
     _phone.dispose();
     _address.dispose();
     _note.dispose();
     super.dispose();
+  }
+
+  void _onMenuScroll() {
+    widget.onMenuScrollOffsetChanged(_menuScrollController.offset);
   }
 
   @override
@@ -135,6 +150,7 @@ class _SettingsPageState extends State<_SettingsPage> {
     return _Shell(
       kicker: context.tr('SYSTEM / SETTINGS'),
       title: context.tr('设置与备份'),
+      scrollController: _menuScrollController,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -388,6 +404,29 @@ class _LanguageSettingsContent extends StatelessWidget {
               ),
             ],
           ),
+        ),
+        const SizedBox(height: 18),
+        DropdownButtonFormField<String>(
+          initialValue: normalizeCurrencySymbol(settings.currencySymbol),
+          isExpanded: true,
+          decoration: InputDecoration(
+            labelText: context.tr('货币单位'),
+            helperText: context.tr('所有金额显示都会使用此货币单位。'),
+          ),
+          items: commonCurrencyUnits
+              .map(
+                (unit) => DropdownMenuItem<String>(
+                  value: unit.symbol,
+                  child: Text('${context.tr(unit.label)} (${unit.symbol})'),
+                ),
+              )
+              .toList(),
+          onChanged: (value) {
+            if (value == null || value == settings.currencySymbol) return;
+            controller.updateSettings(
+              settings.copyWith(currencySymbol: value),
+            );
+          },
         ),
       ],
     );

@@ -212,6 +212,7 @@ class CustomerDetailDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final customer = controller.customerById(customerId);
     if (customer == null) return const SizedBox.shrink();
+    final currencySymbol = controller.data.settings.currencySymbol;
     final orders = controller.data.workOrders
         .where((order) => order.customerId == customerId && !order.isTrashed)
         .toList()
@@ -351,7 +352,10 @@ class CustomerDetailDialog extends StatelessWidget {
                                   value: '${orders.length} ${context.tr('张')}'),
                               _InfoPill(
                                   label: context.tr('未结清'),
-                                  value: _dialogMoney(outstanding)),
+                                  value: _dialogMoney(
+                                    outstanding,
+                                    currencySymbol: currencySymbol,
+                                  )),
                             ],
                           ),
                         ],
@@ -389,7 +393,10 @@ class CustomerDetailDialog extends StatelessWidget {
                                     _DialogStatusChip(order.status),
                                     const SizedBox(height: 3),
                                     Text(
-                                      _dialogMoney(order.total),
+                                      _dialogMoney(
+                                        order.total,
+                                        currencySymbol: currencySymbol,
+                                      ),
                                       style: const TextStyle(
                                           fontSize: 14,
                                           fontFamily: 'monospace'),

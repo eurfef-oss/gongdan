@@ -124,7 +124,7 @@ AAB 是正式商店包，专业版功能默认必须通过 Google Play 购买并
 & 'I:\sdk\flutter\bin\flutter.bat' build appbundle --release
 ```
 
-产物位于 `build/app/outputs/bundle/release/app-release-<versionName>+<versionCode>.aab`（例如 `app-release-1.0.1+8.aab`，同时保留 Flutter 默认产物 `app-release.aab`）。具体版本、构建号、产物大小和 SHA-256 统一记录在[发布检查清单](docs/release-checklist.md)，本文件不重复维护具体构建记录。
+产物位于 `build/app/outputs/bundle/release/app-release-<versionName>+<versionCode>.aab`（例如 `app-release-1.0.1+9.aab`，同时保留 Flutter 默认产物 `app-release.aab`）。具体版本、构建号、产物大小和 SHA-256 统一记录在[发布检查清单](docs/release-checklist.md)，本文件不重复维护具体构建记录。
 
 ## 版本号与构建号
 

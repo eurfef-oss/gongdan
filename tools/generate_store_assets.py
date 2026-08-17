@@ -38,7 +38,10 @@ def brand_background(size: tuple[int, int]) -> Image.Image:
 def render_app_icon(size: int = 1024) -> Image.Image:
     """Render a deterministic, geometric work-order icon without generated art."""
     scale = 2
-    glyph_scale = 0.84
+    # Leave a little more breathing room around the mark in launchers. Android
+    # applies its own adaptive-icon mask, so a nearly full-size glyph appears
+    # noticeably oversized on the home screen.
+    glyph_scale = 0.70
     unit = scale * glyph_scale
     canvas_size = size * scale
     canvas = brand_background((canvas_size, canvas_size)).convert("RGBA")
@@ -178,7 +181,7 @@ def feature_graphic(master: Image.Image, language: str = "zh") -> Image.Image:
         subtitle_font = font(25)
         pill_font = font(18, bold=True)
     else:
-        title = "维修工单助手"
+        title = "Repair Work Orders"
         subtitle = "接单、报价、维修、收款\n一张工单全程管理"
         pills = [("离线可用", 66), ("流程清晰", 202), ("数据本地保存", 338)]
         title_font = font(58, bold=True)

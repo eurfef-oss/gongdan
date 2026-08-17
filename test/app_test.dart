@@ -18,6 +18,9 @@ class _FakeWorkOrderRepository implements WorkOrderRepository {
 void main() {
   testWidgets('work order app shows welcome page before the dashboard',
       (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
     final controller = WorkOrderController(_FakeWorkOrderRepository());
     await controller.initialize();
 
@@ -25,8 +28,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('开始使用'), findsOneWidget);
-    await tester.ensureVisible(find.text('开始使用'));
-    await tester.tap(find.text('开始使用'));
+    final startButton = find.widgetWithText(FilledButton, '开始使用');
+    expect(startButton, findsOneWidget);
+    expect(tester.getBottomRight(startButton).dy, lessThanOrEqualTo(844));
+    await tester.tap(startButton);
     await tester.pumpAndSettle();
 
     expect(find.byType(ReorderableListView), findsOneWidget);
@@ -36,6 +41,24 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     expect(find.text('最近工单'), findsOneWidget);
+  });
+
+  testWidgets('welcome page presents features as a swipeable banner',
+      (tester) async {
+    final controller = WorkOrderController(_FakeWorkOrderRepository());
+    await controller.initialize();
+
+    await tester.pumpWidget(BaseApp(controller: controller));
+    await tester.pumpAndSettle();
+
+    final banner = find.byType(PageView);
+    expect(banner, findsOneWidget);
+    expect(find.text('工单清单'), findsOneWidget);
+
+    await tester.fling(banner, const Offset(-500, 0), 1000);
+    await tester.pumpAndSettle();
+
+    expect(find.text('客户档案'), findsOneWidget);
   });
 
   testWidgets('dashboard progress merges confirmed into repairing',

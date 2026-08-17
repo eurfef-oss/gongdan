@@ -220,7 +220,7 @@ class _DocumentPreviewDialogState extends State<DocumentPreviewDialog> {
   String _documentFileName({required bool asPdf}) {
     final extension = asPdf ? 'pdf' : 'png';
     final number = controller.orderById(orderId)?.number ?? context.tr('单据');
-    return 'RepairDesk-$number.$extension';
+    return 'RepairWorkOrders-$number.$extension';
   }
 
   Future<Uint8List> _pdfFromImage(ui.Image image) async {

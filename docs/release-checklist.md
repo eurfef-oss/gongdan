@@ -10,8 +10,8 @@
 
 | 产物 | 构建日期 | 大小 | SHA-256 |
 | --- | --- | ---: | --- |
-| `build/app/outputs/flutter-apk/app-release.apk` | 2026-08-17 | 59,036,072 bytes（56.30 MB） | `C6B60F2FB9B5DE055F009B2EB2523D90D71F22E49D51C1D69DA76E6737FA99C6` |
-| `build/app/outputs/bundle/release/app-release-1.0.1+8.aab` | 2026-08-17 | 59,219,024 bytes（56.48 MB） | `65577F2BCDDD9D943FDEB0BD3E85B14E7FDF3EB9670006CA0E84CA1AEC3EF4C1` |
+| `build/app/outputs/flutter-apk/app-release.apk` | 2026-08-17 | 63,109,887 bytes（60.19 MB） | `C7BDB3654A84CA6EDE793F3C2668BB0BFFE1C1BB5FA010CDAED7090071601EE6` |
+| `build/app/outputs/bundle/release/app-release-1.0.1+8.aab` | 2026-08-17 | 63,163,273 bytes（60.24 MB） | `48178A24099DB53B91FF921DC214C9E35001EC4847493DA1740B65169A2F12D6` |
 
 版本代码记录：
 
@@ -32,7 +32,7 @@
 
 - [x] `dart format lib test` 已执行
 - [x] `flutter analyze` 无问题
-- [x] `flutter test --no-pub` 全部通过（49 项）
+- [x] `flutter test --no-pub` 全部通过（51 项）
 - [x] 关键失败和边界场景有测试（部分收款、关闭限制、字段清空、报价重新确认、PDF 编码、回收站、自定义类型、概览卡片设置）
 
 ## 本次功能变更记录（2026-08-11）
@@ -112,9 +112,15 @@
 - 构建参数：`ENTITLEMENT_SERVER_URL=https://play.cosdk.com`，使用已登记的公钥，未启用本地测试购买。
 - 购买商品查询修复：移除 Android 商品列表的 `firstWhere(orElse:)` 泛型回退，改为精确商品 ID 匹配，避免 `GooglePlayProductDetails` 运行时类型错误；
 - 购买取消修复：处理 Google Play 取消支付时可能返回的空商品 ID，并加入购买窗口超时兜底，未付款返回后按钮会恢复可点击；
-- Flutter 验证：`flutter analyze` 无问题，49 项测试全部通过。
+- Flutter 验证：`flutter analyze` 无问题，51 项测试全部通过。
 - 内部 APK：使用 `--dart-define=ENABLE_RELEASE_PRO_PREVIEW=true` 重新构建成功；预览授权仅用于内部验收，不写入购买缓存。
-- APK 校验：文件大小 `59,036,072` bytes，SHA-256 为 `C6B60F2FB9B5DE055F009B2EB2523D90D71F22E49D51C1D69DA76E6737FA99C6`，Android `apksigner` v2 校验通过；包名为 `com.cosdk.repairdesk`。
-- 正式 AAB：不含专业版预览开关，构建成功；文件名为 `app-release-1.0.1+8.aab`，文件大小 `59,219,024` bytes，SHA-256 为 `65577F2BCDDD9D943FDEB0BD3E85B14E7FDF3EB9670006CA0E84CA1AEC3EF4C1`，`jarsigner -verify` 通过。
+- APK 校验：文件大小 `63,109,887` bytes，SHA-256 为 `C7BDB3654A84CA6EDE793F3C2668BB0BFFE1C1BB5FA010CDAED7090071601EE6`，Android `apksigner` v2 校验通过；包名为 `com.cosdk.repairdesk`。
+- 正式 AAB：不含专业版预览开关，构建成功；文件名为 `app-release-1.0.1+8.aab`，文件大小 `63,163,273` bytes，SHA-256 为 `48178A24099DB53B91FF921DC214C9E35001EC4847493DA1740B65169A2F12D6`，`jarsigner -verify` 通过。
+
+## 本次功能变更记录（2026-08-17）
+
+- [x] 首次进入按系统语言默认中文或英文，已有语言设置不被覆盖；
+- [x] 欢迎页改为可左右滑动的功能 Banner，每项功能配套插画；
+- [x] 语言设置中增加“打开欢迎页”入口，便于调试首次安装流程；
 
 仍需在 Google Play 内部测试轨道完成 AAB 上传、测试账号安装、真实购买、恢复购买、离线使用和重新安装验证。

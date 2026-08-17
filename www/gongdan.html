@@ -71,6 +71,33 @@
         display: inline;
       }
 
+      /* CSS fallback keeps manual switching available when a strict CSP
+         blocks JavaScript. The external script adds browser-language detection
+         and remembers the user's choice when scripts are allowed. */
+      .language-input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      #language-en:checked ~ .page .lang-zh {
+        display: none !important;
+      }
+
+      #language-en:checked ~ .page .lang-en {
+        display: inline !important;
+      }
+
+      #language-zh:checked ~ .page .lang-zh {
+        display: inline !important;
+      }
+
+      #language-zh:checked ~ .page .lang-en {
+        display: none !important;
+      }
+
       .page {
         min-height: 100vh;
       }
@@ -125,7 +152,7 @@
         box-shadow: 0 5px 16px rgba(16, 40, 61, 0.06);
       }
 
-      .language-switcher button {
+      .language-switcher label {
         min-width: 58px;
         padding: 7px 12px;
         color: var(--muted);
@@ -139,11 +166,12 @@
         transition: color 160ms ease, background 160ms ease, box-shadow 160ms ease;
       }
 
-      .language-switcher button:hover {
+      .language-switcher label:hover {
         color: var(--ink);
       }
 
-      .language-switcher button[aria-pressed="true"] {
+      #language-zh:checked ~ .page .language-switcher label[for="language-zh"],
+      #language-en:checked ~ .page .language-switcher label[for="language-en"] {
         color: #fff;
         background: var(--navy);
         box-shadow: 0 4px 10px rgba(11, 34, 56, 0.18);
@@ -562,7 +590,7 @@
           border-radius: 11px;
         }
 
-        .language-switcher button {
+        .language-switcher label {
           min-width: 48px;
           padding: 6px 9px;
           font-size: 12px;
@@ -658,33 +686,11 @@
         }
       }
     </style>
-    <script>
-      (function () {
-        var storageKey = "repairdesk-privacy-language";
-        var languages = Array.isArray(navigator.languages) && navigator.languages.length
-          ? navigator.languages
-          : [navigator.language || ""];
-        var savedLanguage = null;
-
-        try {
-          savedLanguage = localStorage.getItem(storageKey);
-        } catch (error) {
-          savedLanguage = null;
-        }
-
-        var language = savedLanguage === "zh" || savedLanguage === "en"
-          ? savedLanguage
-          : languages.some(function (item) {
-              return /^zh(?:-|$)/i.test(item);
-            })
-            ? "zh"
-            : "en";
-
-        document.documentElement.dataset.language = language;
-      })();
-    </script>
+    <script src="./gongdan.js" defer></script>
   </head>
   <body>
+    <input class="language-input" type="radio" name="language" id="language-zh" checked aria-label="中文">
+    <input class="language-input" type="radio" name="language" id="language-en" aria-label="English">
     <div class="page">
       <div class="container">
         <header class="site-header">
@@ -702,8 +708,8 @@
           </a>
 
           <div class="language-switcher" aria-label="Language / 语言">
-            <button type="button" data-language-option="zh" aria-pressed="true">中文</button>
-            <button type="button" data-language-option="en" aria-pressed="false">English</button>
+            <label for="language-zh" data-language-option="zh">中文</label>
+            <label for="language-en" data-language-option="en">English</label>
           </div>
         </header>
 
@@ -1097,45 +1103,5 @@
       </div>
     </div>
 
-    <script>
-      (function () {
-        var storageKey = "repairdesk-privacy-language";
-        var root = document.documentElement;
-        var buttons = document.querySelectorAll("[data-language-option]");
-        var initialLanguage = root.dataset.language === "en" ? "en" : "zh";
-
-        function setLanguage(language, persist) {
-          var isEnglish = language === "en";
-          root.dataset.language = isEnglish ? "en" : "zh";
-          root.lang = isEnglish ? "en" : "zh-CN";
-          document.title = isEnglish
-            ? "Repair Work Orders | Privacy Policy"
-            : "维修工单助手｜隐私权政策";
-
-          buttons.forEach(function (button) {
-            button.setAttribute(
-              "aria-pressed",
-              button.dataset.languageOption === root.dataset.language ? "true" : "false"
-            );
-          });
-
-          if (persist) {
-            try {
-              localStorage.setItem(storageKey, root.dataset.language);
-            } catch (error) {
-              // Language switching still works when storage is unavailable.
-            }
-          }
-        }
-
-        buttons.forEach(function (button) {
-          button.addEventListener("click", function () {
-            setLanguage(button.dataset.languageOption, true);
-          });
-        });
-
-        setLanguage(initialLanguage, false);
-      })();
-    </script>
   </body>
 </html>

@@ -1,7 +1,7 @@
 name: repair_work_order_assistant
 description: Offline-first work order, quotation, payment and service record assistant.
 publish_to: none
-version: 1.0.1+8
+version: 1.0.1+9
 
 environment:
   sdk: ">=3.3.0 <4.0.0"
@@ -31,3 +31,5 @@ dev_dependencies:
 flutter:
   generate: true
   uses-material-design: true
+  assets:
+    - assets/welcome/

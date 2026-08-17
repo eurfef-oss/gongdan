@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "appTitle": "RepairDesk",
+  "appTitle": "Repair Work Orders",
   "retry": "Retry",
   "unexpectedError": "Something went wrong. Please try again."
 }

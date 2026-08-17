@@ -92,6 +92,7 @@ const _english = <String, String>{
   '欢迎开始记录每一次服务。': 'Welcome to your service workspace.',
   '报价、维修、收款和客户资料，都在一张离线工单里完成。':
       'Quotes, repairs, payments, and customer records all fit in one offline work order.',
+  '左右滑动浏览功能': 'Swipe left or right to explore',
   '开始使用': 'Get started',
   '工单清单': 'Work orders',
   '把每一次上门变成可追溯的服务记录。': 'Turn every service visit into a traceable record.',
@@ -679,6 +680,8 @@ const _english = <String, String>{
       'If a purchase fails but Google Play shows “Already owned”, tap “Restore purchase” to restore access.',
   'Release APK 已开放全部专业功能；该预览授权不会保存，正式 AAB 需购买。':
       'Release APK builds have all Pro features enabled; this preview entitlement is not saved. Production AAB builds require a purchase.',
-  'RepairDesk 工单 CSV 导出': 'RepairDesk work-order CSV export',
-  'RepairDesk 完整备份（请妥善保管）': 'RepairDesk full backup (keep it safe)',
+  'Repair Work Orders 工单 CSV 导出':
+      'Repair Work Orders work-order CSV export',
+  'Repair Work Orders 完整备份（请妥善保管）':
+      'Repair Work Orders full backup (keep it safe)',
 };

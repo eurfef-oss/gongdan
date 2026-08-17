@@ -1,6 +1,6 @@
 {
   "@@locale": "zh",
-  "appTitle": "RepairDesk",
+  "appTitle": "Repair Work Orders",
   "retry": "重试",
   "unexpectedError": "操作失败，请稍后重试"
 }

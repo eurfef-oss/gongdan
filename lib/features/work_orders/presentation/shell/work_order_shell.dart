@@ -569,11 +569,12 @@ class _WorkOrderPageState extends State<WorkOrderPage> {
     final bytes = Uint8List.fromList(
       utf8.encode(isJson ? controller.exportJson() : controller.exportCsv()),
     );
-    final fileName = isJson ? 'RepairDesk-backup.json' : 'work-orders.csv';
+    final fileName =
+        isJson ? 'RepairWorkOrders-backup.json' : 'work-orders.csv';
     await _shareService.share(
       text: isJson
-          ? context.tr('RepairDesk 完整备份（请妥善保管）')
-          : context.tr('RepairDesk 工单 CSV 导出'),
+          ? context.tr('Repair Work Orders 完整备份（请妥善保管）')
+          : context.tr('Repair Work Orders 工单 CSV 导出'),
       file: ShareFile(
         bytes: bytes,
         fileName: fileName,
@@ -706,128 +707,344 @@ class _WelcomePage extends StatefulWidget {
 }
 
 class _WelcomePageState extends State<_WelcomePage> {
+  late final PageController _pageController;
+  int _currentPage = 0;
   bool _starting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(28),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 760),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'RepairDesk',
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          color: scheme.primary,
-                          letterSpacing: 1.4,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final compact = constraints.maxWidth < 680;
+            final horizontalPadding = compact ? 20.0 : 32.0;
+            final short = constraints.maxHeight < 720;
+            return Padding(
+              padding: EdgeInsets.fromLTRB(
+                horizontalPadding,
+                short
+                    ? 12
+                    : compact
+                        ? 22
+                        : 32,
+                horizontalPadding,
+                short ? 12 : 28,
+              ),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 960),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        AppLocalizations.of(context).appTitle,
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                              color: scheme.primary,
+                              letterSpacing: 1.4,
+                              fontWeight: FontWeight.w800,
+                            ),
+                      ),
+                      SizedBox(
+                          height: short
+                              ? 8
+                              : compact
+                                  ? 18
+                                  : 24),
+                      Text(
+                        context.tr('欢迎开始记录每一次服务。'),
+                        style: (short
+                                ? Theme.of(context).textTheme.headlineMedium
+                                : Theme.of(context).textTheme.displaySmall)
+                            ?.copyWith(
                           fontWeight: FontWeight.w800,
+                          height: 1.1,
                         ),
-                  ),
-                  const SizedBox(height: 28),
-                  Text(
-                    context.tr('欢迎开始记录每一次服务。'),
-                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    context.tr('报价、维修、收款和客户资料，都在一张离线工单里完成。'),
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      ),
+                      SizedBox(height: short ? 6 : 12),
+                      Text(
+                        context.tr('报价、维修、收款和客户资料，都在一张离线工单里完成。'),
+                        style: (short
+                                ? Theme.of(context).textTheme.bodyLarge
+                                : Theme.of(context).textTheme.titleMedium)
+                            ?.copyWith(
                           color: scheme.onSurfaceVariant,
                           height: 1.5,
                         ),
-                  ),
-                  const SizedBox(height: 30),
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: [
-                      _WelcomeFeature(
-                        icon: Icons.receipt_long_outlined,
-                        title: context.tr('工单清单'),
-                        description: context.tr('把每一次上门变成可追溯的服务记录。'),
                       ),
-                      _WelcomeFeature(
-                        icon: Icons.people_outline,
-                        title: context.tr('客户档案'),
-                        description: context.tr('客户和设备信息，下次报修快速复用。'),
+                      SizedBox(
+                          height: short
+                              ? 10
+                              : compact
+                                  ? 20
+                                  : 28),
+                      Expanded(
+                        child: PageView.builder(
+                          controller: _pageController,
+                          itemCount: _welcomeFeatures.length,
+                          onPageChanged: (index) {
+                            if (mounted) setState(() => _currentPage = index);
+                          },
+                          itemBuilder: (context, index) => Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 2),
+                            child: _WelcomeBanner(
+                              feature: _welcomeFeatures[index],
+                              index: index,
+                            ),
+                          ),
+                        ),
                       ),
-                      _WelcomeFeature(
-                        icon: Icons.cloud_off_outlined,
-                        title: context.tr('本地优先'),
-                        description: context.tr('数据保存在本机，网络不可用也能工作。'),
+                      SizedBox(height: short ? 8 : 14),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          for (var index = 0;
+                              index < _welcomeFeatures.length;
+                              index++)
+                            GestureDetector(
+                              onTap: () => _pageController.animateToPage(
+                                index,
+                                duration: const Duration(milliseconds: 280),
+                                curve: Curves.easeOutCubic,
+                              ),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 220),
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 4),
+                                width: index == _currentPage ? 24 : 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: index == _currentPage
+                                      ? scheme.primary
+                                      : scheme.outlineVariant,
+                                  borderRadius: BorderRadius.circular(99),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      SizedBox(height: short ? 3 : 8),
+                      Text(
+                        context.tr('左右滑动浏览功能'),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: scheme.onSurfaceVariant,
+                          fontSize: short ? 12 : 13,
+                        ),
+                      ),
+                      SizedBox(
+                          height: short
+                              ? 8
+                              : compact
+                                  ? 18
+                                  : 22),
+                      Align(
+                        alignment:
+                            compact ? Alignment.center : Alignment.centerRight,
+                        child: FilledButton.icon(
+                          onPressed: _starting
+                              ? null
+                              : () async {
+                                  setState(() => _starting = true);
+                                  await widget.onStart();
+                                  if (mounted) {
+                                    setState(() => _starting = false);
+                                  }
+                                },
+                          icon: _starting
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.arrow_forward),
+                          label: Text(context.tr('开始使用')),
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 34),
-                  FilledButton.icon(
-                    onPressed: _starting
-                        ? null
-                        : () async {
-                            setState(() => _starting = true);
-                            await widget.onStart();
-                            if (mounted) setState(() => _starting = false);
-                          },
-                    icon: _starting
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.arrow_forward),
-                    label: Text(context.tr('开始使用')),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
     );
   }
 }
 
-class _WelcomeFeature extends StatelessWidget {
-  const _WelcomeFeature({
+class _WelcomeFeatureData {
+  const _WelcomeFeatureData({
     required this.icon,
-    required this.title,
-    required this.description,
+    required this.titleKey,
+    required this.descriptionKey,
+    required this.assetPath,
+    required this.accent,
   });
 
   final IconData icon;
-  final String title;
-  final String description;
+  final String titleKey;
+  final String descriptionKey;
+  final String assetPath;
+  final Color accent;
+}
+
+const _welcomeFeatures = <_WelcomeFeatureData>[
+  _WelcomeFeatureData(
+    icon: Icons.receipt_long_outlined,
+    titleKey: '工单清单',
+    descriptionKey: '把每一次上门变成可追溯的服务记录。',
+    assetPath: 'assets/welcome/work_orders.png',
+    accent: Color(0xFF2858C9),
+  ),
+  _WelcomeFeatureData(
+    icon: Icons.people_outline,
+    titleKey: '客户档案',
+    descriptionKey: '客户和设备信息，下次报修快速复用。',
+    assetPath: 'assets/welcome/customer_records.png',
+    accent: Color(0xFF267D66),
+  ),
+  _WelcomeFeatureData(
+    icon: Icons.cloud_off_outlined,
+    titleKey: '本地优先',
+    descriptionKey: '数据保存在本机，网络不可用也能工作。',
+    assetPath: 'assets/welcome/local_first.png',
+    accent: Color(0xFFE06D4D),
+  ),
+];
+
+class _WelcomeBanner extends StatelessWidget {
+  const _WelcomeBanner({required this.feature, required this.index});
+
+  final _WelcomeFeatureData feature;
+  final int index;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 220,
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(icon, color: Theme.of(context).colorScheme.primary),
-              const SizedBox(height: 12),
-              Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
-              const SizedBox(height: 6),
-              Text(
-                description,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  height: 1.4,
-                ),
-              ),
+    final scheme = Theme.of(context).colorScheme;
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              scheme.surface,
+              Color.lerp(
+                scheme.surface,
+                feature.accent,
+                Theme.of(context).brightness == Brightness.dark ? .2 : .07,
+              )!,
             ],
           ),
+        ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final compact = constraints.maxWidth < 600;
+            final short = constraints.maxHeight < 360;
+            final image = Padding(
+              padding: EdgeInsets.all(
+                compact ? (short ? 8 : 14) : 24,
+              ),
+              child: Image.asset(
+                feature.assetPath,
+                fit: BoxFit.contain,
+              ),
+            );
+            final copy = Padding(
+              padding: EdgeInsets.fromLTRB(
+                compact ? (short ? 14 : 22) : 12,
+                compact ? 0 : 28,
+                compact ? (short ? 14 : 22) : 34,
+                compact ? (short ? 12 : 22) : 28,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: short ? 32 : 36,
+                        height: short ? 32 : 36,
+                        decoration: BoxDecoration(
+                          color: feature.accent.withValues(alpha: .14),
+                          borderRadius: BorderRadius.circular(short ? 10 : 11),
+                        ),
+                        child: Icon(
+                          feature.icon,
+                          color: feature.accent,
+                          size: short ? 18 : 24,
+                        ),
+                      ),
+                      SizedBox(width: short ? 8 : 10),
+                      Text(
+                        '${(index + 1).toString().padLeft(2, '0')} / '
+                        '${_welcomeFeatures.length.toString().padLeft(2, '0')}',
+                        style: TextStyle(
+                          color: feature.accent,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: .8,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: short ? 8 : 14),
+                  Text(
+                    context.tr(feature.titleKey),
+                    style: (short
+                            ? Theme.of(context).textTheme.titleLarge
+                            : Theme.of(context).textTheme.headlineSmall)
+                        ?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  SizedBox(height: short ? 6 : 8),
+                  Text(
+                    context.tr(feature.descriptionKey),
+                    style: (short
+                            ? Theme.of(context).textTheme.bodyMedium
+                            : Theme.of(context).textTheme.bodyLarge)
+                        ?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                      height: short ? 1.35 : 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            );
+
+            if (compact && !short) {
+              return Column(
+                children: [
+                  Expanded(flex: 6, child: image),
+                  Expanded(flex: 4, child: copy),
+                ],
+              );
+            }
+            return Row(
+              children: [
+                Expanded(flex: 5, child: image),
+                Expanded(flex: 5, child: copy),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -890,7 +1107,7 @@ class _SideNavigation extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'RepairDesk',
+                        AppLocalizations.of(context).appTitle,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,
